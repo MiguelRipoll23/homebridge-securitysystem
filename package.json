@@ -1,0 +1,24 @@
+{
+  "name": "homebridge-securitysystem",
+  "version": "1.0.1",
+  "description": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.",
+  "license": "ISC",
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/MiguelRipoll23/homebridge-securitysystem.git"
+  },
+  "bugs": {
+    "url": "http://github.com/MiguelRipoll23/homebridge-securitysystem/issues"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "audio-loader": "^1.0.3",
+    "audio-play": "^2.2.1"
+  }
+}
