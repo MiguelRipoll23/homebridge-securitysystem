@@ -5,7 +5,7 @@ Homebridge plugin that creates a security system accessory that can be triggered
 If you already have Homebridge installed, skip to step two!
 
 1. Install homebridge using `npm install -g homebridge`.
-2. Install homebridge-alarm using `npm install -g homebridge-securitysystem`.
+2. Install the plugin using `npm install -g homebridge-securitysystem`.
 3. Update your configuration file (see `sample-config.json`).
 
 ## Automations
