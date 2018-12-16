@@ -11,9 +11,11 @@ If you already have Homebridge installed, skip to step two!
 ## Automations
 Use Eve or a similar app to create automations like this:
 
-| Trigger            | Condition                         | Action          |
-|--------------------|-----------------------------------|-----------------|
-| Motion is detected | Security system is set to `Night` | Turn on `Siren` |
-| Door is opened     | Security system is set to `Away`  | Turn on `Siren` |
+| Trigger            | Condition                         | Action                        |
+|--------------------|-----------------------------------|-------------------------------|
+| Motion is detected | Security system is set to `Night` | Turn on `Siren`               |
+| Door is opened     | Security system is set to `Away`  | Turn on `Siren`               |
+| Button is pressed  | Security system is set to `Away`  | Set security system to `Home` |
 
-An accessory called `Siren` that appears as a switch is used to trigger the alarm.
+## Additional information
+An accessory called `Siren` that appears as a switch is used to trigger the security system. Changing modes while the security system is about to be triggered or already triggered will stop the alarm and continue its normal behaviour.

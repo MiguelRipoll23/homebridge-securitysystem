@@ -13,12 +13,20 @@ module.exports = function(homebridge) {
 function SecuritySystem(log, config) {
   this.log = log;
   this.name = config['name'];
-  this.delaySeconds = config['delay_seconds'];
+  this.armSeconds = config['arm_seconds'];
+  this.triggerSeconds = config['trigger_seconds'];
 
   // Check for optional options
-  if (this.delaySeconds === undefined) {
-    this.delaySeconds = 0;
+  if (this.armSeconds === undefined) {
+    this.armSeconds = 0;
   }
+
+  if (this.triggerSeconds === undefined) {
+    this.triggerSeconds = 0;
+  }
+
+  // Variables
+  this.triggerTimeout = null;
 
   // Security system
   this.service = new Service.SecuritySystem(this.name);
@@ -126,27 +134,27 @@ SecuritySystem.prototype.updateCurrentState = function(state) {
 SecuritySystem.prototype.logState = function(type, state) {
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      this.log(type + ' State (Home)');
+      this.log(type + ' state (Home)');
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      this.log(type + ' State (Away)');
+      this.log(type + ' state (Away)');
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      this.log(type + ' State (Night)');
+      this.log(type + ' state (Night)');
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
-      this.log(type + ' State (Off)');
+      this.log(type + ' state (Off)');
       break;
 
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      this.log(type + ' State (Alarm triggered)');
+      this.log(type + ' state (Alarm triggered)');
       break;
 
     default:
-      this.log(type + ' State (Unknown state)');
+      this.log(type + ' state (Unknown state)');
   }
 }
 
@@ -158,11 +166,29 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
   this.logState('Target', state);
 
-  // Check if alarm is triggered
+  // Check if alarm is about to be
+  // triggered and cancel it if
+  // user is changing to other mode
+  if (this.triggerTimeout !== null && state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
+    clearTimeout(this.triggerTimeout);
+
+    this.triggerTimeout = null;
+    this.log('Trigger timeout (Cancelled)');
+
+    // Turn off 'Siren' accessory
+    if (this.on) {
+      this.on = false;
+      this.switchService.setCharacteristic(Characteristic.On, this.on);
+    }
+  }
+
+  // Check if alarm is already triggered
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    // Cancel it if needed
     if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
       this.stopSirenSound();
 
+      // Turn off 'Siren' accessory
       if (this.on) {
         this.on = false;
         this.switchService.setCharacteristic(Characteristic.On, this.on);
@@ -171,17 +197,17 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   // Update current state
-  // (apply delay if neccessary)
-  var delaySeconds = 0;
+  var armSeconds = 0;
 
+  // No delay needed to disarm the security system
   if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-    delaySeconds = this.delaySeconds;
+    armSeconds = this.armSeconds;
   }
 
   setTimeout(function() {
     this.updateCurrentState(state);
     callback(null);
-  }.bind(this), delaySeconds * 1000);
+  }.bind(this), armSeconds * 1000);
 }
 
 // Switch
@@ -192,17 +218,18 @@ SecuritySystem.prototype.getSwitchState = function(callback) {
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
 
-  // Pause previous siren sound if any
-  this.stopSirenSound();
-
   // Check state
-  if (state) {
-    this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+  if (state && this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.log('Trigger timeout (Started)');
+
+    this.triggerTimeout = setTimeout(function() {
+      this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+      this.triggerTimeout = null;
+    }.bind(this), this.triggerSeconds * 1000);
   }
-  else {
-    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState,
-      Characteristic.SecuritySystemCurrentState.DISARMED
-    );
+  else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.stopSirenSound();
+    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemCurrentState.DISARMED);
   }
 
   callback(null);

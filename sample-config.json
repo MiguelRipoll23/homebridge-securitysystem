@@ -10,7 +10,8 @@
         {
             "accessory": "Security system",
             "name": "Security system",
-            "delay_seconds": 3
+            "arm_seconds": 3,
+            "trigger_seconds": 10
         }
     ]
 }
