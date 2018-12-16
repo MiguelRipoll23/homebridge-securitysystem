@@ -184,7 +184,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
 
   // Check if alarm is already triggered
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Cancel it if needed
+    // Cancel it if set to a mode
     if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
       this.stopSirenSound();
 
