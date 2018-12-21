@@ -1,4 +1,6 @@
 # homebridge-securitysystem
+[![Build Status](https://travis-ci.org/MiguelRipoll23/homebridge-securitysystem.svg?branch=master)](https://travis-ci.org/MiguelRipoll23/homebridge-securitysystem)
+
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
 
 ## Installation
@@ -6,7 +8,7 @@ If you already have Homebridge installed, skip to step two! If you had any issue
 
 1. Install Homebridge using `npm install -g --unsafe-perm homebridge`.
 2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
-3. Update your configuration file (see `sample-config.json` as an example) from Homebridge that you can find on your personal folder. Also, change values from optional parameters if you need.
+3. Update your configuration file from Homebridge (see `sample-config.json` as an example) that you can find on your personal folder. Also, change values from optional parameters if you need.
 
 ## Automations
 Use Eve or a similar app to create automations like this:
