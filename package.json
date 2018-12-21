@@ -4,7 +4,8 @@
   "description": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.",
   "license": "ISC",
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "homekit"
   ],
   "repository": {
     "type": "git",
