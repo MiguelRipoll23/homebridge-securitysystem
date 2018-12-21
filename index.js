@@ -1,6 +1,3 @@
-const play = require('audio-play');
-const load = require('audio-loader');
-
 var Service, Characteristic;
 
 module.exports = function(homebridge) {
@@ -52,63 +49,9 @@ function SecuritySystem(log, config) {
     .on('set', this.setSwitchState.bind(this));
 
   this.on = false;
-
-  // Sounds
-  var securitySystem = this;
-
-  this.sirenSoundBuffer = null;
-  this.sirenSoundPlayback = null;
-
-  var loadSirenSound = function() {
-    var promise = load(__dirname + '/sounds/siren.mp3').then(function(buffer) {
-      securitySystem.sirenSoundBuffer = buffer;
-    });
-
-    return promise;
-  };
-
-  this.armedSoundBuffer = null;
-
-  var loadArmedSound = function() {
-    var promise = load(__dirname + '/sounds/armed.mp3').then(function(buffer) {
-      securitySystem.armedSoundBuffer = buffer;
-    });
-
-    return promise;
-  };
-
-  this.disarmedSoundBuffer = null;
-
-  var loadDisarmedSound = function() {
-    var promise = load(__dirname + '/sounds/disarmed.mp3').then(function(buffer) {
-      securitySystem.disarmedSoundBuffer = buffer;
-    });
-
-    return promise;
-  };
-
-  var soundsLoaded = function() {
-    securitySystem.log('Sounds loaded.');
-  };
-
-  var soundsError = function() {
-    securitySystem.log('Error loading sounds.');
-  };
-
-  loadSirenSound()
-    .then(loadArmedSound)
-    .then(loadDisarmedSound)
-    .then(soundsLoaded)
-    .catch(soundsError);
 }
 
 // Security system
-SecuritySystem.prototype.stopSirenSound = function() {
-  if (this.sirenSoundPlayback !== null) {
-    this.sirenSoundPlayback.pause();
-  }
-}
-
 SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 }
@@ -117,18 +60,6 @@ SecuritySystem.prototype.updateCurrentState = function(state) {
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
-
-  if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.sirenSoundPlayback = play(this.sirenSoundBuffer, {
-      'loop': true
-    });
-  }
-  else if (state === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    play(this.disarmedSoundBuffer);
-  }
-  else {
-    play(this.armedSoundBuffer);
-  }
 }
 
 SecuritySystem.prototype.logState = function(type, state) {
@@ -186,8 +117,6 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Cancel it if set to a mode
     if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
-      this.stopSirenSound();
-
       // Turn off 'Siren' accessory
       if (this.on) {
         this.on = false;
@@ -228,7 +157,6 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
     }.bind(this), this.triggerSeconds * 1000);
   }
   else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.stopSirenSound();
     this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemCurrentState.DISARMED);
   }
 
