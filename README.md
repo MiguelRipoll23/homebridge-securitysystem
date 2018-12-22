@@ -1,6 +1,4 @@
 # homebridge-securitysystem
-[![Build Status](https://travis-ci.org/MiguelRipoll23/homebridge-securitysystem.svg?branch=master)](https://travis-ci.org/MiguelRipoll23/homebridge-securitysystem)
-
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
 
 ## Installation
