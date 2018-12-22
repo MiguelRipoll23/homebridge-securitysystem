@@ -11,7 +11,7 @@
             "accessory": "Security system",
             "name": "Security system",
             "arm_seconds": 3,
-            "trigger_seconds": 10
+            "trigger_seconds": 5
         }
     ]
 }
