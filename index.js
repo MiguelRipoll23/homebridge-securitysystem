@@ -148,6 +148,7 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
 
   if (state) {
+    // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       // Ignore since
       // alarm is already triggered
@@ -162,14 +163,17 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
     }
   }
   else {
+    // Off
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemCurrentState.DISARMED);
     }
     else {
-      clearTimeout(this.triggerTimeout);
-      this.triggerTimeout = null;
+      if (this.triggerTimeout !== null) {
+        clearTimeout(this.triggerTimeout);
+        this.triggerTimeout = null;
 
-      this.log('Trigger timeout (Cancelled)');
+        this.log('Trigger timeout (Cancelled)');
+      }
     }
   }
 
