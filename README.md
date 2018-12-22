@@ -20,4 +20,4 @@ Use Eve or a similar app to create automations like this:
 | Button is pressed  | Security system is set to `Away`  | Set security system to `Home` |
 
 ## Additional information
-An accessory called `Siren` that appears as a switch is used to trigger the security system. Changing modes while the security system is about to be triggered or already triggered will stop the alarm and continue its normal behaviour.
+A switch called `Siren` that appears alongside your security system is used to trigger it. Changing modes while the security system is about to be triggered or already triggered will stop the alarm and continue its normal behaviour.
