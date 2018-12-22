@@ -22,6 +22,10 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
+  // Log options value
+  this.log('Arm delay (' + this.armSeconds + ' second/s)');
+  this.log('Trigger delay (' + this.armSeconds + ' second/s)');
+
   // Variables
   this.triggerTimeout = null;
 
