@@ -100,12 +100,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   // Check if alarm is about to be
   // triggered and cancel it if
   // user is changing to other mode
-  if (this.triggerTimeout !== null && state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
-    clearTimeout(this.triggerTimeout);
-
-    this.triggerTimeout = null;
-    this.log('Trigger timeout (Cancelled)');
-
+  if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
     // Turn off 'Siren' accessory
     if (this.on) {
       this.on = false;
@@ -113,9 +108,10 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     }
   }
 
-  // Check if alarm is already triggered
+  // Check if alarm is already
+  // triggered and cancel it if
+  // user has switched to another mode
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Cancel it if set to a mode
     if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
       // Turn off 'Siren' accessory
       if (this.on) {
@@ -128,7 +124,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   // Update current state
   var armSeconds = 0;
 
-  // No delay needed to disarm the security system
+  // Add arm delay if set to a mode except off
   if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
     armSeconds = this.armSeconds;
   }
@@ -147,17 +143,30 @@ SecuritySystem.prototype.getSwitchState = function(callback) {
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
 
-  // Check state
-  if (state && this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.log('Trigger timeout (Started)');
+  if (state) {
+    if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+      // Ignore since
+      // alarm is already triggered
+    }
+    else {
+      this.log('Trigger timeout (Started)');
 
-    this.triggerTimeout = setTimeout(function() {
-      this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
-      this.triggerTimeout = null;
-    }.bind(this), this.triggerSeconds * 1000);
+      this.triggerTimeout = setTimeout(function() {
+        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+        this.triggerTimeout = null;
+      }.bind(this), this.triggerSeconds * 1000);
+    }
   }
-  else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemCurrentState.DISARMED);
+  else {
+    if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+      this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemCurrentState.DISARMED);
+    }
+    else {
+      clearTimeout(this.triggerTimeout);
+      this.triggerTimeout = null;
+
+      this.log('Trigger timeout (Cancelled)');
+    }
   }
 
   callback(null);
