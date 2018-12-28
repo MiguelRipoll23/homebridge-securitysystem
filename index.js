@@ -5,13 +5,13 @@ module.exports = function(homebridge) {
   Characteristic = homebridge.hap.Characteristic;
 
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
-}
+};
 
 function SecuritySystem(log, config) {
   this.log = log;
-  this.name = config['name'];
-  this.armSeconds = config['arm_seconds'];
-  this.triggerSeconds = config['trigger_seconds'];
+  this.name = config.name;
+  this.armSeconds = config.arm_seconds;
+  this.triggerSeconds = config.trigger_seconds;
 
   // Check for optional options
   if (this.armSeconds === undefined) {
@@ -58,13 +58,13 @@ function SecuritySystem(log, config) {
 // Security system
 SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
-}
+};
 
 SecuritySystem.prototype.updateCurrentState = function(state) {
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
-}
+};
 
 SecuritySystem.prototype.logState = function(type, state) {
   switch (state) {
@@ -91,11 +91,11 @@ SecuritySystem.prototype.logState = function(type, state) {
     default:
       this.log(type + ' state (Unknown state)');
   }
-}
+};
 
 SecuritySystem.prototype.getTargetState = function(callback) {
   callback(null, this.targetState);
-}
+};
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
@@ -137,12 +137,12 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     this.updateCurrentState(state);
     callback(null);
   }.bind(this), armSeconds * 1000);
-}
+};
 
 // Switch
 SecuritySystem.prototype.getSwitchState = function(callback) {
   callback(null, this.on);
-}
+};
 
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
@@ -150,8 +150,8 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
   if (state) {
     // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      // Ignore since
-      // alarm is already triggered
+      // Ignore since alarm
+      // is already triggered
     }
     else {
       this.log('Trigger timeout (Started)');
@@ -178,11 +178,11 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
   }
 
   callback(null);
-}
+};
 
 SecuritySystem.prototype.getServices = function() {
   return [
     this.service,
     this.switchService
   ];
-}
+};
