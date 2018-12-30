@@ -55,7 +55,7 @@ function SecuritySystem(log, config) {
 
   this.on = false;
 
-  // Accesory information
+  // Accessory information
   this.accessoryInformationService = new Service.AccessoryInformation();
 
   this.accessoryInformationService.setCharacteristic(Characteristic.Identify, true);
