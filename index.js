@@ -44,6 +44,7 @@ function SecuritySystem(log, config) {
 
   this.currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
   this.targetState = Characteristic.SecuritySystemCurrentState.DISARMED;
+  this.recoverState = false;
 
   // Switch
   this.switchService = new Service.Switch('Siren');
@@ -117,36 +118,31 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
   this.logState('Target', state);
 
-  // Check if alarm is about to be
-  // triggered and cancel it if
-  // user is changing to other mode
   if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
-    // Turn off 'Siren' accessory
+    // Set security system to mode
+    // selected from the user
+    // during triggered state
+    if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+      this.recoverState = true;
+    }
+
+    // Cancel pending or triggered alarm
+    // if switching to a mode
     if (this.on) {
       this.on = false;
       this.switchService.setCharacteristic(Characteristic.On, this.on);
     }
   }
 
-  // Check if alarm is already
-  // triggered and cancel it if
-  // user has switched to another mode
-  if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
-      // Turn off 'Siren' accessory
-      if (this.on) {
-        this.on = false;
-        this.switchService.setCharacteristic(Characteristic.On, this.on);
-      }
-    }
-  }
-
   // Update current state
   var armSeconds = 0;
 
-  // Add arm delay if set to a mode except off
-  if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-    armSeconds = this.armSeconds;
+  // Add arm delay if alarm is not triggered
+  if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    // Only if set to a mode except off
+    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
+      armSeconds = this.armSeconds;
+    }
   }
 
   setTimeout(function() {
@@ -175,13 +171,16 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
       this.triggerTimeout = setTimeout(function() {
         this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
         this.triggerTimeout = null;
+        this.recoverState = false;
       }.bind(this), this.triggerSeconds * 1000);
     }
   }
   else {
     // Off
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemCurrentState.DISARMED);
+      if (this.recoverState === false) {
+        this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARMED);
+      }
     }
     else {
       if (this.triggerTimeout !== null) {
