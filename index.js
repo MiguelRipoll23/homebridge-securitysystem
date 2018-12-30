@@ -1,3 +1,4 @@
+var packageJson = require('./package.json');
 var Service, Characteristic;
 
 module.exports = function(homebridge) {
@@ -53,6 +54,16 @@ function SecuritySystem(log, config) {
     .on('set', this.setSwitchState.bind(this));
 
   this.on = false;
+
+  // Accesory information
+  this.accessoryInformationService = new Service.AccessoryInformation();
+
+  this.accessoryInformationService.setCharacteristic(Characteristic.Identify, true);
+  this.accessoryInformationService.setCharacteristic(Characteristic.Manufacturer, 'MiguelRipoll23');
+  this.accessoryInformationService.setCharacteristic(Characteristic.Model, 'Generic');
+  this.accessoryInformationService.setCharacteristic(Characteristic.Name, 'homebridge-securitysystem');
+  this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'Generic');
+  this.accessoryInformationService.setCharacteristic(Characteristic.FirmwareRevision, packageJson.version);
 }
 
 SecuritySystem.prototype.identify = function(callback) {
@@ -188,6 +199,7 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
 SecuritySystem.prototype.getServices = function() {
   return [
     this.service,
-    this.switchService
+    this.switchService,
+    this.accessoryInformationService
   ];
 };
