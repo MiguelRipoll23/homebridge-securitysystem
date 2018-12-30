@@ -55,6 +55,11 @@ function SecuritySystem(log, config) {
   this.on = false;
 }
 
+SecuritySystem.prototype.identify = function(callback) {
+  this.log('Identify');
+  callback(null);
+};
+
 // Security system
 SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
