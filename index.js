@@ -29,6 +29,7 @@ function SecuritySystem(log, config) {
 
   // Variables
   this.triggerTimeout = null;
+  this.recoverState = false;
 
   // Security system
   this.service = new Service.SecuritySystem(this.name);
@@ -44,7 +45,6 @@ function SecuritySystem(log, config) {
 
   this.currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
   this.targetState = Characteristic.SecuritySystemCurrentState.DISARMED;
-  this.recoverState = false;
 
   // Switch
   this.switchService = new Service.Switch('Siren');
