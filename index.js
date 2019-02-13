@@ -11,10 +11,40 @@ module.exports = function(homebridge) {
 function SecuritySystem(log, config) {
   this.log = log;
   this.name = config.name;
+  this.defaultState = config.default_mode;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
 
   // Check for optional options
+  if (this.defaultState === undefined) {
+    this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
+  }
+  else {
+    this.defaultState = this.defaultState.toLowerCase();
+
+    switch (this.defaultState) {
+      case 'home':
+        this.defaultState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+        break;
+
+      case 'away':
+        this.defaultState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+        break;
+
+      case 'night':
+        this.defaultState = Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
+        break;
+
+      case 'off':
+        this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
+        break;
+
+      default:
+        this.log('Unknown default mode set in configuration.');
+        this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
+    }
+  }
+
   if (this.armSeconds === undefined) {
     this.armSeconds = 0;
   }
@@ -24,6 +54,7 @@ function SecuritySystem(log, config) {
   }
 
   // Log options value
+  this.logState('Default', this.defaultState);
   this.log('Arm delay (' + this.armSeconds + ' second/s)');
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
@@ -43,8 +74,8 @@ function SecuritySystem(log, config) {
     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
     .on('get', this.getCurrentState.bind(this));
 
-  this.currentState = Characteristic.SecuritySystemCurrentState.DISARMED;
-  this.targetState = Characteristic.SecuritySystemCurrentState.DISARMED;
+  this.currentState = this.defaultState;
+  this.targetState = this.defaultState;
 
   // Switch
   this.switchService = new Service.Switch('Siren');
