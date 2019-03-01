@@ -190,6 +190,13 @@ SecuritySystem.prototype.getSwitchState = function(callback) {
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
 
+  // Ignore if security system's
+  // mode is off
+  if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
+    callback(null);
+    return;
+  }
+
   if (state) {
     // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
