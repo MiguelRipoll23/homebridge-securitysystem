@@ -73,7 +73,7 @@ function SecuritySystem(log, config) {
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
   if (remote) {
-    this.log('Web host (' + this.host + ')');
+    this.log('Webhooks (' + this.host + ')');
   }
 
   // Variables
