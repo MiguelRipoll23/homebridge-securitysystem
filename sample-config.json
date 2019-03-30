@@ -14,25 +14,5 @@
             "arm_seconds": 3,
             "trigger_seconds": 5
         }
-    ],
-    "documentation": {
-        "default_mode": {
-            "description": "Initial mode for the security system when running Homebridge.",
-            "possible_values": [
-                "home",
-                "away",
-                "night",
-                "off"
-            ],
-            "help_value": "case insensitive string"
-        },
-        "arm_seconds": {
-            "description": "Time in seconds to arm the security system after the user requesting it.",
-            "help_value": "positive number"
-        },
-        "trigger_seconds": {
-            "description": "Time in seconds to be able to disarm the security system before triggering it.",
-            "help_value": "positive number"
-        }
-    }
+    ]
 }
