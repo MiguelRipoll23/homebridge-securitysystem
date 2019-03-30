@@ -1,5 +1,8 @@
-var packageJson = require('./package.json');
+const request = require('request');
+const packageJson = require('./package.json');
+
 var Service, Characteristic;
+var remote = false;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -53,10 +56,25 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
+  if (config.host !== undefined) {
+    remote = true;
+
+    this.host = config.host;
+    this.pathHome = config.path_home;
+    this.pathAway = config.path_away;
+    this.pathNight = config.path_night;
+    this.pathOff = config.path_off;
+    this.pathTriggered = config.path_triggered;
+  }
+
   // Log options value
   this.logState('Default', this.defaultState);
   this.log('Arm delay (' + this.armSeconds + ' second/s)');
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
+
+  if (remote) {
+    this.log('Web host (' + this.host + ')');
+  }
 
   // Variables
   this.triggerTimeout = null;
@@ -103,16 +121,76 @@ SecuritySystem.prototype.identify = function(callback) {
   callback(null);
 };
 
+SecuritySystem.prototype.reportError = function(callback) {
+  if (callback !== null) {
+    callback(true);
+  }
+}
+
 // Security system
 SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 };
 
-SecuritySystem.prototype.updateCurrentState = function(state) {
+SecuritySystem.prototype.updateCurrentState = function(state, local, callback) {
+  if (remote && local) {
+    this.updateStateRemotely(state, callback)
+    return;
+  }
+
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
+
+  if (callback !== null) {
+    callback(null);
+  }
 };
+
+SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
+  var path = null;
+
+  switch(state) {
+    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
+      path = this.pathHome;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
+      path = this.pathAway;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
+      path = this.pathNight;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.DISARMED:
+      path = this.pathOff;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      path = this.pathTriggered;
+      break;
+  }
+
+  if (path === undefined || path === null) {
+    this.log('Missing web server path for target state.');
+    this.reportError(callback);
+    return;
+  }
+
+  // Send GET request to remote
+  var that = this;
+
+  request(this.host + path, function (error, response, body) {
+    if (error || response.statusCode !== 200) {
+      that.log('Request to web server failed (' + path + ')');
+      that.reportError(callback);
+      return;
+    }
+
+    that.updateCurrentState(state, false, callback);
+  });
+}
 
 SecuritySystem.prototype.logState = function(type, state) {
   switch (state) {
@@ -177,8 +255,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   setTimeout(function() {
-    this.updateCurrentState(state);
-    callback(null);
+    this.updateCurrentState(state, true, callback);
   }.bind(this), armSeconds * 1000);
 };
 
@@ -207,7 +284,7 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
       this.log('Trigger timeout (Started)');
 
       this.triggerTimeout = setTimeout(function() {
-        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, true, null);
         this.triggerTimeout = null;
         this.recoverState = false;
       }.bind(this), this.triggerSeconds * 1000);
