@@ -8,7 +8,7 @@ If you already have Homebridge installed, skip to step two! If you had any issue
 
 1. Install Homebridge using `npm install -g --unsafe-perm homebridge`.
 2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
-3. Update your configuration file from Homebridge (see `sample-config.json` as an example) that you can find on your personal folder. Also, change values from optional parameters if you need.
+3. Update your configuration file from Homebridge (see `sample-config.json` as an example) that you can find on your personal folder.
 
 ## Automations
 Use Eve or a similar app to create automations like this:
@@ -19,5 +19,14 @@ Use Eve or a similar app to create automations like this:
 | Door is opened     | Security system is set to `Away`  | Turn on `Siren`               |
 | Button is pressed  | Security system is set to `Away`  | Set security system to `Home` |
 
-## Additional information
-A switch called `Siren` that appears alongside your security system is used to trigger it. Changing modes while the security system is about to be triggered or already triggered will stop the alarm and continue its normal behaviour.
+## Options
+| Option          | Required | Description                                                                    | Value/s                |
+|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
+| default_mode    | No       | Initial mode for the security system when running Homebridge.                  | home,away,night,off    |
+| arm_seconds     | No       | Time in seconds to arm the security system after the user requesting it.       | any positive number    |
+| trigger_seconds | No       | Time in seconds to be able to disarm the security system before triggering it. | any positive number    |
+| host            | No       | Host of a web server if you would like to use an external service.             | example.ltd            |
+| path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
+| path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
+| path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
+| path_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
