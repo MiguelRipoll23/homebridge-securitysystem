@@ -178,7 +178,7 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
     return;
   }
 
-  // Send GET request to remote
+  // Send GET request to server
   var that = this;
 
   request(this.host + path, function (error, response, body) {
