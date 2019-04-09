@@ -1,4 +1,4 @@
-const request = require('request');
+const fetch = require('node-fetch');
 const packageJson = require('./package.json');
 
 var Service, Characteristic;
@@ -181,15 +181,18 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
   // Send GET request to server
   var that = this;
 
-  request(this.host + path, function (error, response, body) {
-    if (error || response.statusCode !== 200) {
+  fetch(this.host + path)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Status code (' + response.statusCode + ')');
+      }
+
+      that.updateCurrentState(state, false, callback);
+    })
+    .catch(error => {
       that.log('Request to web server failed (' + path + ')');
       that.reportError(callback);
-      return;
-    }
-
-    that.updateCurrentState(state, false, callback);
-  });
+    });
 }
 
 SecuritySystem.prototype.logState = function(type, state) {
