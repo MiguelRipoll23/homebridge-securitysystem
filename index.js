@@ -1,8 +1,8 @@
 const fetch = require('node-fetch');
 const packageJson = require('./package.json');
 
-var Service, Characteristic;
-var remote = false;
+const Service, Characteristic;
+let remote = false;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -148,7 +148,7 @@ SecuritySystem.prototype.updateCurrentState = function(state, local, callback) {
 };
 
 SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
-  var path = null;
+  let path = null;
 
   switch(state) {
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
@@ -179,7 +179,7 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
   }
 
   // Send GET request to server
-  var that = this;
+  const that = this;
 
   fetch(this.host + path)
     .then(response => {
@@ -247,7 +247,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   // Update current state
-  var armSeconds = 0;
+  let armSeconds = 0;
 
   // Add arm delay if alarm is not triggered
   if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
