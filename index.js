@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const packageJson = require('./package.json');
 
-const Service, Characteristic;
+let Service, Characteristic;
 let remote = false;
 
 module.exports = function(homebridge) {
