@@ -132,8 +132,8 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 };
 
-SecuritySystem.prototype.updateCurrentState = function(state, local, callback) {
-  if (remote && local) {
+SecuritySystem.prototype.updateCurrentState = function(state, proxied, callback) {
+  if (remote && proxied === false) {
     this.updateStateRemotely(state, callback)
     return;
   }
@@ -187,7 +187,7 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
         throw new Error('Status code (' + response.statusCode + ')');
       }
 
-      that.updateCurrentState(state, false, callback);
+      that.updateCurrentState(state, true, callback);
     })
     .catch(error => {
       that.log('Request to web server failed (' + path + ')');
@@ -258,7 +258,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   setTimeout(function() {
-    this.updateCurrentState(state, true, callback);
+    this.updateCurrentState(state, false, callback);
   }.bind(this), armSeconds * 1000);
 };
 
@@ -287,7 +287,7 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
       this.log('Trigger timeout (Started)');
 
       this.triggerTimeout = setTimeout(function() {
-        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, true, null);
+        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, false, null);
         this.triggerTimeout = null;
         this.recoverState = false;
       }.bind(this), this.triggerSeconds * 1000);
