@@ -1,18 +1,18 @@
 {
-    "bridge": {
-        "name": "Homebridge",
-        "username": "CC:22:3D:E3:CE:30",
-        "port": 51826,
-        "pin": "031-45-154"
-    },
-    "description": "Homebridge configuration file.",
-    "accessories": [
-        {
-            "accessory": "Security system",
-            "name": "Security system",
-            "default_mode": "home",
-            "arm_seconds": 3,
-            "trigger_seconds": 5
-        }
-    ]
+  "bridge": {
+    "name": "Homebridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+  "description": "Homebridge configuration file.",
+  "accessories": [
+    {
+      "accessory": "Security system",
+      "name": "Security system",
+      "default_mode": "off",
+      "arm_seconds": 3,
+      "trigger_seconds": 5
+    }
+  ]
 }
