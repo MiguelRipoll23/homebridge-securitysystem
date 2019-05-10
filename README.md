@@ -11,7 +11,7 @@ If you already have Homebridge installed, skip to step two! If you had any issue
 3. Update your configuration file from Homebridge (see `sample-config.json` as an example) that you can find on your personal folder.
 
 ## Automations
-Use Eve or a similar app to create automations like this:
+Use Eve or a similar app to create automations like these:
 
 | Trigger            | Condition                         | Scene actions                 |
 |--------------------|-----------------------------------|-------------------------------|
