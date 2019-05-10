@@ -56,10 +56,10 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
-  if (config.host !== undefined) {
+  if (config.url !== undefined) {
     remote = true;
 
-    this.host = config.host;
+    this.url = config.url;
     this.pathHome = config.path_home;
     this.pathAway = config.path_away;
     this.pathNight = config.path_night;
@@ -73,7 +73,7 @@ function SecuritySystem(log, config) {
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
   if (remote) {
-    this.log('Webhooks (' + this.host + ')');
+    this.log('Webhooks (' + this.url + ')');
   }
 
   // Variables
@@ -181,7 +181,7 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
   // Send GET request to server
   const that = this;
 
-  fetch(this.host + path)
+  fetch(this.url + path)
     .then(response => {
       if (!response.ok) {
         throw new Error('Status code (' + response.statusCode + ')');
