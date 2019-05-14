@@ -7,15 +7,18 @@
     "start": "node index.js",
     "test": "echo \"No test found.\" && exit 0"
   },
-  "license": "ISC",
   "keywords": [
     "homebridge-plugin",
-    "homekit"
+    "homekit",
+    "security",
+    "system"
   ],
   "repository": {
     "type": "git",
     "url": "git://github.com/MiguelRipoll23/homebridge-securitysystem.git"
   },
+  "author": "MiguelRipoll23",
+  "license": "ISC",
   "bugs": {
     "url": "http://github.com/MiguelRipoll23/homebridge-securitysystem/issues"
   },
