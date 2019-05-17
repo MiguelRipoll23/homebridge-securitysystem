@@ -125,7 +125,7 @@ SecuritySystem.prototype.reportError = function(callback) {
   if (callback !== null) {
     callback(true);
   }
-}
+};
 
 // Security system
 SecuritySystem.prototype.getCurrentState = function(callback) {
@@ -134,7 +134,7 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
 
 SecuritySystem.prototype.updateCurrentState = function(state, proxied, callback) {
   if (remote && proxied === false) {
-    this.updateStateRemotely(state, callback)
+    this.updateStateRemotely(state, callback);
     return;
   }
 
