@@ -300,13 +300,11 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
         this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARMED);
       }
     }
-    else {
-      if (this.triggerTimeout !== null) {
-        clearTimeout(this.triggerTimeout);
-        this.triggerTimeout = null;
+    else if (this.triggerTimeout !== null) {
+      clearTimeout(this.triggerTimeout);
+      this.triggerTimeout = null;
 
-        this.log('Trigger timeout (Cancelled)');
-      }
+      this.log('Trigger timeout (Cancelled)');
     }
   }
 
