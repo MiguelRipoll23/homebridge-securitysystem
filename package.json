@@ -27,6 +27,6 @@
     "homebridge": ">=0.2.0"
   },
   "dependencies": {
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.6.0"
   }
 }
