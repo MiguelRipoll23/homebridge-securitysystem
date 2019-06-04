@@ -4,7 +4,7 @@
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
 
 ## Installation
-If you already have Homebridge installed, skip to step two! If you had any issues installing this module previously, they're solved now and you should be able to install this module successfully.
+If you already have Homebridge installed, skip to step two!
 
 1. Install Homebridge using `npm install -g --unsafe-perm homebridge`.
 2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
