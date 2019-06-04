@@ -13,11 +13,12 @@ If you already have Homebridge installed, skip to step two! If you had any issue
 ## Automations
 Use Eve or a similar app to create automations like these:
 
-| Trigger            | Condition                         | Scene actions                 |
-|--------------------|-----------------------------------|-------------------------------|
-| Motion is detected | Security system is set to `Night` | Turn on `Siren`               |
-| Door is opened     | Security system is set to `Away`  | Turn on `Siren`               |
-| Button is pressed  | Security system is set to `Away`  | Set security system to `Home` |
+| Trigger                       | Condition                         | Scene actions                     |
+|-------------------------------|-----------------------------------|-----------------------------------|
+| Motion is detected            | Security system is set to `Night` | Turn on `Siren`                   |
+| Door is opened                | Security system is set to `Away`  | Turn on `Siren`                   |
+| Button is pressed             | Security system is set to `Away`  | Set security system to `Home`     |
+| Security system triggers      | None                              | Play media (iOS 13 or above only) |
 
 ## Options
 | Option          | Required | Description                                                                    | Value/s                |
