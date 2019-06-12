@@ -1,5 +1,5 @@
 # homebridge-securitysystem
-[![NPM version](https://img.shields.io/npm/v/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem) [![NPM downloads](https://img.shields.io/npm/dt/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem) [![Greenkeeper badge](https://badges.greenkeeper.io/MiguelRipoll23/homebridge-securitysystem.svg)](https://greenkeeper.io/)
+[![NPM version](https://img.shields.io/npm/v/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem) [![NPM downloads](https://img.shields.io/npm/dt/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem)
 
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
 
