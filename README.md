@@ -6,7 +6,7 @@ Homebridge plugin that creates a security system accessory that can be triggered
 ## Installation
 If you already have Homebridge installed, skip to step two!
 
-1. [Install Homebridge.](https://github.com/nfarina/homebridge).
+1. [Install Homebridge.](https://github.com/nfarina/homebridge)
 2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
 3. Update your configuration file from Homebridge (see `sample-config.json` as an example) that you can find on your personal folder.
 
