@@ -190,7 +190,8 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
       that.updateCurrentState(state, true, callback);
     })
     .catch(error => {
-      that.log('Request to web server failed (' + path + ')');
+      that.log('Request to web server failed. (' + path + ')');
+      that.log(error);
       that.reportError(callback);
     });
 }
