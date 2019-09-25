@@ -12,7 +12,8 @@
       "name": "Security system",
       "default_mode": "off",
       "arm_seconds": 3,
-      "trigger_seconds": 5
+      "trigger_seconds": 5,
+      "save_state": true
     }
   ]
 }

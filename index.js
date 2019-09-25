@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const storage = require('node-persist');
 const packageJson = require('./package.json');
 
 let Service, Characteristic;
@@ -17,6 +18,7 @@ function SecuritySystem(log, config) {
   this.defaultState = config.default_mode;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
+  this.saveState = config.save_state;
 
   // Check for optional options
   if (this.defaultState === undefined) {
@@ -54,6 +56,10 @@ function SecuritySystem(log, config) {
 
   if (this.triggerSeconds === undefined) {
     this.triggerSeconds = 0;
+  }
+
+  if (this.saveState === undefined) {
+    this.saveState = false;
   }
 
   if (config.url !== undefined) {
@@ -114,7 +120,36 @@ function SecuritySystem(log, config) {
   this.accessoryInformationService.setCharacteristic(Characteristic.Name, 'homebridge-securitysystem');
   this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'Generic');
   this.accessoryInformationService.setCharacteristic(Characteristic.FirmwareRevision, packageJson.version);
+
+  // Storage
+  if (this.saveState) {
+    this.load();
+  }
 }
+
+SecuritySystem.prototype.load = async function() {
+  await storage.init();
+
+  const savedState = await storage.getItem('state');
+
+  if (savedState !== undefined) {
+    this.log('State (Saved)');
+
+    this.currentState = savedState.currentState;
+    this.targetState = savedState.targetState;
+    this.on = savedState.on;
+  }
+};
+
+SecuritySystem.prototype.save = async function() {
+  const state = {
+    'currentState': this.currentState,
+    'targetState': this.targetState,
+    'on': this.on
+  };
+
+  await storage.setItem('state', state);
+};
 
 SecuritySystem.prototype.identify = function(callback) {
   this.log('Identify');
@@ -141,6 +176,10 @@ SecuritySystem.prototype.updateCurrentState = function(state, proxied, callback)
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
+
+  if (this.saveState) {
+    this.save();
+  }
 
   if (callback !== null) {
     callback(null);
@@ -231,6 +270,10 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
   this.logState('Target', state);
 
+  if (this.saveState) {
+    this.save();
+  }
+
   if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
     // Set security system to mode
     // selected from the user
@@ -270,6 +313,10 @@ SecuritySystem.prototype.getSwitchState = function(callback) {
 
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
+
+  if (this.saveState) {
+    this.save();
+  }
 
   // Ignore if security system's
   // mode is off
