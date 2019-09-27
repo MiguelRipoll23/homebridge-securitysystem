@@ -3,11 +3,15 @@ const storage = require('node-persist');
 const packageJson = require('./package.json');
 
 let Service, Characteristic;
+let homebridgeDirectory;
+
 let remote = false;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
+
+  homebridgePersistPath = homebridge.user.persistPath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
 };
@@ -128,7 +132,11 @@ function SecuritySystem(log, config) {
 }
 
 SecuritySystem.prototype.load = async function() {
-  await storage.init()
+  const options = {
+    'dir': homebridgePersistPath
+  };
+
+  await storage.init(options)
     .then()
     .catch((error) => {
       this.log('Unable to initialize storage.');
@@ -141,6 +149,10 @@ SecuritySystem.prototype.load = async function() {
   
   await storage.getItem('state')
     .then(state => {
+      if (state === undefined) {
+        return
+      }
+
       this.log('State (Saved)');
 
       this.currentState = state.currentState;
