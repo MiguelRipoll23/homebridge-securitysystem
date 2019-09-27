@@ -177,12 +177,6 @@ SecuritySystem.prototype.identify = function(callback) {
   callback(null);
 };
 
-SecuritySystem.prototype.reportError = function(callback) {
-  if (callback !== null) {
-    callback(true);
-  }
-};
-
 // Security system
 SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
@@ -234,7 +228,6 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
 
   if (path === undefined || path === null) {
     this.log('Missing web server path for target state.');
-    this.reportError(callback);
     return;
   }
 
@@ -252,7 +245,6 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
     .catch(error => {
       that.log('Request to web server failed. (' + path + ')');
       that.log(error);
-      that.reportError(callback);
     });
 }
 
