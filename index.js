@@ -128,17 +128,29 @@ function SecuritySystem(log, config) {
 }
 
 SecuritySystem.prototype.load = async function() {
-  await storage.init();
+  await storage.init()
+    .then()
+    .catch((error) => {
+      this.log('Unable to initialize storage.');
+      this.log(error);
+    });
 
-  const savedState = await storage.getItem('state');
-
-  if (savedState !== undefined) {
-    this.log('State (Saved)');
-
-    this.currentState = savedState.currentState;
-    this.targetState = savedState.targetState;
-    this.on = savedState.on;
+  if (storage.defaultInstance === undefined) {
+    return;
   }
+  
+  await storage.getItem('state')
+    .then(state => {
+      this.log('State (Saved)');
+
+      this.currentState = state.currentState;
+      this.targetState = state.targetState;
+      this.on = state.on;
+    })
+    .catch(error => {
+      this.log('Unable to load state.');
+      this.log(error);
+    });
 };
 
 SecuritySystem.prototype.save = async function() {
@@ -148,7 +160,16 @@ SecuritySystem.prototype.save = async function() {
     'on': this.on
   };
 
-  await storage.setItem('state', state);
+  if (storage.defaultInstance === undefined) {
+    return;
+  }
+
+  await storage.setItem('state', state)
+    .then()
+    .catch(error => {
+      this.log('Unable to save state.');
+      this.log(error);
+    });
 };
 
 SecuritySystem.prototype.identify = function(callback) {
