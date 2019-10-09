@@ -3,14 +3,13 @@ const storage = require('node-persist');
 const packageJson = require('./package.json');
 
 let Service, Characteristic;
-let homebridgeDirectory;
+let homebridgePersistPath;
 
 let remote = false;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-
   homebridgePersistPath = homebridge.user.persistPath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
@@ -194,9 +193,9 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 };
 
-SecuritySystem.prototype.updateCurrentState = function(state, proxied, callback) {
+SecuritySystem.prototype.updateCurrentState = function(state, proxied) {
   if (remote && proxied === false) {
-    this.updateStateRemotely(state, callback);
+    this.updateStateRemotely(state);
     return;
   }
 
@@ -207,13 +206,9 @@ SecuritySystem.prototype.updateCurrentState = function(state, proxied, callback)
   if (this.saveState) {
     this.save();
   }
-
-  if (callback !== null) {
-    callback(null);
-  }
 };
 
-SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
+SecuritySystem.prototype.updateStateRemotely = function(state) {
   let path = null;
 
   switch(state) {
@@ -252,7 +247,7 @@ SecuritySystem.prototype.updateStateRemotely = function(state, callback) {
         throw new Error('Status code (' + response.statusCode + ')');
       }
 
-      that.updateCurrentState(state, true, callback);
+      that.updateCurrentState(state, true);
     })
     .catch(error => {
       that.log('Request to web server failed. (' + path + ')');
@@ -295,6 +290,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
   this.logState('Target', state);
 
+  // Save state to file
   if (this.saveState) {
     this.save();
   }
@@ -327,8 +323,10 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   setTimeout(function() {
-    this.updateCurrentState(state, false, callback);
+    this.updateCurrentState(state, false);
   }.bind(this), armSeconds * 1000);
+
+  callback(null);
 };
 
 // Switch
@@ -339,6 +337,7 @@ SecuritySystem.prototype.getSwitchState = function(callback) {
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.on = state;
 
+  // Save state to file
   if (this.saveState) {
     this.save();
   }
@@ -360,7 +359,7 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
       this.log('Trigger timeout (Started)');
 
       this.triggerTimeout = setTimeout(function() {
-        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, false, null);
+        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, false);
         this.triggerTimeout = null;
         this.recoverState = false;
       }.bind(this), this.triggerSeconds * 1000);
