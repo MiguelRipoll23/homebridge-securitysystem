@@ -6,6 +6,7 @@ let Service, Characteristic;
 let homebridgePersistPath;
 
 let remote = false;
+let armingTimeout = null;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -203,6 +204,7 @@ SecuritySystem.prototype.updateCurrentState = function(state, proxied) {
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
 
+  // Save state to file
   if (this.saveState) {
     this.save();
   }
@@ -311,6 +313,11 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     }
   }
 
+  // Clear pending mode change
+  if (armingTimeout !== null) {
+    clearTimeout(armingTimeout);
+  }
+
   // Update current state
   let armSeconds = 0;
 
@@ -322,7 +329,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     }
   }
 
-  setTimeout(function() {
+  armingTimeout = setTimeout(function() {
     this.updateCurrentState(state, false);
   }.bind(this), armSeconds * 1000);
 
