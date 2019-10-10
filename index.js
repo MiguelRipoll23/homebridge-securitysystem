@@ -133,7 +133,8 @@ function SecuritySystem(log, config) {
 
 SecuritySystem.prototype.load = async function() {
   const options = {
-    'dir': homebridgePersistPath
+    'dir': homebridgePersistPath,
+    'forgiveParseErrors': true
   };
 
   await storage.init(options)
