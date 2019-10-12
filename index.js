@@ -5,9 +5,6 @@ const packageJson = require('./package.json');
 let Service, Characteristic;
 let homebridgePersistPath;
 
-let remote = false;
-let armingTimeout = null;
-
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
@@ -17,12 +14,19 @@ module.exports = function(homebridge) {
 };
 
 function SecuritySystem(log, config) {
+  // Options
   this.log = log;
   this.name = config.name;
   this.defaultState = config.default_mode;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
   this.saveState = config.save_state;
+
+  // Variables
+  this.remote = false;
+  this.armingTimeout = null;
+  this.triggerTimeout = null;
+  this.recoverState = false;
 
   // Check for optional options
   if (this.defaultState === undefined) {
@@ -67,7 +71,7 @@ function SecuritySystem(log, config) {
   }
 
   if (config.url !== undefined) {
-    remote = true;
+    this.remote = true;
 
     this.url = config.url;
     this.pathHome = config.path_home;
@@ -82,13 +86,9 @@ function SecuritySystem(log, config) {
   this.log('Arm delay (' + this.armSeconds + ' second/s)');
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
-  if (remote) {
+  if (this.remote) {
     this.log('Webhooks (' + this.url + ')');
   }
-
-  // Variables
-  this.triggerTimeout = null;
-  this.recoverState = false;
 
   // Security system
   this.service = new Service.SecuritySystem(this.name);
@@ -196,7 +196,7 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
 };
 
 SecuritySystem.prototype.updateCurrentState = function(state, proxied) {
-  if (remote && proxied === false) {
+  if (this.remote && proxied === false) {
     this.updateStateRemotely(state);
     return;
   }
@@ -214,7 +214,7 @@ SecuritySystem.prototype.updateCurrentState = function(state, proxied) {
 SecuritySystem.prototype.updateStateRemotely = function(state) {
   let path = null;
 
-  switch(state) {
+  switch (state) {
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
       path = this.pathHome;
       break;
@@ -315,8 +315,8 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   // Clear pending mode change
-  if (armingTimeout !== null) {
-    clearTimeout(armingTimeout);
+  if (this.armingTimeout !== null) {
+    clearTimeout(this.armingTimeout);
   }
 
   // Update current state
@@ -330,7 +330,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     }
   }
 
-  armingTimeout = setTimeout(function() {
+  this.armingTimeout = setTimeout(function() {
     this.updateCurrentState(state, false);
   }.bind(this), armSeconds * 1000);
 
