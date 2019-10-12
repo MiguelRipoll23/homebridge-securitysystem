@@ -11,7 +11,8 @@
     "homebridge-plugin",
     "homekit",
     "security",
-    "system"
+    "system",
+    "alarm"
   ],
   "repository": {
     "type": "git",
