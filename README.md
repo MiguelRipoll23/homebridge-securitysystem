@@ -33,6 +33,8 @@ Use Eve or a similar app to create automations like these:
 | save_state      | No       | State persistence for shutdowns and reboots.                                   | true/false             |
 
 ## Advanced options
+| Option          | Required | Description                                                                    | Value/s                |
+|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
 | url             | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
 | path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
 | path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
