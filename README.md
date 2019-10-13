@@ -21,6 +21,7 @@ Use Eve or a similar app to create automations like these:
 | Security system triggers      | None                              | Play media (1)                    |
 
 (1) Requires iOS 13 or above.
+
 (2) Shortcuts app is required to create this automation.
 
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
