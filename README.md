@@ -17,12 +17,13 @@ Use Eve or a similar app to create automations like these:
 |-------------------------------|-----------------------------------|-----------------------------------|
 | Motion is detected            | Security system is set to `Night` | Turn on `Siren`                   |
 | Door is opened                | Security system is set to `Away`  | Turn on `Siren`                   |
-| NFC tag (1)                   | None                              | Set security system to `Home`     |
+| NFC tag is detected (1) (2)   | None                              | Set security system to `Home`     |
 | Security system triggers      | None                              | Play media (1)                    |
 
 (1) Requires iOS 13 or above.
+(2) Shortcuts app is required to create this automation.
 
-**Important:** Use a NFC tag to disarm the security system easily and securely.
+**Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
 ## Options
 | Option          | Required | Description                                                                    | Value/s                |
