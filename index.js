@@ -113,7 +113,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getSwitchState.bind(this))
     .on('set', this.setSwitchState.bind(this));
 
-  this.on = false;
+  this.switchOn = false;
 
   // Accessory information
   this.accessoryInformationService = new Service.AccessoryInformation();
@@ -158,7 +158,7 @@ SecuritySystem.prototype.load = async function() {
 
       this.currentState = state.currentState;
       this.targetState = state.targetState;
-      this.on = state.on;
+      this.switchOn = state.switchOn;
     })
     .catch(error => {
       this.log('Unable to load state.');
@@ -167,15 +167,15 @@ SecuritySystem.prototype.load = async function() {
 };
 
 SecuritySystem.prototype.save = async function() {
-  const state = {
-    'currentState': this.currentState,
-    'targetState': this.targetState,
-    'on': this.on
-  };
-
   if (storage.defaultInstance === undefined) {
     return;
   }
+
+  const state = {
+    'currentState': this.currentState,
+    'targetState': this.targetState,
+    'switchOn': this.switchOn
+  };
 
   await storage.setItem('state', state)
     .then()
@@ -242,19 +242,17 @@ SecuritySystem.prototype.updateStateRemotely = function(state) {
   }
 
   // Send GET request to server
-  const that = this;
-
   fetch(this.url + path)
     .then(response => {
       if (!response.ok) {
         throw new Error('Status code (' + response.statusCode + ')');
       }
 
-      that.updateCurrentState(state, true);
+      this.updateCurrentState(state, true);
     })
     .catch(error => {
-      that.log('Request to web server failed. (' + path + ')');
-      that.log(error);
+      this.log('Request to web server failed. (' + path + ')');
+      this.log(error);
     });
 }
 
@@ -298,23 +296,21 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     this.save();
   }
 
-  if (state !== Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED) {
-    // Set security system to mode
-    // selected from the user
-    // during triggered state
-    if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.recoverState = true;
-    }
-
-    // Cancel pending or triggered alarm
-    // if switching to a mode
-    if (this.on) {
-      this.on = false;
-      this.switchService.setCharacteristic(Characteristic.On, this.on);
-    }
+  // Set security system to mode
+  // selected from the user
+  // during triggered state
+  if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.recoverState = true;
   }
 
-  // Clear pending mode change
+  // Cancel pending or triggered alarm
+  // if switching to a mode
+  if (this.switchOn) {
+    this.switchOn = false;
+    this.switchService.setCharacteristic(Characteristic.On, this.switchOn);
+  }
+
+  // Clear timeouts
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
   }
@@ -330,61 +326,73 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     }
   }
 
-  this.armingTimeout = setTimeout(function() {
+  // Update current state
+  this.armingTimeout = setTimeout(() => {
+    this.armingTimeout = null;
     this.updateCurrentState(state, false);
-  }.bind(this), armSeconds * 1000);
+  }, armSeconds * 1000);
 
   callback(null);
 };
 
 // Switch
 SecuritySystem.prototype.getSwitchState = function(callback) {
-  callback(null, this.on);
+  callback(null, this.switchOn);
 };
 
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
-  this.on = state;
+  this.switchOn = state;
 
   // Save state to file
   if (this.saveState) {
     this.save();
   }
 
-  // Ignore if security system's
+  // Ignore if the security system
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    callback(null);
+    callback('Security system not armed.');
     return;
   }
 
-  if (state) {
+  // Ignore if the security system
+  // is arming
+  if (this.armingTimeout !== null) {
+    callback('Security system not yet armed.');
+    return;
+  }
+
+  if (this.switchOn) {
     // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       // Ignore since alarm
       // is already triggered
     }
     else {
-      this.log('Trigger timeout (Started)');
+      this.log('Sensor/s (Triggered)');
 
-      this.triggerTimeout = setTimeout(function() {
-        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, false);
+      this.triggerTimeout = setTimeout(() => {
         this.triggerTimeout = null;
         this.recoverState = false;
-      }.bind(this), this.triggerSeconds * 1000);
+
+        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, false);
+      }, this.triggerSeconds * 1000);
     }
   }
   else {
     // Off
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       if (this.recoverState === false) {
-        this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARMED);
+        this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
       }
     }
-    else if (this.triggerTimeout !== null) {
-      clearTimeout(this.triggerTimeout);
-      this.triggerTimeout = null;
+    else {
+      if (this.triggerTimeout !== null) {
+        clearTimeout(this.triggerTimeout);
+        this.triggerTimeout = null;
 
-      this.log('Trigger timeout (Cancelled)');
+        this.log('Sensor/s (Cancelled)');
+      }
     }
   }
 
