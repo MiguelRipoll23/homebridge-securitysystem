@@ -17,8 +17,12 @@ Use Eve or a similar app to create automations like these:
 |-------------------------------|-----------------------------------|-----------------------------------|
 | Motion is detected            | Security system is set to `Night` | Turn on `Siren`                   |
 | Door is opened                | Security system is set to `Away`  | Turn on `Siren`                   |
-| Button is pressed             | Security system is set to `Away`  | Set security system to `Home`     |
-| Security system triggers      | None                              | Play media (iOS 13 or above only) |
+| NFC tag (1)                   | None                              | Set security system to `Home`     |
+| Security system triggers      | None                              | Play media (1)                    |
+
+(1) Requires iOS 13 or above.
+
+**Important:** Use a NFC tag to disarm the security system easily and securely.
 
 ## Options
 | Option          | Required | Description                                                                    | Value/s                |
@@ -27,6 +31,8 @@ Use Eve or a similar app to create automations like these:
 | arm_seconds     | No       | Time in seconds to arm the security system after the user requesting it.       | any positive number    |
 | trigger_seconds | No       | Time in seconds to be able to disarm the security system before triggering it. | any positive number    |
 | save_state      | No       | State persistence for shutdowns and reboots.                                   | true/false             |
+
+## Advanced options
 | url             | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
 | path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
 | path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
