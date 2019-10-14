@@ -346,6 +346,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   // selected from the user
   // during triggered state
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive).updateValue(false);
     this.recoverState = true;
   }
 
@@ -459,6 +460,8 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   }
   else {
     // Off
+    this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive).updateValue(false);
+
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       if (this.recoverState === false) {
         this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
