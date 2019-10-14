@@ -16,11 +16,12 @@ function CustomCharacteristic(Characteristic) {
       maxValue: 3,
       minValue: 0,
       validValues: [0, 1, 2, 3],
+      minStep: 1,
       perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
     });
     this.value = this.getDefaultValue();
   };
-  
+
   inherits(this.SecuritySystemArmingState, Characteristic);
 
   this.SecuritySystemSirenActive = function() {

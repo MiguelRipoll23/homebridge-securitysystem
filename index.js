@@ -32,6 +32,8 @@ function SecuritySystem(log, config) {
 
   // Variables
   this.remote = false;
+  this.armingEnding = false;
+  this.armingEndingTimeout = null;
   this.armingTimeout = null;
   this.triggerTimeout = null;
   this.recoverState = false;
@@ -132,6 +134,7 @@ function SecuritySystem(log, config) {
 
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
+  this.armingState = this.armingState;
   this.sirenActive = false;
 
   // Switch
@@ -197,6 +200,8 @@ SecuritySystem.prototype.load = async function() {
 
       this.currentState = state.currentState;
       this.targetState = state.targetState;
+      this.armingState = state.armingState;
+      this.sirenActive = state.sirenActive;
       this.switchOn = state.switchOn;
     })
     .catch(error => {
@@ -213,6 +218,8 @@ SecuritySystem.prototype.save = async function() {
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
+    'armingState': this.armingState,
+    'sirenActive': this.sirenActive,
     'switchOn': this.switchOn
   };
 
@@ -350,6 +357,10 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   }
 
   // Clear timeouts
+  if (this.armingEndingTimeout !== null) {
+    clearTimeout(this.armingEndingTimeout);
+  }
+
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
   }
@@ -365,11 +376,26 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     }
   }
 
+  // Allow sensors to abort the
+  // arming if necessary
+  this.armingEnding = false;
+
+  if (this.armSeconds >= 30) {
+    this.armingEndingTimeout = setTimeout(() => {
+      this.armingEndingTimeout = null;
+      this.armingEnding = true;
+    }, (armSeconds - 15) * 1000);
+  }
+
   // Update current state
   this.armingTimeout = setTimeout(() => {
     this.armingTimeout = null;
+    this.armingEnding = false;
     this.updateCurrentState(state, false);
   }, armSeconds * 1000);
+
+  // Update characteristic
+  this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingState).updateValue(state);
 
   callback(null);
 };
@@ -380,23 +406,24 @@ SecuritySystem.prototype.getSirenActive = function(callback) {
 
 SecuritySystem.prototype.setSirenActive = function(state, callback) {
   this.sirenActive = state;
-  this.sirenUpdate(state, callback);
+  this.sensorTriggered(state, callback);
 }
 
-// Switch
-SecuritySystem.prototype.getSwitchState = function(callback) {
-  callback(null, this.switchOn);
-};
-
-SecuritySystem.prototype.setSwitchState = function(state, callback) {
-  this.switchOn = state;
-  this.sirenUpdate(state, callback);
-};
-
-SecuritySystem.prototype.sirenUpdate = function(state, callback) {
+SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   // Save state to file
   if (this.saveState) {
     this.save();
+  }
+
+  // Abort arming due to
+  // sensors still triggering
+  // during last 15 seconds of arming
+  if (this.armingEnding) {
+    clearTimeout(this.armingTimeout);
+    this.armingTimeout = null;
+
+    this.log('Sensor/s (Triggered) [Arming aborted]');
+    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
   }
 
   // Ignore if the security system
@@ -447,9 +474,25 @@ SecuritySystem.prototype.sirenUpdate = function(state, callback) {
     }
   }
 
+  // Save state to file
+  if (this.saveState) {
+    this.save();
+  }
+
   callback(null);
 };
 
+// Switch
+SecuritySystem.prototype.getSwitchState = function(callback) {
+  callback(null, this.switchOn);
+};
+
+SecuritySystem.prototype.setSwitchState = function(state, callback) {
+  this.switchOn = state;
+  this.sensorTriggered(state, callback);
+};
+
+// Accessory
 SecuritySystem.prototype.getServices = function() {
   return this.services;
 };
