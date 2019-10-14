@@ -1,13 +1,20 @@
+const customServices = require('./customServices');
+const customCharacteristics = require('./customCharacteristics');
+
 const fetch = require('node-fetch');
 const storage = require('node-persist');
 const packageJson = require('./package.json');
 
-let Service, Characteristic;
+let Service, Characteristic, CustomService, CustomCharacteristic;
 let homebridgePersistPath;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
+
+  CustomCharacteristic = customCharacteristics.CustomCharacteristic(Characteristic);
+  CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
+
   homebridgePersistPath = homebridge.user.persistPath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
@@ -20,6 +27,7 @@ function SecuritySystem(log, config) {
   this.defaultState = config.default_mode;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
+  this.sirenSwitch = config.siren_switch;
   this.saveState = config.save_state;
 
   // Variables
@@ -66,6 +74,13 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
+  if (this.sirenSwitch === undefined) {
+    this.sirenSwitch = false;
+  }
+  else if (this.sirenSwitch) {
+    this.sirenSwitch = true;
+  }
+
   if (this.saveState === undefined) {
     this.saveState = false;
   }
@@ -86,12 +101,16 @@ function SecuritySystem(log, config) {
   this.log('Arm delay (' + this.armSeconds + ' second/s)');
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
+  if (this.sirenSwitch) {
+    this.log('Siren switch (enabled)');
+  }
+
   if (this.remote) {
     this.log('Webhooks (' + this.url + ')');
   }
 
   // Security system
-  this.service = new Service.SecuritySystem(this.name);
+  this.service = new CustomService.SecuritySystem(this.name);
 
   this.service
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
@@ -102,8 +121,18 @@ function SecuritySystem(log, config) {
     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
     .on('get', this.getCurrentState.bind(this));
 
+  this.service
+    .getCharacteristic(CustomCharacteristic.SecuritySystemArmingState)
+    .on('get', this.getTargetState.bind(this));
+
+  this.service
+    .getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive)
+    .on('get', this.getSirenActive.bind(this))
+    .on('set', this.setSirenActive.bind(this));
+
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
+  this.sirenActive = false;
 
   // Switch
   this.switchService = new Service.Switch('Siren');
@@ -124,6 +153,16 @@ function SecuritySystem(log, config) {
   this.accessoryInformationService.setCharacteristic(Characteristic.Name, 'homebridge-securitysystem');
   this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'Generic');
   this.accessoryInformationService.setCharacteristic(Characteristic.FirmwareRevision, packageJson.version);
+
+  // Services
+  this.services = [
+    this.service,
+    this.accessoryInformationService
+  ];
+
+  if (this.sirenSwitch) {
+    this.services.push(this.switchService);
+  }
 
   // Storage
   if (this.saveState) {
@@ -335,6 +374,15 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   callback(null);
 };
 
+SecuritySystem.prototype.getSirenActive = function(callback) {
+  callback(null, this.sirenActive);
+};
+
+SecuritySystem.prototype.setSirenActive = function(state, callback) {
+  this.sirenActive = state;
+  this.sirenUpdate(state, callback);
+}
+
 // Switch
 SecuritySystem.prototype.getSwitchState = function(callback) {
   callback(null, this.switchOn);
@@ -342,7 +390,10 @@ SecuritySystem.prototype.getSwitchState = function(callback) {
 
 SecuritySystem.prototype.setSwitchState = function(state, callback) {
   this.switchOn = state;
+  this.sirenUpdate(state, callback);
+};
 
+SecuritySystem.prototype.sirenUpdate = function(state, callback) {
   // Save state to file
   if (this.saveState) {
     this.save();
@@ -362,7 +413,7 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
     return;
   }
 
-  if (this.switchOn) {
+  if (state) {
     // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       // Ignore since alarm
@@ -400,9 +451,5 @@ SecuritySystem.prototype.setSwitchState = function(state, callback) {
 };
 
 SecuritySystem.prototype.getServices = function() {
-  return [
-    this.service,
-    this.switchService,
-    this.accessoryInformationService
-  ];
+  return this.services;
 };

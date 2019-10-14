@@ -15,8 +15,8 @@ Use Eve or a similar app to create automations like these:
 
 | Trigger                       | Condition                         | Scene actions                     |
 |-------------------------------|-----------------------------------|-----------------------------------|
-| Motion is detected            | Security system is set to `Night` | Turn on `Siren`                   |
-| Door is opened                | Security system is set to `Away`  | Turn on `Siren`                   |
+| Motion is detected            | Security system is set to `Night` | Turn on `Siren` (3)               |
+| Door is opened                | Security system is set to `Away`  | Turn on `Siren` (3)               |
 | NFC tag is detected (1) (2)   | None                              | Set security system to `Home`     |
 | Security system triggers      | None                              | Play media (1)                    |
 
@@ -24,15 +24,20 @@ Use Eve or a similar app to create automations like these:
 
 (2) Shortcuts app is required to create this automation.
 
+(3) A powerful HomeKit app like the Eve app is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
+
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
 ## Options
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| default_mode    | No       | Initial mode for the security system when running Homebridge.                  | home,away,night,off    |
+| default_mode    | No       | Initial mode for the security system when running Homebridge.                  | home|away|night|off    |
 | arm_seconds     | No       | Time in seconds to arm the security system after the user requesting it.       | any positive number    |
 | trigger_seconds | No       | Time in seconds to be able to disarm the security system before triggering it. | any positive number    |
+| siren_switch    | No       | Shows a switch on the Home app to trigger the security system. (1)             | true/false             |
 | save_state      | No       | State persistence for shutdowns and reboots.                                   | true/false             |
+
+1. 
 
 ## Advanced options
 | Option          | Required | Description                                                                    | Value/s                |
