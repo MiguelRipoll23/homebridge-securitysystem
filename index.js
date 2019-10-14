@@ -77,10 +77,10 @@ function SecuritySystem(log, config) {
   }
 
   if (this.sirenSwitch === undefined) {
-    this.sirenSwitch = false;
-  }
-  else if (this.sirenSwitch) {
     this.sirenSwitch = true;
+  }
+  else if (this.sirenSwitch === false) {
+    this.sirenSwitch = false;
   }
 
   if (this.saveState === undefined) {
