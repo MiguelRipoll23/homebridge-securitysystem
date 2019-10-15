@@ -15,8 +15,8 @@ Use Eve or a similar app to create automations like these:
 
 | Trigger                       | Condition                         | Scene actions                     |
 |-------------------------------|-----------------------------------|-----------------------------------|
-| Motion is detected            | Security system is set to `Night` | Turn on `Siren` (3)               |
-| Door is opened                | Security system is set to `Away`  | Turn on `Siren` (3)               |
+| Motion is detected            | Security system is set to `Night` | Turn on `Siren`                   |
+| Door is opened                | Security system is set to `Away`  | Turn on `Siren`                   |
 | NFC tag is detected (1) (2)   | None                              | Set security system to `Home`     |
 | Security system triggers      | None                              | Play media (1)                    |
 
