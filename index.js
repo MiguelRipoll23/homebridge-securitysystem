@@ -134,7 +134,7 @@ function SecuritySystem(log, config) {
 
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
-  this.armingState = this.armingState;
+  this.armingState = this.currentState;
   this.sirenActive = false;
 
   // Switch
