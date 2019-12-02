@@ -53,7 +53,7 @@ You can set the option `port` that will start a web server on your Homebridge de
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
 | Port            | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
 
-After setting the port, you can call the url `http://<homebridge_ip>/alarm-state-changed/<new_state>`
+After setting the port, you can call the url `http://<homebridge_ip>:<config_port>/alarm-state-changed/<new_state>`
 The `new_state` can be one of the following:
  * STAY_ARM: `0`
  * AWAY_ARM: `1`
