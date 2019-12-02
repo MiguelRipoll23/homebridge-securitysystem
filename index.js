@@ -123,7 +123,7 @@ function SecuritySystem(log, config) {
         this.updateCurrentState(newState, true);
         response.send('State updated');
       } else {
-        response.send('State is not in the available list of states.');
+        response.send('Bad state value');
       }
     });
 
