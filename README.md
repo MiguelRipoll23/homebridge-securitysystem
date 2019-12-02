@@ -45,3 +45,18 @@ Use Eve or a similar app to create automations like these:
 | path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
 | path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
 | path_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
+
+## Update the state when it changed from another source
+Use case: If your alarm can be controlled by a remote, when the user change the alarm state with the remote, the state is not updated in Homebridge.
+You can set the option `port` that will start a web server on your Homebridge device and listen for state changes to update the display state in Home app.
+| Option          | Required | Description                                                                    | Value/s                |
+|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
+| Port            | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
+
+After setting the port, you can call the url `http://<homebridge_ip>/alarm-state-changed/<new_state>`
+The `new_state` can be one of the following:
+ * STAY_ARM: `0`
+ * AWAY_ARM: `1`
+ * NIGHT_ARM: `2`
+ * DISARMED: `3`
+ * ALARM_TRIGGERED: `4`

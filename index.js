@@ -4,6 +4,8 @@ const customCharacteristics = require('./customCharacteristics');
 const fetch = require('node-fetch');
 const storage = require('node-persist');
 const packageJson = require('./package.json');
+const express = require('express');
+const app = express();
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
 let homebridgePersistPath;
@@ -96,6 +98,32 @@ function SecuritySystem(log, config) {
     this.pathNight = config.path_night;
     this.pathOff = config.path_off;
     this.pathTriggered = config.path_triggered;
+  }
+
+  if (config.server_port !== undefined) {
+    app.get('/alarm-state-changed/:state', (request, response) => {
+      const availableStates = [
+        Characteristic.SecuritySystemCurrentState.STAY_ARM,
+        Characteristic.SecuritySystemCurrentState.AWAY_ARM,
+        Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+        Characteristic.SecuritySystemCurrentState.DISARMED,
+        Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
+      ]
+      if (availableStates.includes(request.params.state)) {
+        this.updateCurrentState(state, true);
+        response.send('State updated');
+      } else {
+        response.send('State is not in the available list of states.');
+      }
+    });
+
+    app.listen(config.server_port, err => {
+      if (err) {
+        this.log('Server could not start', err);
+        return;
+      }
+      this.log(`Server is listening on port ${config.server_port}`)
+    });
   }
 
   // Log options value
