@@ -118,8 +118,9 @@ function SecuritySystem(log, config) {
         Characteristic.SecuritySystemCurrentState.DISARMED,
         Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
       ]
-      if (availableStates.includes(request.params.state)) {
-        this.updateCurrentState(state, true);
+      const newState = Number(request.params.state);
+      if (availableStates.includes(newState)) {
+        this.updateCurrentState(newState, true);
         response.send('State updated');
       } else {
         response.send('State is not in the available list of states.');
