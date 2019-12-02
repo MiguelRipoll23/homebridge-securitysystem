@@ -46,9 +46,8 @@ Use Eve or a similar app to create automations like these:
 | path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
 | path_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
 
-## Update the state when it changed from another source
-Use case: If your alarm can be controlled by a remote, when the user change the alarm state with the remote, the state is not updated in Homebridge.
-You can set the option `port` that will start a web server on your Homebridge device and listen for state changes to update the display state in Home app.
+## State update API
+To enable the state update API you can set the option `port` that will start a web server on your Homebridge device and listen for state changes to update the display state in Home app.
 
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
