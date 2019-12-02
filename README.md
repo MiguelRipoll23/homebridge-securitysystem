@@ -49,6 +49,7 @@ Use Eve or a similar app to create automations like these:
 ## Update the state when it changed from another source
 Use case: If your alarm can be controlled by a remote, when the user change the alarm state with the remote, the state is not updated in Homebridge.
 You can set the option `port` that will start a web server on your Homebridge device and listen for state changes to update the display state in Home app.
+
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
 | port            | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
