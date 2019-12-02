@@ -90,7 +90,7 @@ function SecuritySystem(log, config) {
     this.saveState = false;
   }
 
-  if (config.url !== undefined) {
+  if (config.url) {
     this.remote = true;
 
     this.url = config.url;
@@ -101,7 +101,7 @@ function SecuritySystem(log, config) {
     this.pathTriggered = config.path_triggered;
   }
 
-  if (config.server_port !== undefined) {
+  if (config.server_port) {
     // Add auth if needed
     if (config.username && config.password) {
       const users = {};
