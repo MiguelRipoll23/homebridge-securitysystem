@@ -51,7 +51,9 @@ Use case: If your alarm can be controlled by a remote, when the user change the 
 You can set the option `port` that will start a web server on your Homebridge device and listen for state changes to update the display state in Home app.
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| Port            | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
+| port            | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
+| username        | No       | Set the username/password values to activate HTTP basic auth                   | username               |
+| password        | No       | Set the username/password values to activate HTTP basic auth                   | password               |
 
 After setting the port, you can call the url `http://<homebridge_ip>:<config_port>/alarm-state-changed/<new_state>`
 The `new_state` can be one of the following:

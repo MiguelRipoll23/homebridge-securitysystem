@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const storage = require('node-persist');
 const packageJson = require('./package.json');
 const express = require('express');
+const basicAuth = require('express-basic-auth');
 const app = express();
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
@@ -101,6 +102,14 @@ function SecuritySystem(log, config) {
   }
 
   if (config.server_port !== undefined) {
+    // Add auth if needed
+    if (config.username && config.password) {
+      const users = {};
+      users[config.username] = config.password;
+      app.use(basicAuth({ users }));
+    }
+
+    // Declare route to update state
     app.get('/alarm-state-changed/:state', (request, response) => {
       const availableStates = [
         Characteristic.SecuritySystemCurrentState.STAY_ARM,
@@ -117,6 +126,7 @@ function SecuritySystem(log, config) {
       }
     });
 
+    // Start the server
     app.listen(config.server_port, err => {
       if (err) {
         this.log('Server could not start', err);
