@@ -122,7 +122,7 @@ function SecuritySystem(log, config) {
       ]
       const newState = Number(request.params.state);
       if (availableStates.includes(newState)) {
-        _this.updateCurrentState(newState, true);
+        _this.setTargetState(newState, null);
         response.send('State updated');
       } else {
         response.send('Bad state value');
@@ -439,7 +439,12 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   // Update characteristic
   this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingState).updateValue(state);
 
-  callback(null);
+  if (callback !== null) {
+    callback(null);
+  }
+  else {
+    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(state);
+  }
 };
 
 SecuritySystem.prototype.getSirenActive = function(callback) {
