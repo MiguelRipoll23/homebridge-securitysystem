@@ -102,6 +102,8 @@ function SecuritySystem(log, config) {
   }
 
   if (config.server_port) {
+    const _this = this;
+
     // Add auth if needed
     if (config.username && config.password) {
       const users = {};
@@ -120,7 +122,7 @@ function SecuritySystem(log, config) {
       ]
       const newState = Number(request.params.state);
       if (availableStates.includes(newState)) {
-        this.updateCurrentState(newState, true);
+        _this.updateCurrentState(newState, true);
         response.send('State updated');
       } else {
         response.send('Bad state value');
@@ -130,10 +132,10 @@ function SecuritySystem(log, config) {
     // Start the server
     app.listen(config.server_port, err => {
       if (err) {
-        this.log('Server could not start', err);
+        _this.log('Server could not start', err);
         return;
       }
-      this.log(`Server is listening on port ${config.server_port}`)
+      _this.log(`Server is listening on port ${config.server_port}`)
     });
   }
 
