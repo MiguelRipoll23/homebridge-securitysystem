@@ -37,28 +37,29 @@ Use Eve or a similar app to create automations like these:
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
-## Advanced options
-| Option          | Required | Description                                                                    | Value/s                |
-|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| url             | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
-| path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
-| path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
-| path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
-| path_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
-
-## State update API
-To enable the state update API you can set the option `port` that will start a web server on your Homebridge device and listen for state changes to update the display state in Home app.
+## Server options (API)
+To enable the server API you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
 
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| port            | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
+| server_port     | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
 | username        | No       | Set the username/password values to activate HTTP basic auth                   | username               |
 | password        | No       | Set the username/password values to activate HTTP basic auth                   | password               |
 
-After setting the port, you can call the url `http://<homebridge_ip>:<config_port>/alarm-state-changed/<new_state>`
+After setting the port, you can call the URL `http://<homebridge_ip>:<config_server_port>/target-state/<new_state>`
 The `new_state` can be one of the following:
  * STAY_ARM: `0`
  * AWAY_ARM: `1`
  * NIGHT_ARM: `2`
  * DISARMED: `3`
- * ALARM_TRIGGERED: `4`
+
+To trigger the security syste use `/sensor/triggered` instead.
+
+## Proxy options
+| Option          | Required | Description                                                                    | Value/s                |
+|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
+| url             | No       | URL of a web server if you would like to use a proxy.                          | http://example.ltd     |
+| path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
+| path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
+| path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
+| path_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |

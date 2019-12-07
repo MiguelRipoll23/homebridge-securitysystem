@@ -32,6 +32,8 @@ function SecuritySystem(log, config) {
   this.triggerSeconds = config.trigger_seconds;
   this.sirenSwitch = config.siren_switch;
   this.saveState = config.save_state;
+  this.serverPort = config.server_port;
+  this.url = config.url;
 
   // Variables
   this.remote = false;
@@ -90,10 +92,9 @@ function SecuritySystem(log, config) {
     this.saveState = false;
   }
 
-  if (config.url) {
+  if (this.url) {
     this.remote = true;
 
-    this.url = config.url;
     this.pathHome = config.path_home;
     this.pathAway = config.path_away;
     this.pathNight = config.path_night;
@@ -101,41 +102,53 @@ function SecuritySystem(log, config) {
     this.pathTriggered = config.path_triggered;
   }
 
-  if (config.server_port) {
-    const _this = this;
+  if (this.serverPort) {
+    const username = config.username;
+    const password = config.password;
 
     // Add auth if needed
-    if (config.username && config.password) {
+    if (username && password) {
       const users = {};
-      users[config.username] = config.password;
+      users[username] = password;
+
       app.use(basicAuth({ users }));
     }
 
-    // Declare route to update state
-    app.get('/alarm-state-changed/:state', (request, response) => {
-      const availableStates = [
-        Characteristic.SecuritySystemCurrentState.STAY_ARM,
-        Characteristic.SecuritySystemCurrentState.AWAY_ARM,
-        Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
-        Characteristic.SecuritySystemCurrentState.DISARMED,
-        Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
-      ]
-      const newState = Number(request.params.state);
-      if (availableStates.includes(newState)) {
-        _this.setTargetState(newState, null);
-        response.send('State updated');
-      } else {
-        response.send('Bad state value');
+    const targetStates = [
+      Characteristic.SecuritySystemTargetState.STAY_ARM,
+      Characteristic.SecuritySystemTargetState.AWAY_ARM,
+      Characteristic.SecuritySystemTargetState.NIGHT_ARM,
+      Characteristic.SecuritySystemTargetState.DISARMED,
+    ];
+
+    // Declare route to trigger the
+    // security system
+    app.get('/sensor/triggered', (request, response) => {
+      this.sensorTriggered(true, null);
+      response.send('Acknowledged.');
+    });
+
+    // Declare route to update target state
+    app.get('/target-state/:state', (request, response) => {
+      const state = Number(request.params.state);
+
+      if (targetStates.includes(state)) {
+        this.setTargetState(state, null);
+        response.send('State updated.');
+      }
+      else {
+        response.send('Invalid state.');
       }
     });
 
     // Start the server
-    app.listen(config.server_port, err => {
-      if (err) {
-        _this.log('Server could not start', err);
+    app.listen(this.serverPort, error => {
+      if (error) {
+        this.log('Server could not start', error);
         return;
       }
-      _this.log(`Server is listening on port ${config.server_port}`)
+      
+      this.log(`Server (${this.serverPort})`);
     });
   }
 
@@ -149,7 +162,7 @@ function SecuritySystem(log, config) {
   }
 
   if (this.remote) {
-    this.log('Webhooks (' + this.url + ')');
+    this.log('Proxy (' + this.url + ')');
   }
 
   // Security system
@@ -341,7 +354,7 @@ SecuritySystem.prototype.updateStateRemotely = function(state) {
       this.log('Request to web server failed. (' + path + ')');
       this.log(error);
     });
-}
+};
 
 SecuritySystem.prototype.logState = function(type, state) {
   switch (state) {
@@ -377,6 +390,11 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
   this.logState('Target', state);
+
+  // Update state from remote
+  if (callback === null) {
+    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(state);
+  }
 
   // Save state to file
   if (this.saveState) {
@@ -442,9 +460,6 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   if (callback !== null) {
     callback(null);
   }
-  else {
-    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(state);
-  }
 };
 
 SecuritySystem.prototype.getSirenActive = function(callback) {
@@ -454,7 +469,7 @@ SecuritySystem.prototype.getSirenActive = function(callback) {
 SecuritySystem.prototype.setSirenActive = function(state, callback) {
   this.sirenActive = state;
   this.sensorTriggered(state, callback);
-}
+};
 
 SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   // Save state to file
@@ -476,14 +491,20 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   // Ignore if the security system
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    callback('Security system not armed.');
+    if (callback !== null) {
+      callback('Security system not armed.');
+    }
+
     return;
   }
 
   // Ignore if the security system
   // is arming
   if (this.armingTimeout !== null) {
-    callback('Security system not yet armed.');
+    if (callback !== null) {
+      callback('Security system not yet armed.');
+    }
+
     return;
   }
 
@@ -528,7 +549,9 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     this.save();
   }
 
-  callback(null);
+  if (callback !== null) {
+    callback(null);
+  }
 };
 
 // Switch
