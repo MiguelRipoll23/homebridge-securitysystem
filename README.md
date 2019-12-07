@@ -37,23 +37,30 @@ Use Eve or a similar app to create automations like these:
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
-## Server options (API)
+## Server options
 To enable the server API you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
 
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| server_port     | No       | Port of the web server that will run on your Homebridge device                 | 3030                   |
-| username        | No       | Set the username/password values to activate HTTP basic auth                   | username               |
-| password        | No       | Set the username/password values to activate HTTP basic auth                   | password               |
+| server_port     | No       | Port of the web server that will run on your Homebridge device.                | 0-65535                |
+| username        | No       | Set the username/password values to activate HTTP basic auth.                  | any string             |
+| password        | No       | Set the username/password values to activate HTTP basic auth.                  | any string             |
 
-After setting the port, you can call the URL `http://<homebridge_ip>:<config_server_port>/target-state/<new_state>`
+After setting the port, you can call these endpoints:
+
+| Method | Endpoint                  | Description                                     |
+|--------|---------------------------|-------------------------------------------------|
+| GET    | /target-state/<new_state> | Changes current state from the security system. |
+| GET    | /sensor/triggered         | Sends a sensor triggered event.                 |
+
 The `new_state` can be one of the following:
- * STAY_ARM: `0`
- * AWAY_ARM: `1`
- * NIGHT_ARM: `2`
- * DISARMED: `3`
 
-To trigger the security syste use `/sensor/triggered` instead.
+|       | State |
+|-------|-------|
+| Home  | 0     |
+| Away  | 1     |
+| Night | 2     |
+| Off   | 3     |
 
 ## Proxy options
 | Option          | Required | Description                                                                    | Value/s                |
