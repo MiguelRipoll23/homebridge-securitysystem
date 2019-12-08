@@ -38,7 +38,7 @@ Use Eve or a similar app to create automations like these:
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
 ## Server options
-To enable the server API you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
+To enable remote state changes you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
 
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
@@ -50,11 +50,10 @@ After setting the port, you can call these endpoints:
 
 | Method | Endpoint                   | Description                                     |
 |--------|----------------------------|-------------------------------------------------|
-| GET    | /target-state/<new_state>  | Changes current state from the security system. |
-| GET    | /display-state/<new_state> | Changes the security system display state       |
-| GET    | /sensor/triggered          | Sends a sensor triggered event.                 |
+| GET    | /target-state/<state>      | Changes current state from the security system. |
+| GET    | /triggered                 | Triggers the security system.                   |
 
-The `new_state` can be one of the following:
+The `state` can be one of the following:
 
 |       | State |
 |-------|-------|
@@ -63,10 +62,12 @@ The `new_state` can be one of the following:
 | Night | 2     |
 | Off   | 3     |
 
-## Proxy options
+## Webhooks options
+To enable webhooks you can set the option 'webhooks_url' and requests to the server set will be made as the current security system state changes.
+
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| url             | No       | URL of a web server if you would like to use a proxy.                          | http://example.ltd     |
+| webhooks_url    | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
 | path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
 | path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
 | path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |

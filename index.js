@@ -33,10 +33,10 @@ function SecuritySystem(log, config) {
   this.sirenSwitch = config.siren_switch;
   this.saveState = config.save_state;
   this.serverPort = config.server_port;
-  this.url = config.url;
+  this.webhooksUrl = config.webhooks_url;
 
   // Variables
-  this.remote = false;
+  this.webhooks = false;
   this.armingEnding = false;
   this.armingEndingTimeout = null;
   this.armingTimeout = null;
@@ -92,16 +92,6 @@ function SecuritySystem(log, config) {
     this.saveState = false;
   }
 
-  if (this.url) {
-    this.remote = true;
-
-    this.pathHome = config.path_home;
-    this.pathAway = config.path_away;
-    this.pathNight = config.path_night;
-    this.pathOff = config.path_off;
-    this.pathTriggered = config.path_triggered;
-  }
-
   if (this.serverPort) {
     const username = config.username;
     const password = config.password;
@@ -120,30 +110,20 @@ function SecuritySystem(log, config) {
       Characteristic.SecuritySystemTargetState.NIGHT_ARM,
       Characteristic.SecuritySystemTargetState.DISARM,
     ];
+
     // Declare route to trigger the
     // security system
-    app.get('/sensor/triggered', (request, response) => {
-      this.sensorTriggered(true, null);
-      response.send('Acknowledged.');
+    app.get('/triggered', (request, response) => {
+      this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+      response.send('State updated.');
     });
 
     // Declare route to update target state
     app.get('/target-state/:state', (request, response) => {
       const state = Number(request.params.state);
+
       if (targetStates.includes(state)) {
         this.setTargetState(state, null);
-        response.send('State updated.');
-      }
-      else {
-        response.send('Invalid state.');
-      }
-    });
-
-    // Declare route to update only display state
-    app.get('/display-state/:state', (request, response) => {
-      const state = Number(request.params.state);
-      if (targetStates.includes(state)) {
-        this.updateCurrentState(state, true)
         response.send('State updated.');
       }
       else {
@@ -162,6 +142,16 @@ function SecuritySystem(log, config) {
     });
   }
 
+  if (this.webhooksUrl) {
+    this.webhooks = true;
+
+    this.pathHome = config.path_home;
+    this.pathAway = config.path_away;
+    this.pathNight = config.path_night;
+    this.pathOff = config.path_off;
+    this.pathTriggered = config.path_triggered;
+  }
+
   // Log options value
   this.logState('Default', this.defaultState);
   this.log('Arm delay (' + this.armSeconds + ' second/s)');
@@ -171,8 +161,8 @@ function SecuritySystem(log, config) {
     this.log('Siren switch (enabled)');
   }
 
-  if (this.remote) {
-    this.log('Proxy (' + this.url + ')');
+  if (this.webhooks) {
+    this.log('Webhooks (' + this.webhooksUrl + ')');
   }
 
   // Security system
@@ -257,7 +247,7 @@ SecuritySystem.prototype.load = async function() {
   await storage.getItem('state')
     .then(state => {
       if (state === undefined) {
-        return
+        return;
       }
 
       this.log('State (Saved)');
@@ -305,12 +295,7 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 };
 
-SecuritySystem.prototype.updateCurrentState = function(state, proxied) {
-  if (this.remote && proxied === false) {
-    this.updateStateRemotely(state);
-    return;
-  }
-
+SecuritySystem.prototype.updateCurrentState = function(state) {
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
@@ -319,51 +304,11 @@ SecuritySystem.prototype.updateCurrentState = function(state, proxied) {
   if (this.saveState) {
     this.save();
   }
-};
 
-SecuritySystem.prototype.updateStateRemotely = function(state) {
-  let path = null;
-
-  switch (state) {
-    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      path = this.pathHome;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      path = this.pathAway;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      path = this.pathNight;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.DISARMED:
-      path = this.pathOff;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      path = this.pathTriggered;
-      break;
+  // Webhook
+  if (this.webhooks) {
+    this.sendWebhookEvent(state);
   }
-
-  if (path === undefined || path === null) {
-    this.log('Missing web server path for target state.');
-    return;
-  }
-
-  // Send GET request to server
-  fetch(this.url + path)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Status code (' + response.statusCode + ')');
-      }
-
-      this.updateCurrentState(state, true);
-    })
-    .catch(error => {
-      this.log('Request to web server failed. (' + path + ')');
-      this.log(error);
-    });
 };
 
 SecuritySystem.prototype.logState = function(type, state) {
@@ -399,11 +344,6 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
-
-  if (this.targetState === this.currentState) {
-    this.logState(`State changed event triggered but is already the current state`, state);
-    return;
-  }
   this.logState('Target', state);
 
   // Update state from remote
@@ -445,9 +385,12 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
 
   // Add arm delay if alarm is not triggered
   if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Only if set to a mode except off
+    // Only if set to a mode excluding off
     if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      armSeconds = this.armSeconds;
+      // Only if set from HomeKit
+      if (callback !== null) {
+        armSeconds = this.armSeconds;
+      }
     }
   }
 
@@ -466,7 +409,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.armingTimeout = setTimeout(() => {
     this.armingTimeout = null;
     this.armingEnding = false;
-    this.updateCurrentState(state, false);
+    this.updateCurrentState(state);
   }, armSeconds * 1000);
 
   // Update characteristic
@@ -536,7 +479,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
         this.triggerTimeout = null;
         this.recoverState = false;
 
-        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, false);
+        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       }, this.triggerSeconds * 1000);
     }
   }
@@ -567,6 +510,51 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   if (callback !== null) {
     callback(null);
   }
+};
+
+SecuritySystem.prototype.sendWebhookEvent = function(state) {
+  let path = null;
+
+  switch (state) {
+    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
+      path = this.pathHome;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
+      path = this.pathAway;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
+      path = this.pathNight;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.DISARMED:
+      path = this.pathOff;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      path = this.pathTriggered;
+      break;
+  }
+
+  if (path === undefined || path === null) {
+    this.log('Missing webhook path for target state.');
+    return;
+  }
+
+  // Send GET request to server
+  fetch(this.webhooksUrl + path)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Status code (' + response.statusCode + ')');
+      }
+
+      this.log('Webhook event (Sent)');
+    })
+    .catch(error => {
+      this.log('Request to webhook failed. (' + path + ')');
+      this.log(error);
+    });
 };
 
 // Switch
