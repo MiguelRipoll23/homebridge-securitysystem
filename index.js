@@ -118,9 +118,8 @@ function SecuritySystem(log, config) {
       Characteristic.SecuritySystemTargetState.STAY_ARM,
       Characteristic.SecuritySystemTargetState.AWAY_ARM,
       Characteristic.SecuritySystemTargetState.NIGHT_ARM,
-      Characteristic.SecuritySystemTargetState.DISARMED,
+      Characteristic.SecuritySystemTargetState.DISARM,
     ];
-
     // Declare route to trigger the
     // security system
     app.get('/sensor/triggered', (request, response) => {
@@ -131,9 +130,20 @@ function SecuritySystem(log, config) {
     // Declare route to update target state
     app.get('/target-state/:state', (request, response) => {
       const state = Number(request.params.state);
-
       if (targetStates.includes(state)) {
         this.setTargetState(state, null);
+        response.send('State updated.');
+      }
+      else {
+        response.send('Invalid state.');
+      }
+    });
+
+    // Declare route to update only display state
+    app.get('/display-state/:state', (request, response) => {
+      const state = Number(request.params.state);
+      if (targetStates.includes(state)) {
+        this.updateCurrentState(state, true)
         response.send('State updated.');
       }
       else {
@@ -389,6 +399,11 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
+
+  if (this.targetState === this.currentState) {
+    this.logState(`State changed event triggered but is already the current state`, state);
+    return;
+  }
   this.logState('Target', state);
 
   // Update state from remote

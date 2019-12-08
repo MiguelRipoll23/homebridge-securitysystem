@@ -48,10 +48,11 @@ To enable the server API you can set the option `server_port` that will start a 
 
 After setting the port, you can call these endpoints:
 
-| Method | Endpoint                  | Description                                     |
-|--------|---------------------------|-------------------------------------------------|
-| GET    | /target-state/<new_state> | Changes current state from the security system. |
-| GET    | /sensor/triggered         | Sends a sensor triggered event.                 |
+| Method | Endpoint                   | Description                                     |
+|--------|----------------------------|-------------------------------------------------|
+| GET    | /target-state/<new_state>  | Changes current state from the security system. |
+| GET    | /display-state/<new_state> | Changes the security system display state       |
+| GET    | /sensor/triggered          | Sends a sensor triggered event.                 |
 
 The `new_state` can be one of the following:
 
