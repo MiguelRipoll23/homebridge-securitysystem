@@ -50,7 +50,7 @@ After setting the port, you can call these endpoints:
 
 | Method | Endpoint                   | Description                                     |
 |--------|----------------------------|-------------------------------------------------|
-| GET    | /target-state/<state>      | Changes current state from the security system. |
+| GET    | /target-state/`state`      | Changes current state from the security system. |
 | GET    | /triggered                 | Triggers the security system.                   |
 
 The `state` can be one of the following:
