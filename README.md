@@ -37,10 +37,37 @@ Use Eve or a similar app to create automations like these:
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
-## Advanced options
+## Server options
+To enable remote state changes you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
+
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| url             | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
+| server_port     | No       | Port of the web server that will run on your Homebridge device.                | 0-65535                |
+| username        | No       | Set the username/password values to activate HTTP basic auth.                  | any string             |
+| password        | No       | Set the username/password values to activate HTTP basic auth.                  | any string             |
+
+After setting the port, you can call these endpoints:
+
+| Method | Endpoint                   | Description                                     |
+|--------|----------------------------|-------------------------------------------------|
+| GET    | /target-state/`state`      | Changes current state from the security system. |
+| GET    | /triggered                 | Triggers the security system.                   |
+
+The `state` can be one of the following:
+
+|       | State |
+|-------|-------|
+| Home  | 0     |
+| Away  | 1     |
+| Night | 2     |
+| Off   | 3     |
+
+## Webhooks options
+To enable webhooks you can set the option `webhooks_url` and requests to the server set will be made as the current security system state changes.
+
+| Option          | Required | Description                                                                    | Value/s                |
+|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
+| webhooks_url    | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
 | path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
 | path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
 | path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
