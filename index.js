@@ -232,7 +232,7 @@ function SecuritySystem(log, config) {
   // Storage
   if (this.saveState) {
     this.load();
-  }º
+  }
 }
 
 SecuritySystem.prototype.load = async function() {
