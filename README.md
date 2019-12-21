@@ -33,6 +33,7 @@ Use Eve or a similar app to create automations like these:
 | arm_seconds      | No       | Time in seconds to arm the security system after the user requesting it.       | any positive number    |
 | trigger_seconds  | No       | Time in seconds to be able to disarm the security system before triggering it. | any positive number    |
 | siren_switch (1) | No       | Shows a switch on the Home app to trigger the security system.                 | true/false             |
+| override_off     | No       | Allows to trigger the security system while disarmed.                          | true/false             |
 | save_state       | No       | State persistence for shutdowns and reboots.                                   | true/false             |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
