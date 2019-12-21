@@ -63,7 +63,7 @@ The `state` can be one of the following:
 | Night | 2     |
 | Off   | 3     |
 
-## Webhooks options
+## Webhook options
 To enable webhooks you can set the option `webhook_url` and requests to the server set will be made as the current security system state changes.
 
 | Option             | Required | Description                                                                    | Value/s                |
