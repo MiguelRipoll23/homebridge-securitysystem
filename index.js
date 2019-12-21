@@ -231,7 +231,7 @@ function SecuritySystem(log, config) {
   // Storage
   if (this.saveState) {
     this.load();
-  }
+  }º
 }
 
 SecuritySystem.prototype.load = async function() {
@@ -257,13 +257,13 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
-      this.log('State (Saved)');
-
       this.currentState = state.currentState;
       this.targetState = state.targetState;
       this.armingState = state.armingState;
       this.sirenActive = state.sirenActive;
       this.switchOn = state.switchOn;
+
+      this.logState('Saved', this.currentState);
     })
     .catch(error => {
       this.log('Unable to load state.');
