@@ -31,7 +31,10 @@ function SecuritySystem(log, config) {
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
   this.sirenSwitch = config.siren_switch;
+  this.overrideOff = config.override_off;
   this.saveState = config.save_state;
+
+  // Extra features
   this.serverPort = config.server_port;
   this.webhookUrl = config.webhook_url;
 
@@ -81,11 +84,15 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
-  if (this.sirenSwitch === undefined) {
+  if (this.sirenSwitch === undefined || this.sirenSwitch === true) {
     this.sirenSwitch = true;
   }
-  else if (this.sirenSwitch === false) {
+  else {
     this.sirenSwitch = false;
+  }
+
+  if (this.overrideOff === undefined) {
+    this.overrideOff = false;
   }
 
   if (this.saveState === undefined) {
@@ -449,11 +456,13 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   // Ignore if the security system
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    if (callback !== null) {
-      callback('Security system not armed.');
+    if (this.overrideOff === false) {
+      if (callback !== null) {
+        callback('Security system not armed.');
+      }
+  
+      return;
     }
-
-    return;
   }
 
   // Ignore if the security system
