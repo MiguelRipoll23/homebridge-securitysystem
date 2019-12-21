@@ -63,12 +63,12 @@ The `state` can be one of the following:
 | Off   | 3     |
 
 ## Webhooks options
-To enable webhooks you can set the option `webhooks_url` and requests to the server set will be made as the current security system state changes.
+To enable webhooks you can set the option `webhook_url` and requests to the server set will be made as the current security system state changes.
 
-| Option          | Required | Description                                                                    | Value/s                |
-|-----------------|----------|--------------------------------------------------------------------------------|------------------------|
-| webhooks_url    | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
-| path_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
-| path_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
-| path_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
-| path_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
+| Option             | Required | Description                                                                    | Value/s                |
+|--------------------|----------|--------------------------------------------------------------------------------|------------------------|
+| webhook_url        | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
+| webhook_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
+| webhook_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
+| webhook_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
+| webhook_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |

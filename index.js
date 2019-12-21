@@ -33,10 +33,10 @@ function SecuritySystem(log, config) {
   this.sirenSwitch = config.siren_switch;
   this.saveState = config.save_state;
   this.serverPort = config.server_port;
-  this.webhooksUrl = config.webhooks_url;
+  this.webhookUrl = config.webhook_url;
 
   // Variables
-  this.webhooks = false;
+  this.webhook = false;
   this.armingEnding = false;
   this.armingEndingTimeout = null;
   this.armingTimeout = null;
@@ -142,14 +142,14 @@ function SecuritySystem(log, config) {
     });
   }
 
-  if (this.webhooksUrl) {
-    this.webhooks = true;
+  if (this.webhookUrl) {
+    this.webhook = true;
 
-    this.pathHome = config.path_home;
-    this.pathAway = config.path_away;
-    this.pathNight = config.path_night;
-    this.pathOff = config.path_off;
-    this.pathTriggered = config.path_triggered;
+    this.webhookHome = config.webhook_home;
+    this.webhookAway = config.webhook_away;
+    this.webhookNight = config.webhook_night;
+    this.webhookOff = config.webhook_off;
+    this.webhookTriggered = config.webhook_triggered;
   }
 
   // Log options value
@@ -161,8 +161,8 @@ function SecuritySystem(log, config) {
     this.log('Siren switch (enabled)');
   }
 
-  if (this.webhooks) {
-    this.log('Webhooks (' + this.webhooksUrl + ')');
+  if (this.webhook) {
+    this.log('Webhook (' + this.webhookUrl + ')');
   }
 
   // Security system
@@ -306,7 +306,7 @@ SecuritySystem.prototype.updateCurrentState = function(state) {
   }
 
   // Webhook
-  if (this.webhooks) {
+  if (this.webhook) {
     this.sendWebhookEvent(state);
   }
 };
@@ -517,23 +517,23 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
 
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      path = this.pathHome;
+      path = this.webhookHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      path = this.pathAway;
+      path = this.webhookAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      path = this.pathNight;
+      path = this.webhookNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
-      path = this.pathOff;
+      path = this.webhookOff;
       break;
 
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      path = this.pathTriggered;
+      path = this.webhookTriggered;
       break;
   }
 
@@ -543,7 +543,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
   }
 
   // Send GET request to server
-  fetch(this.webhooksUrl + path)
+  fetch(this.webhookUrl + path)
     .then(response => {
       if (!response.ok) {
         throw new Error('Status code (' + response.statusCode + ')');
