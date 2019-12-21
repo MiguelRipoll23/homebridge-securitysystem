@@ -120,7 +120,7 @@ function SecuritySystem(log, config) {
 
     // Declare route to trigger the
     // security system
-    app.get('/triggered', (request, response) => {
+    app.get('/trigger', (request, response) => {
       this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       response.send('State updated.');
     });
