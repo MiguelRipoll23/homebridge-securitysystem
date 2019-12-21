@@ -141,7 +141,8 @@ function SecuritySystem(log, config) {
     // Start the server
     app.listen(this.serverPort, error => {
       if (error) {
-        this.log('Server could not start', error);
+        this.log('Error while starting server.');
+        this.log(error);
         return;
       }
       
