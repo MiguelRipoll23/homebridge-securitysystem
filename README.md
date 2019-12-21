@@ -63,7 +63,7 @@ The `state` can be one of the following:
 | Off   | 3     |
 
 ## Webhooks options
-To enable webhooks you can set the option 'webhooks_url' and requests to the server set will be made as the current security system state changes.
+To enable webhooks you can set the option `webhooks_url` and requests to the server set will be made as the current security system state changes.
 
 | Option          | Required | Description                                                                    | Value/s                |
 |-----------------|----------|--------------------------------------------------------------------------------|------------------------|
