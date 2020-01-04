@@ -5,7 +5,11 @@ const fetch = require('node-fetch');
 const storage = require('node-persist');
 const packageJson = require('./package.json');
 const express = require('express');
-const basicAuth = require('express-basic-auth');
+
+const MESSAGE_CODE_REQUIRED = 'Code required.';
+const MESSAGE_CODE_INVALID = 'Code invalid.';
+const MESSAGE_STATE_UPDATED = 'State updated.';
+
 const app = express();
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
@@ -100,45 +104,67 @@ function SecuritySystem(log, config) {
   }
 
   if (this.serverPort) {
-    const username = config.username;
-    const password = config.password;
+    const code = config.server_code;
+    
+    // Authentication
+    app.all('*', (req, res, next) => {
+      // Skip authentication if code is not set
+      if (code === undefined) {
+        return next();
+      }
 
-    // Add auth if needed
-    if (username && password) {
-      const users = {};
-      users[username] = password;
+      let userCode = req.query.code;
 
-      app.use(basicAuth({ users }));
-    }
+      // Check if code exists
+      if (userCode === undefined) {
+        this.log('Code required (Server)')
+        return res.status(401).send(MESSAGE_CODE_REQUIRED);
+      }
 
-    const targetStates = [
-      Characteristic.SecuritySystemTargetState.STAY_ARM,
-      Characteristic.SecuritySystemTargetState.AWAY_ARM,
-      Characteristic.SecuritySystemTargetState.NIGHT_ARM,
-      Characteristic.SecuritySystemTargetState.DISARM,
-    ];
+      // Check if code is a number
+      userCode = parseInt(userCode);
 
-    // Declare route to trigger the
-    // security system
-    app.get('/trigger', (request, response) => {
-      this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
-      response.send('State updated.');
+      if (isNaN(code) || isNaN(userCode)) {
+        this.log('Code invalid (Server)')
+        return res.status(401).send(MESSAGE_CODE_INVALID);
+      }
+
+      // Compare codes
+      if (userCode !== code) {
+        this.log('Code invalid (Server)')
+        return res.status(403).send(MESSAGE_CODE_INVALID);
+      }
+
+      return next();
     });
 
-    // Declare route to update target state
-    app.get('/target-state/:state', (request, response) => {
-      const state = Number(request.params.state);
-
-      if (targetStates.includes(state)) {
-        this.setTargetState(state, null);
-        response.send('State updated.');
-      }
-      else {
-        response.send('Invalid state.');
-      }
+    // Routes
+    app.get('/home', (req, res) => {
+      this.setTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, null);
+      res.send(MESSAGE_STATE_UPDATED);
     });
 
-    // Start the server
+    app.get('/away', (req, res) => {
+      this.setTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, null);
+      res.send(MESSAGE_STATE_UPDATED);
+    });
+
+    app.get('/night', (req, res) => {
+      this.setTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, null);
+      res.send(MESSAGE_STATE_UPDATED);
+    });
+
+    app.get('/off', (req, res) => {
+      this.setTargetState(Characteristic.SecuritySystemTargetState.DISARM, null);
+      res.send(MESSAGE_STATE_UPDATED);
+    });
+
+    app.get('/triggered', (req, res) => {
+      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+      res.send(MESSAGE_STATE_UPDATED);
+    });
+
+    // Server
     app.listen(this.serverPort, error => {
       if (error) {
         this.log('Error while starting server.');
@@ -166,7 +192,7 @@ function SecuritySystem(log, config) {
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
   if (this.sirenSwitch) {
-    this.log('Siren switch (enabled)');
+    this.log('Siren switch (Enabled)');
   }
 
   if (this.webhook) {
@@ -303,7 +329,7 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 };
 
-SecuritySystem.prototype.updateCurrentState = function(state) {
+SecuritySystem.prototype.setCurrentState = function(state) {
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
@@ -417,7 +443,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.armingTimeout = setTimeout(() => {
     this.armingTimeout = null;
     this.armingEnding = false;
-    this.updateCurrentState(state);
+    this.setCurrentState(state);
   }, armSeconds * 1000);
 
   // Update characteristic
@@ -489,7 +515,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
         this.triggerTimeout = null;
         this.recoverState = false;
 
-        this.updateCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+        this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       }, this.triggerSeconds * 1000);
     }
   }
