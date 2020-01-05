@@ -10,7 +10,7 @@ function CustomService(Service, Characteristic, CustomCharacteristic) {
     this.addCharacteristic(Characteristic.SecuritySystemCurrentState);
     this.addCharacteristic(Characteristic.SecuritySystemTargetState);
 
-    this.addCharacteristic(CustomCharacteristic.SecuritySystemArmingState);
+    this.addCharacteristic(CustomCharacteristic.SecuritySystemArming);
     this.addCharacteristic(CustomCharacteristic.SecuritySystemSirenActive);
 
     // Optional Characteristics

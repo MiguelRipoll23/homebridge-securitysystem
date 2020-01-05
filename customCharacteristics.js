@@ -1,28 +1,20 @@
 const inherits = require('util').inherits;
 
 function CustomCharacteristic(Characteristic) {
-  this.SecuritySystemArmingState = function() {
+  this.SecuritySystemArming = function() {
     this.UUID = '00003005-0000-1000-8000-135D67EC4377';
 
-    Characteristic.call(this, 'Security System Arming State', this.UUID);
-
-    this.STAY_ARM = 0;
-    this.AWAY_ARM = 1;
-    this.NIGHT_ARM = 2;
-    this.DISARM = 3;
+    Characteristic.call(this, 'Security System Arming', this.UUID);
     
     this.setProps({
-      format: Characteristic.Formats.UINT8,
-      maxValue: 3,
-      minValue: 0,
-      validValues: [0, 1, 2, 3],
-      minStep: 1,
+      format: Characteristic.Formats.BOOL,
       perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
     });
+    
     this.value = this.getDefaultValue();
   };
 
-  inherits(this.SecuritySystemArmingState, Characteristic);
+  inherits(this.SecuritySystemArming, Characteristic);
 
   this.SecuritySystemSirenActive = function() {
     this.UUID = '00003006-0000-1000-8000-135D67EC4377';

@@ -44,11 +44,9 @@ function SecuritySystem(log, config) {
 
   // Variables
   this.webhook = false;
-  this.armingEnding = false;
-  this.armingEndingTimeout = null;
   this.armingTimeout = null;
   this.triggerTimeout = null;
-  this.recoverState = false;
+  this.modeChanged = false;
 
   // Check for optional options
   if (this.defaultState === undefined) {
@@ -140,22 +138,38 @@ function SecuritySystem(log, config) {
 
     // Routes
     app.get('/home', (req, res) => {
-      this.setTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, null);
+      this.service.setCharacteristic(
+        Characteristic.SecuritySystemTargetState,
+        Characteristic.SecuritySystemTargetState.STAY_ARM
+      );
+
       res.send(MESSAGE_STATE_UPDATED);
     });
 
     app.get('/away', (req, res) => {
-      this.setTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, null);
+      this.service.setCharacteristic(
+        Characteristic.SecuritySystemTargetState,
+        Characteristic.SecuritySystemTargetState.AWAY_ARM
+      );
+
       res.send(MESSAGE_STATE_UPDATED);
     });
 
     app.get('/night', (req, res) => {
-      this.setTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, null);
+      this.service.setCharacteristic(
+        Characteristic.SecuritySystemTargetState,
+        Characteristic.SecuritySystemTargetState.NIGHT_ARM
+      );
+
       res.send(MESSAGE_STATE_UPDATED);
     });
 
     app.get('/off', (req, res) => {
-      this.setTargetState(Characteristic.SecuritySystemTargetState.DISARM, null);
+      this.service.setCharacteristic(
+        Characteristic.SecuritySystemTargetState,
+        Characteristic.SecuritySystemTargetState.DISARM
+      );
+
       res.send(MESSAGE_STATE_UPDATED);
     });
 
@@ -212,7 +226,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getCurrentState.bind(this));
 
   this.service
-    .getCharacteristic(CustomCharacteristic.SecuritySystemArmingState)
+    .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
     .on('get', this.getTargetState.bind(this));
 
   this.service
@@ -222,7 +236,7 @@ function SecuritySystem(log, config) {
 
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
-  this.armingState = this.currentState;
+  this.arming = false;
   this.sirenActive = false;
 
   // Switch
@@ -286,7 +300,6 @@ SecuritySystem.prototype.load = async function() {
 
       this.currentState = state.currentState;
       this.targetState = state.targetState;
-      this.armingState = state.armingState;
       this.sirenActive = state.sirenActive;
       this.switchOn = state.switchOn;
 
@@ -306,7 +319,6 @@ SecuritySystem.prototype.save = async function() {
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'armingState': this.armingState,
     'sirenActive': this.sirenActive,
     'switchOn': this.switchOn
   };
@@ -325,26 +337,6 @@ SecuritySystem.prototype.identify = function(callback) {
 };
 
 // Security system
-SecuritySystem.prototype.getCurrentState = function(callback) {
-  callback(null, this.currentState);
-};
-
-SecuritySystem.prototype.setCurrentState = function(state) {
-  this.currentState = state;
-  this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
-  this.logState('Current', state);
-
-  // Save state to file
-  if (this.saveState) {
-    this.save();
-  }
-
-  // Webhook
-  if (this.webhook) {
-    this.sendWebhookEvent(state);
-  }
-};
-
 SecuritySystem.prototype.logState = function(type, state) {
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
@@ -372,6 +364,26 @@ SecuritySystem.prototype.logState = function(type, state) {
   }
 };
 
+SecuritySystem.prototype.getCurrentState = function(callback) {
+  callback(null, this.currentState);
+};
+
+SecuritySystem.prototype.setCurrentState = function(state) {
+  this.currentState = state;
+  this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
+  this.logState('Current', state);
+
+  // Save state to file
+  if (this.saveState) {
+    this.save();
+  }
+
+  // Webhook
+  if (this.webhook) {
+    this.sendWebhookEvent(state);
+  }
+};
+
 SecuritySystem.prototype.getTargetState = function(callback) {
   callback(null, this.targetState);
 };
@@ -379,11 +391,6 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 SecuritySystem.prototype.setTargetState = function(state, callback) {
   this.targetState = state;
   this.logState('Target', state);
-
-  // Update state from remote
-  if (callback === null) {
-    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(state);
-  }
 
   // Save state to file
   if (this.saveState) {
@@ -395,7 +402,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   // during triggered state
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive).updateValue(false);
-    this.recoverState = true;
+    this.modeChanged = true;
   }
 
   // Cancel pending or triggered alarm
@@ -405,11 +412,7 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     this.switchService.setCharacteristic(Characteristic.On, this.switchOn);
   }
 
-  // Clear timeouts
-  if (this.armingEndingTimeout !== null) {
-    clearTimeout(this.armingEndingTimeout);
-  }
-
+  // Clear timeout
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
   }
@@ -421,37 +424,31 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Only if set to a mode excluding off
     if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      // Only if set from HomeKit
-      if (callback !== null) {
-        armSeconds = this.armSeconds;
-      }
+      armSeconds = this.armSeconds;
+
+      // Update arming status
+      this.arming = true;
+      this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArming).updateValue(this.arming);
     }
-  }
-
-  // Allow sensors to abort the
-  // arming if necessary
-  this.armingEnding = false;
-
-  if (this.armSeconds >= 30) {
-    this.armingEndingTimeout = setTimeout(() => {
-      this.armingEndingTimeout = null;
-      this.armingEnding = true;
-    }, (armSeconds - 15) * 1000);
   }
 
   // Update current state
   this.armingTimeout = setTimeout(() => {
     this.armingTimeout = null;
-    this.armingEnding = false;
     this.setCurrentState(state);
+
+    // Only if set to a mode excluding off
+    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
+      this.arming = false;
+      this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArming).updateValue(this.arming);
+    }
   }, armSeconds * 1000);
 
-  // Update characteristic
-  this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingState).updateValue(state);
+  callback(null);
+};
 
-  if (callback !== null) {
-    callback(null);
-  }
+SecuritySystem.prototype.getArming = function(callback) {
+  callback(null, this.arming);
 };
 
 SecuritySystem.prototype.getSirenActive = function(callback) {
@@ -467,17 +464,6 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   // Save state to file
   if (this.saveState) {
     this.save();
-  }
-
-  // Abort arming due to
-  // sensors still triggering
-  // during last 15 seconds of arming
-  if (this.armingEnding) {
-    clearTimeout(this.armingTimeout);
-    this.armingTimeout = null;
-
-    this.log('Sensor/s (Triggered) [Arming aborted]');
-    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
   }
 
   // Ignore if the security system
@@ -512,9 +498,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
       this.log('Sensor/s (Triggered)');
 
       this.triggerTimeout = setTimeout(() => {
+        // Reset
         this.triggerTimeout = null;
-        this.recoverState = false;
+        this.modeChanged = false;
 
+        // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       }, this.triggerSeconds * 1000);
     }
@@ -524,7 +512,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive).updateValue(false);
 
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      if (this.recoverState === false) {
+      if (this.modeChanged === false) {
         this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
       }
     }
@@ -543,9 +531,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     this.save();
   }
 
-  if (callback !== null) {
-    callback(null);
-  }
+  callback(null);
 };
 
 SecuritySystem.prototype.sendWebhookEvent = function(state) {
