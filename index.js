@@ -1,6 +1,7 @@
 const customServices = require('./customServices');
 const customCharacteristics = require('./customCharacteristics');
 
+const { exec } = require('child_process');
 const fetch = require('node-fetch');
 const storage = require('node-persist');
 const packageJson = require('./package.json');
@@ -41,6 +42,7 @@ function SecuritySystem(log, config) {
   // Extra features
   this.serverPort = config.server_port;
   this.webhookUrl = config.webhook_url;
+  this.command = config.command;
 
   // Variables
   this.webhook = false;
@@ -120,6 +122,17 @@ function SecuritySystem(log, config) {
     this.webhookNight = config.webhook_night;
     this.webhookOff = config.webhook_off;
     this.webhookTriggered = config.webhook_triggered;
+  }
+
+  if (this.command === undefined || this.command === false) {
+    this.command = false;
+  }
+  else {
+    this.commandHome = config.command_home;
+    this.commandAway = config.command_away;
+    this.commandNight = config.command_night;
+    this.commandOff = config.command_off;
+    this.commandTriggered = config.command_triggered;
   }
 
   // Log options value
@@ -409,6 +422,11 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   if (this.webhook) {
     this.sendWebhookEvent(state);
   }
+
+  // Command
+  if (this.command) {
+    this.executeCommand(state);
+  }
 };
 
 SecuritySystem.prototype.handleStateChange = function() {
@@ -501,7 +519,7 @@ SecuritySystem.prototype.updateTargetState = function(state) {
       // Only if server arm delay is enabled
       if (this.serverArmDelay === true) {
         armSeconds = this.armSeconds;
-        
+
         // Update arming status
         this.arming = true;
         this.service
@@ -623,6 +641,10 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
       path = this.webhookTriggered;
       break;
+
+    default:
+      this.log(`Unknown target state. (${state})`);
+      return;
   }
 
   if (path === undefined || path === null) {
@@ -643,6 +665,51 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
       this.log('Request to webhook failed. (' + path + ')');
       this.log(error);
     });
+};
+
+SecuritySystem.prototype.executeCommand = function(state) {
+  let command = null;
+
+  switch (state) {
+    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
+      command = this.commandHome;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
+      command = this.commandAway;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
+      command = this.commandNight;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.DISARMED:
+      command = this.commandOff;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      command = this.commandTriggered;
+      break;
+
+    default:
+      this.log(`Unknown target state. (${state})`);
+  }
+
+  if (command === undefined || command === null) {
+    this.log(`Missing command for target state.`);
+    return;
+  }
+
+  exec(command, (error, stdout, stderr) => {
+    if (error !== null) {
+      this.log(`Command failed. (${command})\n${error}`);
+      return;
+    }
+
+    if (stderr !== '') {
+      this.log(`Command failed. (${command})\n${stderr}`);
+    }
+  });
 };
 
 // Switch

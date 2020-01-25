@@ -60,7 +60,7 @@ After setting the option, you can call these endpoints:
 If you're using the `server_code` option, add `?code=[your_code]` at the end of the URL.
 
 ## Webhook options
-To enable webhooks you can set the option `webhook_url` and requests to the server set will be made as the current security system state changes.
+To enable webhooks you can set the option `webhook_url` and requests to the server set will be made when the security system mode changes.
 
 | Option             | Required | Description                                                                    | Value/s                |
 |--------------------|----------|--------------------------------------------------------------------------------|------------------------|
@@ -70,3 +70,15 @@ To enable webhooks you can set the option `webhook_url` and requests to the serv
 | webhook_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
 | webhook_off        | No       | Path of the 'off' mode used on your web server.                                | /your-path             |
 | webhook_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
+
+## Command options (alpha)
+To enable commands you can set the option `command` and commands on the running device will be executed when the security system mode changes.
+
+| Option             | Required | Description                                                                    | Value/s                |
+|--------------------|----------|--------------------------------------------------------------------------------|------------------------|
+| command            | No       | Enables commands on the running device.                                        | true/false             |
+| command_home       | No       | Command of the 'home' mode to execute on the running device.                   | any string             |
+| command_away       | No       | Command of the 'away' mode to execute on the running device.                   | any string             |
+| command_night      | No       | Command of the 'night' mode to execute on the running device.                  | any string             |
+| command_off        | No       | Command of the 'off' mode to execute on the running device.                    | any string             |
+| command_triggered  | No       | Command of the 'triggered' mode to execute on the running device.              | any string             |
