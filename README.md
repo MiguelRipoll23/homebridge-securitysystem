@@ -45,6 +45,7 @@ To enable remote state changes you can set the option `server_port` that will st
 |-------------------|----------|---------------------------------------------------------------------------------|------------------------|
 | server_port       | No       | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
 | server_code       | No       | Code to authenticate requests sent to the security system.                      | any number             |
+| server_arm_delay  | No       | Allows to enable or disable the arming delay.                                   | true/false             |
 
 After setting the option, you can call these endpoints:
 
