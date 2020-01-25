@@ -102,92 +102,14 @@ function SecuritySystem(log, config) {
   }
 
   if (this.serverPort) {
-    const code = config.server_code;
-    
-    // Authentication
-    app.all('*', (req, res, next) => {
-      // Skip authentication if code is not set
-      if (code === undefined) {
-        return next();
-      }
+    this.serverCode = config.server_code;
+    this.serverArmDelay = config.server_arm_delay;
 
-      let userCode = req.query.code;
+    if (this.serverArmDelay === undefined) {
+      this.serverArmDelay = true;
+    }
 
-      // Check if code exists
-      if (userCode === undefined) {
-        this.log('Code required (Server)')
-        return res.status(401).send(MESSAGE_CODE_REQUIRED);
-      }
-
-      // Check if code is a number
-      userCode = parseInt(userCode);
-
-      if (isNaN(code) || isNaN(userCode)) {
-        this.log('Code invalid (Server)')
-        return res.status(401).send(MESSAGE_CODE_INVALID);
-      }
-
-      // Compare codes
-      if (userCode !== code) {
-        this.log('Code invalid (Server)')
-        return res.status(403).send(MESSAGE_CODE_INVALID);
-      }
-
-      return next();
-    });
-
-    // Routes
-    app.get('/home', (req, res) => {
-      this.service.setCharacteristic(
-        Characteristic.SecuritySystemTargetState,
-        Characteristic.SecuritySystemTargetState.STAY_ARM
-      );
-
-      res.send(MESSAGE_STATE_UPDATED);
-    });
-
-    app.get('/away', (req, res) => {
-      this.service.setCharacteristic(
-        Characteristic.SecuritySystemTargetState,
-        Characteristic.SecuritySystemTargetState.AWAY_ARM
-      );
-
-      res.send(MESSAGE_STATE_UPDATED);
-    });
-
-    app.get('/night', (req, res) => {
-      this.service.setCharacteristic(
-        Characteristic.SecuritySystemTargetState,
-        Characteristic.SecuritySystemTargetState.NIGHT_ARM
-      );
-
-      res.send(MESSAGE_STATE_UPDATED);
-    });
-
-    app.get('/off', (req, res) => {
-      this.service.setCharacteristic(
-        Characteristic.SecuritySystemTargetState,
-        Characteristic.SecuritySystemTargetState.DISARM
-      );
-
-      res.send(MESSAGE_STATE_UPDATED);
-    });
-
-    app.get('/triggered', (req, res) => {
-      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
-      res.send(MESSAGE_STATE_UPDATED);
-    });
-
-    // Server
-    app.listen(this.serverPort, error => {
-      if (error) {
-        this.log('Error while starting server.');
-        this.log(error);
-        return;
-      }
-      
-      this.log(`Server (${this.serverPort})`);
-    });
+    this.startServer();
   }
 
   if (this.webhookUrl) {
@@ -337,6 +259,19 @@ SecuritySystem.prototype.identify = function(callback) {
 };
 
 // Security system
+SecuritySystem.prototype.getArming = function(callback) {
+  callback(null, this.arming);
+};
+
+SecuritySystem.prototype.getSirenActive = function(callback) {
+  callback(null, this.sirenActive);
+};
+
+SecuritySystem.prototype.setSirenActive = function(state, callback) {
+  this.sirenActive = state;
+  this.sensorTriggered(state, callback);
+};
+
 SecuritySystem.prototype.logState = function(type, state) {
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
@@ -364,6 +299,98 @@ SecuritySystem.prototype.logState = function(type, state) {
   }
 };
 
+SecuritySystem.prototype.isAuthenticated = function(req, res) {
+  let userCode = req.query.code;
+
+  // Skip authentication if disabled
+  if (this.serverCode === undefined) {
+    return true;
+  }
+
+  // Check if code was sent
+  if (userCode === undefined) {
+    this.log('Code required (Server)')
+    res.status(401).send(MESSAGE_CODE_REQUIRED);
+
+    return false;
+  }
+
+  // Compare codes
+  userCode = parseInt(userCode);
+
+  if (userCode !== this.serverCode) {
+    this.log('Code invalid (Server)')
+    res.status(403).send(MESSAGE_CODE_INVALID);
+
+    return false;
+  }
+
+  return true;
+};
+
+SecuritySystem.prototype.startServer = async function() {
+  app.get('/home', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/away', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/night', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/off', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/triggered', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  // Listener
+  app.listen(this.serverPort, error => {
+    if (error) {
+      this.log('Error while starting server.');
+      this.log(error);
+      return;
+    }
+    
+    this.log(`Server (${this.serverPort})`);
+  });
+};
+
 SecuritySystem.prototype.getCurrentState = function(callback) {
   callback(null, this.currentState);
 };
@@ -384,14 +411,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   }
 };
 
-SecuritySystem.prototype.getTargetState = function(callback) {
-  callback(null, this.targetState);
-};
-
-SecuritySystem.prototype.setTargetState = function(state, callback) {
-  this.targetState = state;
-  this.logState('Target', state);
-
+SecuritySystem.prototype.handleStateChange = function() {
   // Save state to file
   if (this.saveState) {
     this.save();
@@ -401,7 +421,9 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   // selected from the user
   // during triggered state
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive).updateValue(false);
+    this.service
+      .getCharacteristic(CustomCharacteristic.SecuritySystemSirenActive)
+      .updateValue(false);
     this.modeChanged = true;
   }
 
@@ -416,8 +438,17 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
   }
+};
 
-  // Update current state
+SecuritySystem.prototype.getTargetState = function(callback) {
+  callback(null, this.targetState);
+};
+
+SecuritySystem.prototype.setTargetState = function(state, callback) {
+  this.targetState = state;
+  this.logState('Target', state);
+  this.handleStateChange();
+
   let armSeconds = 0;
 
   // Add arm delay if alarm is not triggered
@@ -428,7 +459,9 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
 
       // Update arming status
       this.arming = true;
-      this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArming).updateValue(this.arming);
+      this.service
+        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
+        .updateValue(this.arming);
     }
   }
 
@@ -440,24 +473,57 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
     // Only if set to a mode excluding off
     if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
       this.arming = false;
-      this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArming).updateValue(this.arming);
+      this.service
+        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
+        .updateValue(this.arming);
     }
   }, armSeconds * 1000);
 
   callback(null);
 };
 
-SecuritySystem.prototype.getArming = function(callback) {
-  callback(null, this.arming);
-};
+SecuritySystem.prototype.updateTargetState = function(state) {
+  this.targetState = state;
+  this.logState('Target', state);
 
-SecuritySystem.prototype.getSirenActive = function(callback) {
-  callback(null, this.sirenActive);
-};
+  this.service
+  .getCharacteristic(Characteristic.SecuritySystemTargetState)
+  .updateValue(this.targetState);
 
-SecuritySystem.prototype.setSirenActive = function(state, callback) {
-  this.sirenActive = state;
-  this.sensorTriggered(state, callback);
+  this.handleStateChange();
+
+  let armSeconds = 0;
+
+  // Add arm delay if alarm is not triggered
+  if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    // Only if set to a mode excluding off
+    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
+      // Only if server arm delay is enabled
+      if (this.serverArmDelay === true) {
+        armSeconds = this.armSeconds;
+        
+        // Update arming status
+        this.arming = true;
+        this.service
+          .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
+          .updateValue(this.arming);
+      }
+    }
+  }
+
+  // Update current state
+  this.armingTimeout = setTimeout(() => {
+    this.armingTimeout = null;
+    this.setCurrentState(state);
+
+    // Only if set to a mode excluding off
+    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
+      this.arming = false;
+      this.service
+        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
+        .updateValue(this.arming);
+    }
+  }, armSeconds * 1000);
 };
 
 SecuritySystem.prototype.sensorTriggered = function(state, callback) {
