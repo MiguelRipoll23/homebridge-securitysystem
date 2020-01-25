@@ -71,7 +71,7 @@ To enable webhooks you can set the option `webhook_url` and requests to the serv
 | webhook_off        | No       | Path of the 'off' mode used on your web server.                                | /your-path             |
 | webhook_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
 
-## Command options (alpha)
+## Command options
 To enable commands you can set the option `command` and commands on the running device will be executed when the security system mode changes.
 
 | Option             | Required | Description                                                                    | Value/s                |
