@@ -9,6 +9,7 @@ const express = require('express');
 
 const MESSAGE_CODE_REQUIRED = 'Code required.';
 const MESSAGE_CODE_INVALID = 'Code invalid.';
+const MESSAGE_MODE_EXCLUDED = 'Mode excluded.';
 const MESSAGE_STATE_UPDATED = 'State updated.';
 
 const app = express();
@@ -28,6 +29,26 @@ module.exports = function(homebridge) {
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
 };
 
+function mode2State(mode) {
+  switch (mode) {
+    case 'home':
+      return Characteristic.SecuritySystemCurrentState.STAY_ARM;
+
+    case 'away':
+      return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+
+    case 'night':
+      return Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
+      
+    case 'off':
+      return Characteristic.SecuritySystemCurrentState.DISARMED;
+
+    default:
+      console.log(`Unknown mode (${mode}).`);
+      return -1;
+  }
+}
+
 function SecuritySystem(log, config) {
   // Options
   this.log = log;
@@ -35,6 +56,7 @@ function SecuritySystem(log, config) {
   this.defaultState = config.default_mode;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
+  this.modesDisabled = config.disabled_modes;
   this.sirenSwitch = config.siren_switch;
   this.overrideOff = config.override_off;
   this.saveState = config.save_state;
@@ -45,10 +67,12 @@ function SecuritySystem(log, config) {
   this.command = config.command;
 
   // Variables
-  this.webhook = false;
+  this.targetStates = null;
+  this.disabledStates = [];
   this.armingTimeout = null;
   this.triggerTimeout = null;
   this.modeChanged = false;
+  this.webhook = false;
 
   // Check for optional options
   if (this.defaultState === undefined) {
@@ -56,28 +80,7 @@ function SecuritySystem(log, config) {
   }
   else {
     this.defaultState = this.defaultState.toLowerCase();
-
-    switch (this.defaultState) {
-      case 'home':
-        this.defaultState = Characteristic.SecuritySystemCurrentState.STAY_ARM;
-        break;
-
-      case 'away':
-        this.defaultState = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-        break;
-
-      case 'night':
-        this.defaultState = Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
-        break;
-
-      case 'off':
-        this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
-        break;
-
-      default:
-        this.log('Unknown default mode set in configuration.');
-        this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
-    }
+    this.defaultState = mode2State(this.defaultState);
   }
 
   if (this.armSeconds === undefined) {
@@ -86,6 +89,10 @@ function SecuritySystem(log, config) {
 
   if (this.triggerSeconds === undefined) {
     this.triggerSeconds = 0;
+  }
+
+  if (this.modesDisabled === undefined || this.modesDisabled === null) {
+    this.modesDisabled = [];
   }
 
   if (this.sirenSwitch === undefined || this.sirenSwitch === true) {
@@ -150,9 +157,21 @@ function SecuritySystem(log, config) {
 
   // Security system
   this.service = new CustomService.SecuritySystem(this.name);
+  this.targetStates = this.service
+                        .getCharacteristic(Characteristic.SecuritySystemTargetState).props.validValues;
+
+  for (let modeDisabled of this.modesDisabled) {
+    modeDisabled = modeDisabled.toLowerCase();
+
+    const state = mode2State(modeDisabled);
+    this.disabledStates.push(state);
+  }
+
+  this.targetStates = this.targetStates.filter(mode => !this.disabledStates.includes(mode));
 
   this.service
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
+    .setProps({validValues: this.targetStates})
     .on('get', this.getTargetState.bind(this))
     .on('set', this.setTargetState.bind(this));
 
@@ -341,10 +360,27 @@ SecuritySystem.prototype.isAuthenticated = function(req, res) {
   return true;
 };
 
+SecuritySystem.prototype.isModeDisabled = function(req, res) {
+  const mode = req.path.substring(1);
+  const state = mode2State(mode);
+
+  if (this.targetStates.includes(state)) {
+    return false;
+  }
+  
+  res.status(400).send(MESSAGE_MODE_EXCLUDED);
+  return true;
+};
+
 SecuritySystem.prototype.startServer = async function() {
   app.get('/home', (req, res) => {
     // Check authentication
     if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    // Check mode
+    if (this.isModeDisabled(req, res) === true) {
       return false;
     }
 
@@ -358,6 +394,11 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
+    // Check mode
+    if (this.isModeDisabled(req, res) === true) {
+      return false;
+    }
+
     this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
     res.send(MESSAGE_STATE_UPDATED);
   });
@@ -368,6 +409,11 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
+    // Check mode
+    if (this.isModeDisabled(req, res) === true) {
+      return false;
+    }
+
     this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
     res.send(MESSAGE_STATE_UPDATED);
   });
@@ -375,6 +421,11 @@ SecuritySystem.prototype.startServer = async function() {
   app.get('/off', (req, res) => {
     // Check authentication
     if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    // Check mode
+    if (this.isModeDisabled(req, res) === true) {
       return false;
     }
 

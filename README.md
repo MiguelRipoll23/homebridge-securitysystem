@@ -30,6 +30,7 @@ Use Eve or a similar app to create automations like these:
 | Option           | Required | Description                                                                    | Value/s                   |
 |------------------|----------|--------------------------------------------------------------------------------|---------------------------|
 | default_mode     | No       | Initial mode for the security system when running Homebridge.                  | home\|away\|night\|off    |
+| disabled_modes   | No       | Modes to exclude from the available modes list.                                | [home, away, night, off]  |
 | arm_seconds      | No       | Time in seconds to arm the security system after the user requesting it.       | any positive number       |
 | trigger_seconds  | No       | Time in seconds to be able to disarm the security system before triggering it. | any positive number       |
 | siren_switch (1) | No       | Shows a switch on the Home app to trigger the security system.                 | true/false                |
