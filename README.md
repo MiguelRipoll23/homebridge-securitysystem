@@ -1,7 +1,9 @@
 # homebridge-securitysystem
-[![NPM version](https://img.shields.io/npm/v/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem) [![NPM downloads](https://img.shields.io/npm/dt/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem) [One-time donation](https://paypal.me/miguelripoll23)
+[![NPM version](https://img.shields.io/npm/v/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem) [![NPM downloads](https://img.shields.io/npm/dt/homebridge-securitysystem.svg)](https://www.npmjs.com/package/homebridge-securitysystem)
 
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
+
+[One-time donation](https://paypal.me/miguelripoll23)
 
 ## Installation
 If you already have Homebridge installed, skip to step two!
@@ -26,11 +28,11 @@ Use Eve or a similar app to create automations like these:
 
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
-## Options
+## Basic options
 | Option           | Required | Description                                                                    | Value/s                   |
 |------------------|----------|--------------------------------------------------------------------------------|---------------------------|
 | default_mode     | No       | Initial mode for the security system when running Homebridge.                  | home\|away\|night\|off    |
-| disabled_modes   | No       | Modes to exclude from the available modes list.                                | [home, away, night, off]  |
+| disabled_modes   | No       | Modes to exclude from the available modes list.                                | \["night"\]               |
 | arm_seconds      | No       | Time in seconds to arm the security system after the user requesting it.       | any positive number       |
 | trigger_seconds  | No       | Time in seconds to be able to disarm the security system before triggering it. | any positive number       |
 | siren_switch (1) | No       | Shows a switch on the Home app to trigger the security system.                 | true/false                |
@@ -39,7 +41,7 @@ Use Eve or a similar app to create automations like these:
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
-## Server options
+## Server options (optional)
 To enable remote state changes you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
 
 | Option            | Required | Description                                                                     | Value/s                |
@@ -60,7 +62,7 @@ After setting the option, you can call these endpoints:
 
 If you're using the `server_code` option, add `?code=[your_code]` at the end of the URL.
 
-## Webhook options
+## Webhook options (optional)
 To enable webhooks you can set the option `webhook_url` and requests to the server set will be made when the security system mode changes.
 
 | Option             | Required | Description                                                                    | Value/s                |
@@ -72,7 +74,7 @@ To enable webhooks you can set the option `webhook_url` and requests to the serv
 | webhook_off        | No       | Path of the 'off' mode used on your web server.                                | /your-path             |
 | webhook_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
 
-## Command options
+## Command options (optional)
 To enable commands you can set the option `command` and commands on the running device will be executed when the security system mode changes.
 
 | Option             | Required | Description                                                                    | Value/s                |
