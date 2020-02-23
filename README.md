@@ -46,7 +46,7 @@ To enable remote state changes you can set the option `server_port` that will st
 
 | Option            | Required | Description                                                                     | Value/s                |
 |-------------------|----------|---------------------------------------------------------------------------------|------------------------|
-| server_port       | No       | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
+| server_port       | Yes      | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
 | server_code       | No       | Code to authenticate requests sent to the security system.                      | any number             |
 | server_arm_delay  | No       | Allows to enable or disable the arming delay.                                   | true/false             |
 
@@ -67,7 +67,7 @@ To enable webhooks you can set the option `webhook_url` and requests to the serv
 
 | Option             | Required | Description                                                                    | Value/s                |
 |--------------------|----------|--------------------------------------------------------------------------------|------------------------|
-| webhook_url        | No       | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
+| webhook_url        | Yes      | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
 | webhook_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
 | webhook_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
 | webhook_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
@@ -79,7 +79,7 @@ To enable commands you can set the option `command` and commands on the running 
 
 | Option             | Required | Description                                                                    | Value/s                |
 |--------------------|----------|--------------------------------------------------------------------------------|------------------------|
-| command            | No       | Enables commands on the running device.                                        | true/false             |
+| command            | Yes      | Enables commands on the running device.                                        | true/false             |
 | command_home       | No       | Command of the 'home' mode to execute on the running device.                   | any string             |
 | command_away       | No       | Command of the 'away' mode to execute on the running device.                   | any string             |
 | command_night      | No       | Command of the 'night' mode to execute on the running device.                  | any string             |
