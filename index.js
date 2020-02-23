@@ -29,6 +29,14 @@ module.exports = function(homebridge) {
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
 };
 
+function isOptionSet(value) {
+  if (value === undefined || value === null) {
+    return false;
+  }
+
+  return true;
+}
+
 function mode2State(mode) {
   switch (mode) {
     case 'home':
@@ -49,14 +57,30 @@ function mode2State(mode) {
   }
 }
 
+function getTargetStates(service, disabledModes) {
+  const targetStateCharacteristic = service.getCharacteristic(Characteristic.SecuritySystemTargetState);
+  const targetStates = targetStateCharacteristic.props.validValues;
+
+  const disabledStates = [];
+
+  for (let disabledMode of disabledModes) {
+    disabledMode = disabledMode.toLowerCase();
+
+    const state = mode2State(disabledMode);
+    disabledStates.push(state);
+  }
+
+  return targetStates.filter(mode => !disabledStates.includes(mode));
+}
+
 function SecuritySystem(log, config) {
   // Options
   this.log = log;
   this.name = config.name;
-  this.defaultState = config.default_mode;
+  this.defaultMode = config.default_mode;
+  this.disabledModes = config.disabled_modes;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
-  this.modesDisabled = config.disabled_modes;
   this.sirenSwitch = config.siren_switch;
   this.overrideOff = config.override_off;
   this.saveState = config.save_state;
@@ -67,50 +91,61 @@ function SecuritySystem(log, config) {
   this.command = config.command;
 
   // Variables
+  this.defaultState = null;
   this.targetStates = null;
-  this.disabledStates = [];
   this.armingTimeout = null;
   this.triggerTimeout = null;
   this.modeChanged = false;
   this.webhook = false;
 
   // Check for optional options
-  if (this.defaultState === undefined) {
-    this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
+  if (isOptionSet(this.defaultMode)) {
+    this.defaultMode = this.defaultMode.toLowerCase();
+    this.defaultState = mode2State(this.defaultMode);
   }
   else {
-    this.defaultState = this.defaultState.toLowerCase();
-    this.defaultState = mode2State(this.defaultState);
+    this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
   }
 
-  if (this.armSeconds === undefined) {
+  if (isOptionSet(this.disabledModes) === false) {
+    this.disabledModes = [];
+  }
+
+  if (isOptionSet(this.armSeconds) === false) {
     this.armSeconds = 0;
   }
 
-  if (this.triggerSeconds === undefined) {
+  if (isOptionSet(this.triggerSeconds) === false) {
     this.triggerSeconds = 0;
   }
 
-  if (this.modesDisabled === undefined || this.modesDisabled === null) {
-    this.modesDisabled = [];
-  }
-
-  if (this.sirenSwitch === undefined || this.sirenSwitch === true) {
-    this.sirenSwitch = true;
+  if (isOptionSet(this.sirenSwitch)) {
+    if (this.sirenSwitch) {
+      this.sirenSwitch = true;
+    }
+    else {
+      this.sirenSwitch = false;
+    }
   }
   else {
-    this.sirenSwitch = false;
+    this.sirenSwitch = true;
   }
 
-  if (this.overrideOff === undefined) {
+  if (isOptionSet(this.overrideOff) && this.overrideOff) {
+    this.overrideOff = true;
+  }
+  else {
     this.overrideOff = false;
   }
 
-  if (this.saveState === undefined) {
+  if (isOptionSet(this.saveState) && this.saveState) {
+    this.saveState = true;
+  }
+  else {
     this.saveState = false;
   }
 
-  if (this.serverPort) {
+  if (isOptionSet(this.serverPort)) {
     this.serverCode = config.server_code;
     this.serverArmDelay = config.server_arm_delay;
 
@@ -121,7 +156,7 @@ function SecuritySystem(log, config) {
     this.startServer();
   }
 
-  if (this.webhookUrl) {
+  if (isOptionSet(this.webhookUrl)) {
     this.webhook = true;
 
     this.webhookHome = config.webhook_home;
@@ -130,16 +165,19 @@ function SecuritySystem(log, config) {
     this.webhookOff = config.webhook_off;
     this.webhookTriggered = config.webhook_triggered;
   }
-
-  if (this.command === undefined || this.command === false) {
-    this.command = false;
-  }
   else {
+    this.webhook = false;
+  }
+
+  if (isOptionSet(this.command) && this.command) {
     this.commandHome = config.command_home;
     this.commandAway = config.command_away;
     this.commandNight = config.command_night;
     this.commandOff = config.command_off;
     this.commandTriggered = config.command_triggered;
+  }
+  else {
+    this.command = false;
   }
 
   // Log options value
@@ -147,28 +185,15 @@ function SecuritySystem(log, config) {
   this.log('Arm delay (' + this.armSeconds + ' second/s)');
   this.log('Trigger delay (' + this.armSeconds + ' second/s)');
 
-  if (this.sirenSwitch) {
-    this.log('Siren switch (Enabled)');
-  }
-
   if (this.webhook) {
     this.log('Webhook (' + this.webhookUrl + ')');
   }
 
   // Security system
   this.service = new CustomService.SecuritySystem(this.name);
-  this.targetStates = this.service
-                        .getCharacteristic(Characteristic.SecuritySystemTargetState).props.validValues;
+  this.targetStates = getTargetStates(this.service, this.disabledModes);
 
-  for (let modeDisabled of this.modesDisabled) {
-    modeDisabled = modeDisabled.toLowerCase();
-
-    const state = mode2State(modeDisabled);
-    this.disabledStates.push(state);
-  }
-
-  this.targetStates = this.targetStates.filter(mode => !this.disabledStates.includes(mode));
-
+  // Services
   this.service
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
     .setProps({validValues: this.targetStates})
@@ -360,27 +385,25 @@ SecuritySystem.prototype.isAuthenticated = function(req, res) {
   return true;
 };
 
-SecuritySystem.prototype.isModeDisabled = function(req, res) {
+SecuritySystem.prototype.isModeEnabled = function(req, res) {
   const mode = req.path.substring(1);
   const state = mode2State(mode);
 
   if (this.targetStates.includes(state)) {
-    return false;
+    return true;
   }
   
   res.status(400).send(MESSAGE_MODE_EXCLUDED);
-  return true;
+  return false;
 };
 
 SecuritySystem.prototype.startServer = async function() {
   app.get('/home', (req, res) => {
-    // Check authentication
     if (this.isAuthenticated(req, res) === false) {
       return false;
     }
 
-    // Check mode
-    if (this.isModeDisabled(req, res) === true) {
+    if (this.isModeEnabled(req, res) === false) {
       return false;
     }
 
@@ -389,13 +412,11 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   app.get('/away', (req, res) => {
-    // Check authentication
     if (this.isAuthenticated(req, res) === false) {
       return false;
     }
 
-    // Check mode
-    if (this.isModeDisabled(req, res) === true) {
+    if (this.isModeEnabled(req, res) === false) {
       return false;
     }
 
@@ -404,13 +425,11 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   app.get('/night', (req, res) => {
-    // Check authentication
     if (this.isAuthenticated(req, res) === false) {
       return false;
     }
 
-    // Check mode
-    if (this.isModeDisabled(req, res) === true) {
+    if (this.isModeEnabled(req, res) === false) {
       return false;
     }
 
@@ -419,13 +438,11 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   app.get('/off', (req, res) => {
-    // Check authentication
     if (this.isAuthenticated(req, res) === false) {
       return false;
     }
 
-    // Check mode
-    if (this.isModeDisabled(req, res) === true) {
+    if (this.isModeEnabled(req, res) === false) {
       return false;
     }
 
