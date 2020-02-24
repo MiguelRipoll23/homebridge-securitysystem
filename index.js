@@ -37,42 +37,6 @@ function isOptionSet(value) {
   return true;
 }
 
-function mode2State(mode) {
-  switch (mode) {
-    case 'home':
-      return Characteristic.SecuritySystemCurrentState.STAY_ARM;
-
-    case 'away':
-      return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-
-    case 'night':
-      return Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
-      
-    case 'off':
-      return Characteristic.SecuritySystemCurrentState.DISARMED;
-
-    default:
-      console.log(`Unknown mode (${mode}).`);
-      return -1;
-  }
-}
-
-function getTargetStates(service, disabledModes) {
-  const targetStateCharacteristic = service.getCharacteristic(Characteristic.SecuritySystemTargetState);
-  const targetStates = targetStateCharacteristic.props.validValues;
-
-  const disabledStates = [];
-
-  for (let disabledMode of disabledModes) {
-    disabledMode = disabledMode.toLowerCase();
-
-    const state = mode2State(disabledMode);
-    disabledStates.push(state);
-  }
-
-  return targetStates.filter(mode => !disabledStates.includes(mode));
-}
-
 function SecuritySystem(log, config) {
   // Options
   this.log = log;
@@ -101,7 +65,7 @@ function SecuritySystem(log, config) {
   // Check for optional options
   if (isOptionSet(this.defaultMode)) {
     this.defaultMode = this.defaultMode.toLowerCase();
-    this.defaultState = mode2State(this.defaultMode);
+    this.defaultState = this.mode2State(this.defaultMode);
   }
   else {
     this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -191,7 +155,7 @@ function SecuritySystem(log, config) {
 
   // Security system
   this.service = new CustomService.SecuritySystem(this.name);
-  this.targetStates = getTargetStates(this.service, this.disabledModes);
+  this.targetStates = this.getTargetStates();
 
   // Services
   this.service
@@ -316,17 +280,24 @@ SecuritySystem.prototype.identify = function(callback) {
 };
 
 // Security system
-SecuritySystem.prototype.getArming = function(callback) {
-  callback(null, this.arming);
-};
+SecuritySystem.prototype.mode2State = function(mode) {
+  switch (mode) {
+    case 'home':
+      return Characteristic.SecuritySystemCurrentState.STAY_ARM;
 
-SecuritySystem.prototype.getSirenActive = function(callback) {
-  callback(null, this.sirenActive);
-};
+    case 'away':
+      return Characteristic.SecuritySystemCurrentState.AWAY_ARM;
 
-SecuritySystem.prototype.setSirenActive = function(state, callback) {
-  this.sirenActive = state;
-  this.sensorTriggered(state, callback);
+    case 'night':
+      return Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
+      
+    case 'off':
+      return Characteristic.SecuritySystemCurrentState.DISARMED;
+
+    default:
+      this.log(`Unknown mode (${mode}).`);
+      return -1;
+  }
 };
 
 SecuritySystem.prototype.logState = function(type, state) {
@@ -356,120 +327,33 @@ SecuritySystem.prototype.logState = function(type, state) {
   }
 };
 
-SecuritySystem.prototype.isAuthenticated = function(req, res) {
-  let userCode = req.query.code;
+SecuritySystem.prototype.getTargetStates = function() {
+  const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
+  const targetStates = targetStateCharacteristic.props.validValues;
 
-  // Skip authentication if disabled
-  if (this.serverCode === undefined) {
-    return true;
+  const disabledStates = [];
+
+  for (let disabledMode of this.disabledModes) {
+    disabledMode = disabledMode.toLowerCase();
+
+    const state = this.mode2State(disabledMode);
+    disabledStates.push(state);
   }
 
-  // Check if code was sent
-  if (userCode === undefined) {
-    this.log('Code required (Server)')
-    res.status(401).send(MESSAGE_CODE_REQUIRED);
-
-    return false;
-  }
-
-  // Compare codes
-  userCode = parseInt(userCode);
-
-  if (userCode !== this.serverCode) {
-    this.log('Code invalid (Server)')
-    res.status(403).send(MESSAGE_CODE_INVALID);
-
-    return false;
-  }
-
-  return true;
+  return targetStates.filter(mode => !disabledStates.includes(mode));
 };
 
-SecuritySystem.prototype.isModeEnabled = function(req, res) {
-  const mode = req.path.substring(1);
-  const state = mode2State(mode);
-
-  if (this.targetStates.includes(state)) {
-    return true;
-  }
-  
-  res.status(400).send(MESSAGE_MODE_EXCLUDED);
-  return false;
+SecuritySystem.prototype.getArming = function(callback) {
+  callback(null, this.arming);
 };
 
-SecuritySystem.prototype.startServer = async function() {
-  app.get('/home', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
+SecuritySystem.prototype.getSirenActive = function(callback) {
+  callback(null, this.sirenActive);
+};
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
-    }
-
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM);
-    res.send(MESSAGE_STATE_UPDATED);
-  });
-
-  app.get('/away', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
-
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
-    }
-
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
-    res.send(MESSAGE_STATE_UPDATED);
-  });
-
-  app.get('/night', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
-
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
-    }
-
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
-    res.send(MESSAGE_STATE_UPDATED);
-  });
-
-  app.get('/off', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
-
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
-    }
-
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM);
-    res.send(MESSAGE_STATE_UPDATED);
-  });
-
-  app.get('/triggered', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
-
-    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
-    res.send(MESSAGE_STATE_UPDATED);
-  });
-
-  // Listener
-  app.listen(this.serverPort, error => {
-    if (error) {
-      this.log('Error while starting server.');
-      this.log(error);
-      return;
-    }
-    
-    this.log(`Server (${this.serverPort})`);
-  });
+SecuritySystem.prototype.setSirenActive = function(state, callback) {
+  this.sirenActive = state;
+  this.sensorTriggered(state, callback);
 };
 
 SecuritySystem.prototype.getCurrentState = function(callback) {
@@ -684,6 +568,122 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   }
 
   callback(null);
+};
+
+SecuritySystem.prototype.isAuthenticated = function(req, res) {
+  let userCode = req.query.code;
+
+  // Skip authentication if disabled
+  if (this.serverCode === undefined) {
+    return true;
+  }
+
+  // Check if code was sent
+  if (userCode === undefined) {
+    this.log('Code required (Server)')
+    res.status(401).send(MESSAGE_CODE_REQUIRED);
+
+    return false;
+  }
+
+  // Compare codes
+  userCode = parseInt(userCode);
+
+  if (userCode !== this.serverCode) {
+    this.log('Code invalid (Server)')
+    res.status(403).send(MESSAGE_CODE_INVALID);
+
+    return false;
+  }
+
+  return true;
+};
+
+SecuritySystem.prototype.isModeEnabled = function(req, res) {
+  const mode = req.path.substring(1);
+  const state = this.mode2State(mode);
+
+  if (this.targetStates.includes(state)) {
+    return true;
+  }
+  
+  res.status(400).send(MESSAGE_MODE_EXCLUDED);
+  return false;
+};
+
+SecuritySystem.prototype.startServer = async function() {
+  app.get('/home', (req, res) => {
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    if (this.isModeEnabled(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/away', (req, res) => {
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    if (this.isModeEnabled(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/night', (req, res) => {
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    if (this.isModeEnabled(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/off', (req, res) => {
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    if (this.isModeEnabled(req, res) === false) {
+      return false;
+    }
+
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  app.get('/triggered', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    res.send(MESSAGE_STATE_UPDATED);
+  });
+
+  // Listener
+  app.listen(this.serverPort, error => {
+    if (error) {
+      this.log('Error while starting server.');
+      this.log(error);
+      return;
+    }
+    
+    this.log(`Server (${this.serverPort})`);
+  });
 };
 
 SecuritySystem.prototype.sendWebhookEvent = function(state) {
