@@ -370,14 +370,14 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.save();
   }
 
-  // Webhook
-  if (this.webhook) {
-    this.sendWebhookEvent(state);
-  }
-
   // Command
   if (this.command) {
     this.executeCommand(state);
+  }
+
+  // Webhook
+  if (this.webhook) {
+    this.sendWebhookEvent(state);
   }
 };
 
