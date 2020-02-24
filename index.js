@@ -9,7 +9,7 @@ const express = require('express');
 
 const MESSAGE_CODE_REQUIRED = 'Code required.';
 const MESSAGE_CODE_INVALID = 'Code invalid.';
-const MESSAGE_MODE_EXCLUDED = 'Mode excluded.';
+const MESSAGE_STATE_DISABLED = 'Mode disabled.';
 const MESSAGE_STATE_UPDATED = 'State updated.';
 
 const app = express();
@@ -607,7 +607,7 @@ SecuritySystem.prototype.isModeEnabled = function(req, res) {
     return true;
   }
   
-  res.status(400).send(MESSAGE_MODE_EXCLUDED);
+  res.status(400).send(MESSAGE_STATE_DISABLED);
   return false;
 };
 
