@@ -1,0 +1,134 @@
+{
+  "plugin_alias": "SecuritySystem",
+  "schemas": [
+    {
+      "title": "Security System",
+      "type": "object",
+      "properties": {
+        "accessory": {
+          "title": "Accessory",
+          "type": "string",
+          "const": "SecuritySystem",
+          "readOnly": true
+        },
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": "Security System",
+          "required": true
+        },
+        "default_mode": {
+          "title": "Default Mode",
+          "type": "string",
+          "required": false
+        },
+        "disabled_modes": {
+          "title": "Disabled Modes",
+          "type": "array",
+          "required": false,
+          "items": {
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "arm_seconds": {
+          "title": "Arm Seconds",
+          "type": "integer",
+          "default": 0,
+          "required": false
+        },
+        "trigger_seconds": {
+          "title": "Trigger Seconds",
+          "type": "integer",
+          "default": 0,
+          "required": false
+        },
+        "siren_switch": {
+          "title": "Show Siren Switch",
+          "type": "boolean",
+          "default": true,
+          "required": false
+        },
+        "override_off": {
+          "title": "Siren Switch Overrides Off Mode",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "save_state": {
+          "title": "Save State (allows reboots)",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "server_port": {
+          "title": "Server Port",
+          "type": "integer",
+          "required": false
+        },
+        "server_code": {
+          "title": "Server Code (numeric password)",
+          "type": "integer",
+          "required": false
+        },
+        "server_arm_delay": {
+          "title": "Change Mode With Arming Delay",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "webhook_url": {
+          "title": "Webhook URL (for mode changes)",
+          "type": "string",
+          "required": false
+        },
+        "webhook_home": {
+          "title": "Webhook Home Path",
+          "type": "string",
+          "required": false
+        },
+        "webhook_away": {
+          "title": "Webhook Away Path",
+          "type": "string",
+          "required": false
+        },
+        "webhook_night": {
+          "title": "Webhook Night Path",
+          "type": "string",
+          "required": false
+        },
+        "webhook_off": {
+          "title": "Webhook Off Path",
+          "type": "string",
+          "required": false
+        },
+        "command": {
+          "title": "Execute Command (for mode changes)",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "command_home": {
+          "title": "Command Home",
+          "type": "string",
+          "required": false
+        },
+        "command_away": {
+          "title": "Command Away",
+          "type": "string",
+          "required": false
+        },
+        "command_night": {
+          "title": "Command Night",
+          "type": "string",
+          "required": false
+        },
+        "command_off": {
+          "title": "Command Off",
+          "type": "string",
+          "required": false
+        }
+      }
+    }
+  ]
+}
