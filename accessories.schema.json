@@ -56,7 +56,7 @@
           "required": false
         },
         "save_state": {
-          "title": "Save State (allows reboots)",
+          "title": "Save State",
           "type": "boolean",
           "default": false,
           "required": false
@@ -67,12 +67,12 @@
           "required": false
         },
         "server_code": {
-          "title": "Server Code (numeric password)",
+          "title": "Server Code",
           "type": "integer",
           "required": false
         },
         "server_arm_delay": {
-          "title": "Change Mode With Arming Delay",
+          "title": "Server Changes Mode With Arming Delay",
           "type": "boolean",
           "default": false,
           "required": false
