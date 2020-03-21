@@ -1,10 +1,12 @@
 const customServices = require('./customServices');
 const customCharacteristics = require('./customCharacteristics');
 
+const path = require('path');
 const { exec } = require('child_process');
+const packageJson = require('./package.json');
+
 const fetch = require('node-fetch');
 const storage = require('node-persist');
-const packageJson = require('./package.json');
 const express = require('express');
 
 const MESSAGE_CODE_REQUIRED = 'Code required.';
@@ -15,7 +17,7 @@ const MESSAGE_STATE_UPDATED = 'State updated.';
 const app = express();
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgePersistPath;
+let homebridgeStoragePath = null;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -24,7 +26,7 @@ module.exports = function(homebridge) {
   CustomCharacteristic = customCharacteristics.CustomCharacteristic(Characteristic);
   CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
 
-  homebridgePersistPath = homebridge.user.persistPath();
+  homebridgeStoragePath = homebridge.user.storagePath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
 };
@@ -220,7 +222,7 @@ function SecuritySystem(log, config) {
 
 SecuritySystem.prototype.load = async function() {
   const options = {
-    'dir': homebridgePersistPath,
+    'dir': path.join(homebridgeStoragePath, 'homebridge-securitysystem'),
     'forgiveParseErrors': true
   };
 
