@@ -1,5 +1,5 @@
 {
-  "plugin_alias": "SecuritySystem",
+  "plugin_alias": "Security system",
   "schemas": [
     {
       "title": "Security System",
@@ -8,7 +8,7 @@
         "accessory": {
           "title": "Accessory",
           "type": "string",
-          "const": "SecuritySystem",
+          "const": "Security system",
           "readOnly": true
         },
         "name": {
