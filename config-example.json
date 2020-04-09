@@ -8,7 +8,7 @@
   "description": "Homebridge configuration file.",
   "accessories": [
     {
-      "accessory": "Security system",
+      "accessory": "security-system",
       "name": "Security system",
       "default_mode": "off",
       "arm_seconds": 3,
