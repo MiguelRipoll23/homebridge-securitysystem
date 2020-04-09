@@ -768,7 +768,10 @@ SecuritySystem.prototype.executeCommand = function(state) {
 
     if (stderr !== '') {
       this.log(`Command failed. (${command})\n${stderr}`);
+      return;
     }
+
+    this.log(`Command output: ${stdout}`);
   });
 };
 
