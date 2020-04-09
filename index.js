@@ -28,7 +28,7 @@ module.exports = function(homebridge) {
 
   homebridgeStoragePath = homebridge.user.storagePath();
 
-  homebridge.registerAccessory('homebridge-securitysystem', 'Security system', SecuritySystem);
+  homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
 
 function isOptionSet(value) {
