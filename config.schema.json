@@ -42,13 +42,15 @@
       "title": "Arm Seconds",
       "type": "integer",
       "default": 0,
-      "required": false
+      "required": false,
+      "minimum": 0
     },
     "trigger_seconds": {
       "title": "Trigger Seconds",
       "type": "integer",
       "default": 0,
-      "required": false
+      "required": false,
+      "minimum": 0
     },
     "siren_switch": {
       "title": "Show Siren Switch",
@@ -71,13 +73,14 @@
     "server_port": {
       "title": "Server Port",
       "type": "integer",
-      "required": false
+      "required": false,
+      "minimum": 0
     },
     "server_code": {
       "title": "Server Code (for authentication)",
       "type": "integer",
       "required": false,
-      "placeholder": "1234"
+      "minimum": 0
     },
     "server_arm_delay": {
       "title": "Add Arming Delay to Mode Changes Using Server",
