@@ -54,7 +54,11 @@ function SecuritySystem(log, config) {
   // Extra features
   this.serverPort = config.server_port;
   this.webhookUrl = config.webhook_url;
-  this.command = config.command;
+  this.commandHome = config.command_home;
+  this.commandAway = config.command_away;
+  this.commandNight = config.command_night;
+  this.commandOff = config.command_off;
+  this.commandTriggered = config.command_triggered;
 
   // Variables
   this.defaultState = null;
@@ -133,17 +137,6 @@ function SecuritySystem(log, config) {
   }
   else {
     this.webhook = false;
-  }
-
-  if (isOptionSet(this.command) && this.command) {
-    this.commandHome = config.command_home;
-    this.commandAway = config.command_away;
-    this.commandNight = config.command_night;
-    this.commandOff = config.command_off;
-    this.commandTriggered = config.command_triggered;
-  }
-  else {
-    this.command = false;
   }
 
   // Log options value
@@ -372,12 +365,10 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.save();
   }
 
-  // Command
-  if (this.command) {
-    this.executeCommand(state);
-  }
+  // Execute command (if sent)
+  this.executeCommand(state);
 
-  // Webhook
+  // Send Webhook request
   if (this.webhook) {
     this.sendWebhookEvent(state);
   }
@@ -766,7 +757,6 @@ SecuritySystem.prototype.executeCommand = function(state) {
   }
 
   if (command === undefined || command === null) {
-    this.log(`Missing command for target state.`);
     return;
   }
 
