@@ -24,7 +24,7 @@
     "url": "http://github.com/MiguelRipoll23/homebridge-securitysystem/issues"
   },
   "engines": {
-    "node": ">=0.12.0",
+    "node": ">=10.x",
     "homebridge": ">=0.2.0"
   },
   "dependencies": {
