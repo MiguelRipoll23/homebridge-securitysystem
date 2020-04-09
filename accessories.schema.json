@@ -1,16 +1,10 @@
 {
-  "plugin_alias": "Security system",
+  "plugin_alias": "security-system",
   "schemas": [
     {
       "title": "Security System",
       "type": "object",
       "properties": {
-        "accessory": {
-          "title": "Accessory",
-          "type": "string",
-          "const": "Security system",
-          "readOnly": true
-        },
         "name": {
           "title": "Name",
           "type": "string",
@@ -20,7 +14,14 @@
         "default_mode": {
           "title": "Default Mode",
           "type": "string",
-          "required": false
+          "default": "Off",
+          "required": true,
+          "enum": [
+            "Off",
+            "Home",
+            "Night",
+            "Away"
+          ]
         },
         "disabled_modes": {
           "title": "Disabled Modes",
@@ -28,7 +29,14 @@
           "required": false,
           "items": {
             "title": "Mode",
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Off",
+              "Home",
+              "Night",
+              "Away"
+            ],
+            "uniqueItems": true
           }
         },
         "arm_seconds": {
@@ -56,7 +64,7 @@
           "required": false
         },
         "save_state": {
-          "title": "Save State",
+          "title": "Save State On Mode Change",
           "type": "boolean",
           "default": false,
           "required": false
@@ -67,64 +75,60 @@
           "required": false
         },
         "server_code": {
-          "title": "Server Code",
+          "title": "Server Code (for authentication)",
           "type": "integer",
-          "required": false
+          "required": false,
+          "placeholder": "1234"
         },
         "server_arm_delay": {
-          "title": "Server Changes Mode With Arming Delay",
+          "title": "Add Arming Delay to Mode Changes Using Server",
           "type": "boolean",
           "default": false,
           "required": false
         },
         "webhook_url": {
-          "title": "Webhook URL (for mode changes)",
+          "title": "Webhook Base URL",
           "type": "string",
-          "required": false
+          "required": false,
+          "format": "uri"
         },
         "webhook_home": {
-          "title": "Webhook Home Path",
+          "title": "Webhook Path: Home",
           "type": "string",
           "required": false
         },
         "webhook_away": {
-          "title": "Webhook Away Path",
+          "title": "Webhook Path: Away",
           "type": "string",
           "required": false
         },
         "webhook_night": {
-          "title": "Webhook Night Path",
+          "title": "Webhook Path: Night",
           "type": "string",
           "required": false
         },
         "webhook_off": {
-          "title": "Webhook Off Path",
+          "title": "Webhook Path: Off",
           "type": "string",
           "required": false
         },
-        "command": {
-          "title": "Execute Command (for mode changes)",
-          "type": "boolean",
-          "default": false,
-          "required": false
-        },
         "command_home": {
-          "title": "Command Home",
+          "title": "Command: Home",
           "type": "string",
           "required": false
         },
         "command_away": {
-          "title": "Command Away",
+          "title": "Command: Away",
           "type": "string",
           "required": false
         },
         "command_night": {
-          "title": "Command Night",
+          "title": "Command: Night",
           "type": "string",
           "required": false
         },
         "command_off": {
-          "title": "Command Off",
+          "title": "Command: Off",
           "type": "string",
           "required": false
         }

@@ -1,0 +1,135 @@
+{
+  "pluginAlias": "security-system",
+  "pluginType": "accessory",
+  "headerDisplay": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.",
+  "footerDisplay": "Need help? [Go to the issues page](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) and ask a question!",
+  "schema": {
+    "name": {
+      "title": "Name",
+      "type": "string",
+      "default": "Security system",
+      "required": true
+    },
+    "default_mode": {
+      "title": "Default Mode",
+      "type": "string",
+      "default": "Off",
+      "required": true,
+      "enum": [
+        "Off",
+        "Home",
+        "Night",
+        "Away"
+      ]
+    },
+    "disabled_modes": {
+      "title": "Disabled Modes",
+      "type": "array",
+      "required": false,
+      "items": {
+        "title": "Mode",
+        "type": "string",
+        "enum": [
+          "Off",
+          "Home",
+          "Night",
+          "Away"
+        ],
+        "uniqueItems": true
+      }
+    },
+    "arm_seconds": {
+      "title": "Arm Seconds",
+      "type": "integer",
+      "default": 0,
+      "required": false
+    },
+    "trigger_seconds": {
+      "title": "Trigger Seconds",
+      "type": "integer",
+      "default": 0,
+      "required": false
+    },
+    "siren_switch": {
+      "title": "Show Siren Switch",
+      "type": "boolean",
+      "default": true,
+      "required": false
+    },
+    "override_off": {
+      "title": "Siren Switch Overrides Off Mode",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
+    "save_state": {
+      "title": "Save State On Mode Change",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
+    "server_port": {
+      "title": "Server Port",
+      "type": "integer",
+      "required": false
+    },
+    "server_code": {
+      "title": "Server Code (for authentication)",
+      "type": "integer",
+      "required": false,
+      "placeholder": "1234"
+    },
+    "server_arm_delay": {
+      "title": "Add Arming Delay to Mode Changes Using Server",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
+    "webhook_url": {
+      "title": "Webhook Base URL",
+      "type": "string",
+      "required": false,
+      "format": "uri"
+    },
+    "webhook_home": {
+      "title": "Webhook Path: Home",
+      "type": "string",
+      "required": false
+    },
+    "webhook_away": {
+      "title": "Webhook Path: Away",
+      "type": "string",
+      "required": false
+    },
+    "webhook_night": {
+      "title": "Webhook Path: Night",
+      "type": "string",
+      "required": false
+    },
+    "webhook_off": {
+      "title": "Webhook Path: Off",
+      "type": "string",
+      "required": false
+    },
+    "command_home": {
+      "title": "Command: Home",
+      "type": "string",
+      "required": false
+    },
+    "command_away": {
+      "title": "Command: Away",
+      "type": "string",
+      "required": false
+    },
+    "command_night": {
+      "title": "Command: Night",
+      "type": "string",
+      "required": false
+    },
+    "command_off": {
+      "title": "Command: Off",
+      "type": "string",
+      "required": false
+    }
+  }
+}
