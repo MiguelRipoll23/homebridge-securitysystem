@@ -123,7 +123,12 @@ function SecuritySystem(log, config) {
       this.serverArmDelay = true;
     }
 
-    this.startServer();
+    if (this.serverPort < 0 || this.serverPort > 65535) {
+      this.log('Server port is invalid.');
+    }
+    else {
+      this.startServer();
+    }
   }
 
   if (isOptionSet(this.webhookUrl)) {
@@ -668,7 +673,7 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   // Listener
-  app.listen(this.serverPort, error => {
+  const server = app.listen(this.serverPort, error => {
     if (error) {
       this.log('Error while starting server.');
       this.log(error);
@@ -676,6 +681,11 @@ SecuritySystem.prototype.startServer = async function() {
     }
     
     this.log(`Server (${this.serverPort})`);
+  });
+
+  server.on('error', (error) => {
+    this.log('Error while starting server.');
+    this.log(error);
   });
 };
 
