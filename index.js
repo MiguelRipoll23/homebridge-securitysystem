@@ -671,6 +671,15 @@ SecuritySystem.prototype.startServer = async function() {
     this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
     res.send(MESSAGE_STATE_UPDATED);
   });
+    
+  app.get('/status', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    res.send('CurrentState: ' + this.currentState);
+  });
 
   // Listener
   const server = app.listen(this.serverPort, error => {
