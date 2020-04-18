@@ -110,7 +110,7 @@ function SecuritySystem(log, config) {
     this.serverCode = config.server_code;
     this.serverArmDelay = config.server_arm_delay;
 
-    if (this.serverArmDelay === undefined) {
+    if (isOptionSet(this.serverArmDelay)) {
       this.serverArmDelay = true;
     }
 
@@ -370,9 +370,7 @@ SecuritySystem.prototype.getTargetStates = function() {
   const disabledStates = [];
 
   for (let disabledMode of this.disabledModes) {
-    disabledMode = disabledMode.toLowerCase();
-
-    const state = this.mode2State(disabledMode);
+    const state = this.mode2State(disabledMode.toLowerCase());
     disabledStates.push(state);
   }
 
