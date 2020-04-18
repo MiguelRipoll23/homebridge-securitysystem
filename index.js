@@ -89,41 +89,19 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
-  if (isOptionSet(this.sirenSwitch)) {
-    if (this.sirenSwitch) {
-      this.sirenSwitch = true;
-    }
-    else {
-      this.sirenSwitch = false;
-    }
-  }
-  else {
+  if (!isOptionSet(this.sirenSwitch)) {
     this.sirenSwitch = true;
   }
 
-  if (isOptionSet(this.sirenModeSwitch)) {
-    if (this.sirenModeSwitch) {
-      this.sirenModeSwitch = true;
-    }
-    else {
-      this.sirenModeSwitch = false;
-    }
-  }
-  else {
+  if (!isOptionSet(this.sirenModeSwitch)) {
     this.sirenModeSwitch = false;
   }
 
-  if (isOptionSet(this.overrideOff) && this.overrideOff) {
-    this.overrideOff = true;
-  }
-  else {
+  if (!isOptionSet(this.overrideOff)) {
     this.overrideOff = false;
   }
 
-  if (isOptionSet(this.saveState) && this.saveState) {
-    this.saveState = true;
-  }
-  else {
+  if (!isOptionSet(this.saveState)) {
     this.saveState = false;
   }
 
@@ -266,8 +244,7 @@ function SecuritySystem(log, config) {
 
 SecuritySystem.prototype.load = async function() {
   const options = {
-    'dir': path.join(homebridgeStoragePath, 'homebridge-securitysystem'),
-    'forgiveParseErrors': true
+    'dir': path.join(homebridgeStoragePath, 'homebridge-securitysystem')
   };
 
   await storage.init(options)
@@ -834,13 +811,13 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
   fetch(this.webhookUrl + path)
     .then(response => {
       if (!response.ok) {
-        throw new Error('Status code (' + response.statusCode + ')');
+        throw new Error(`Status code (${response.statusCode})`);
       }
 
       this.log('Webhook event (Sent)');
     })
     .catch(error => {
-      this.log('Request to webhook failed. (' + path + ')');
+      this.log(`Request to webhook failed. (${path})`);
       this.log(error);
     });
 };
@@ -903,9 +880,9 @@ SecuritySystem.prototype.setSirenState = function(state, callback) {
 };
 
 // Siren Mode Switches
-SecuritySystem.prototype.triggerIfModeSet = function(mode, state, callback) {
+SecuritySystem.prototype.triggerIfModeSet = function(switchRequiredState, state, callback) {
   if (state) {
-    if (mode === this.state2Mode(this.currentState)) {
+    if (switchRequiredState === this.currentState) {
       this.sensorTriggered(state, null);
       callback(null);
     }
@@ -913,7 +890,7 @@ SecuritySystem.prototype.triggerIfModeSet = function(mode, state, callback) {
       this.sensorTriggered(state, null);
     }
     else {
-      callback('Security system not armed.');
+      callback('Security system not armed with required state.');
     }
   }
   else {
@@ -928,7 +905,12 @@ SecuritySystem.prototype.getSirenHomeState = function(callback) {
 
 SecuritySystem.prototype.setSirenHomeState = function(state, callback) {
   this.sirenHomeOn = state;
-  this.triggerIfModeSet('home', state, callback);
+
+  this.triggerIfModeSet(
+    Characteristic.SecuritySystemCurrentState.STAY_ARM,
+    state,
+    callback
+  );
 };
 
 SecuritySystem.prototype.getSirenAwayState = function(callback) {
@@ -937,7 +919,12 @@ SecuritySystem.prototype.getSirenAwayState = function(callback) {
 
 SecuritySystem.prototype.setSirenAwayState = function(state, callback) {
   this.sirenAwayOn = state;
-  this.triggerIfModeSet('away', state, callback);
+
+  this.triggerIfModeSet(
+    Characteristic.SecuritySystemCurrentState.AWAY_ARM,
+    state,
+    callback
+  );
 };
 
 SecuritySystem.prototype.getSirenNightState = function(callback) {
@@ -946,7 +933,12 @@ SecuritySystem.prototype.getSirenNightState = function(callback) {
 
 SecuritySystem.prototype.setSirenNightState = function(state, callback) {
   this.sirenNightOn = state;
-  this.triggerIfModeSet('night', state, callback);
+
+  this.triggerIfModeSet(
+    Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+    state,
+    callback
+  );
 };
 
 // Accessory
