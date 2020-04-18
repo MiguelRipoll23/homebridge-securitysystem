@@ -58,6 +58,12 @@
       "default": true,
       "required": false
     },
+    "siren_mode_switches": {
+      "title": "Show Siren Mode Switches",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
     "override_off": {
       "title": "Siren Switch Overrides Off Mode",
       "type": "boolean",
