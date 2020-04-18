@@ -47,7 +47,7 @@ function SecuritySystem(log, config) {
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
   this.sirenSwitch = config.siren_switch;
-  this.sirenModeSwitch = config.siren_mode_switch;
+  this.sirenModeSwitches = config.siren_mode_switches;
   this.overrideOff = config.override_off;
   this.saveState = config.save_state;
 
@@ -93,8 +93,8 @@ function SecuritySystem(log, config) {
     this.sirenSwitch = true;
   }
 
-  if (!isOptionSet(this.sirenModeSwitch)) {
-    this.sirenModeSwitch = false;
+  if (!isOptionSet(this.sirenModeSwitches)) {
+    this.sirenModeSwitches = false;
   }
 
   if (!isOptionSet(this.overrideOff)) {
@@ -230,7 +230,7 @@ function SecuritySystem(log, config) {
     this.services.push(this.sirenService);
   }
 
-  if (this.sirenModeSwitch) {
+  if (this.sirenModeSwitches) {
     this.services.push(this.sirenHomeService);
     this.services.push(this.sirenAwayService);
     this.services.push(this.sirenNightService);
