@@ -5,6 +5,12 @@
       "title": "Security System",
       "type": "object",
       "properties": {
+        "accessory": {
+          "title": "Accessory",
+          "type": "string",
+          "const": "security-system",
+          "readOnly": true
+        },
         "name": {
           "title": "Name",
           "type": "string",
