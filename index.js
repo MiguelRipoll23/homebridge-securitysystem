@@ -9,10 +9,9 @@ const fetch = require('node-fetch');
 const storage = require('node-persist');
 const express = require('express');
 
-const MESSAGE_CODE_REQUIRED = 'Code required.';
-const MESSAGE_CODE_INVALID = 'Code invalid.';
-const MESSAGE_STATE_DISABLED = 'Mode disabled.';
-const MESSAGE_STATE_UPDATED = 'State updated.';
+const MESSAGE_CODE_REQUIRED = 'Code required';
+const MESSAGE_CODE_INVALID = 'Code invalid';
+const MESSAGE_STATE_DISABLED = 'Mode disabled';
 
 const app = express();
 
@@ -280,6 +279,29 @@ SecuritySystem.prototype.identify = function(callback) {
 };
 
 // Security system
+SecuritySystem.prototype.state2Mode = function(state) {
+  switch (state) {
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      return 'triggered';
+
+    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
+      return 'home';
+
+    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
+      return 'away';
+
+    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
+      return 'night';
+      
+    case Characteristic.SecuritySystemCurrentState.DISARMED:
+      return 'off';
+
+    default:
+      this.log(`Unknown state (${state}).`);
+      return 'unknown';
+  }
+};
+
 SecuritySystem.prototype.mode2State = function(mode) {
   switch (mode) {
     case 'home':
@@ -301,30 +323,10 @@ SecuritySystem.prototype.mode2State = function(mode) {
 };
 
 SecuritySystem.prototype.logState = function(type, state) {
-  switch (state) {
-    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      this.log(type + ' state (Home)');
-      break;
+  let mode = this.state2Mode(state);
+  mode = mode.charAt(0).toUpperCase() + mode.slice(1);
 
-    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      this.log(type + ' state (Away)');
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      this.log(type + ' state (Night)');
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.DISARMED:
-      this.log(type + ' state (Off)');
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      this.log(type + ' state (Alarm triggered)');
-      break;
-
-    default:
-      this.log(type + ' state (Unknown state)');
-  }
+  this.log(`${type} state (${mode})`);
 };
 
 SecuritySystem.prototype.getTargetStates = function() {
@@ -579,7 +581,13 @@ SecuritySystem.prototype.isAuthenticated = function(req, res) {
   // Check if code was sent
   if (userCode === undefined) {
     this.log('Code required (Server)')
-    res.status(401).send(MESSAGE_CODE_REQUIRED);
+
+    const codeRequiredResponse = {
+      'error': true,
+      'message': MESSAGE_CODE_REQUIRED
+    };
+
+    res.status(401).json(codeRequiredResponse);
 
     return false;
   }
@@ -589,7 +597,13 @@ SecuritySystem.prototype.isAuthenticated = function(req, res) {
 
   if (userCode !== this.serverCode) {
     this.log('Code invalid (Server)')
-    res.status(403).send(MESSAGE_CODE_INVALID);
+
+    const codeInvalidResponse = {
+      'error': true,
+      'message': MESSAGE_CODE_INVALID
+    };
+
+    res.status(403).json(codeInvalidResponse);
 
     return false;
   }
@@ -604,12 +618,41 @@ SecuritySystem.prototype.isModeEnabled = function(req, res) {
   if (this.targetStates.includes(state)) {
     return true;
   }
+
+  const response = {
+    'error': true,
+    'message': MESSAGE_STATE_DISABLED
+  };
   
-  res.status(400).send(MESSAGE_STATE_DISABLED);
+  res.status(400).json(response);
+
   return false;
 };
 
+SecuritySystem.prototype.sendOkResponse = function(res) {
+  const response = {
+    'error': false
+  };
+
+  res.json(response);
+}
+
 SecuritySystem.prototype.startServer = async function() {
+  app.get('/status', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    const response = {
+      'current_mode': this.state2Mode(this.currentState),
+      'target_mode': this.state2Mode(this.targetState),
+      'arming': this.arming
+    };
+
+    res.json(response);
+  });
+
   app.get('/home', (req, res) => {
     if (this.isAuthenticated(req, res) === false) {
       return false;
@@ -620,7 +663,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM);
-    res.send(MESSAGE_STATE_UPDATED);
+    this.sendOkResponse(res);
   });
 
   app.get('/away', (req, res) => {
@@ -633,7 +676,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
-    res.send(MESSAGE_STATE_UPDATED);
+    this.sendOkResponse(res);
   });
 
   app.get('/night', (req, res) => {
@@ -646,7 +689,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
-    res.send(MESSAGE_STATE_UPDATED);
+    this.sendOkResponse(res);
   });
 
   app.get('/off', (req, res) => {
@@ -659,7 +702,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM);
-    res.send(MESSAGE_STATE_UPDATED);
+    this.sendOkResponse(res);
   });
 
   app.get('/triggered', (req, res) => {
@@ -669,16 +712,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
-    res.send(MESSAGE_STATE_UPDATED);
-  });
-    
-  app.get('/status', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
-
-    res.send('CurrentState: ' + this.currentState);
+    this.sendOkResponse(res);
   });
 
   // Listener
