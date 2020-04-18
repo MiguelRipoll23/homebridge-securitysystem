@@ -100,6 +100,16 @@
       "required": false,
       "format": "uri"
     },
+    "webhook_triggered": {
+      "title": "Webhook Path: Triggered",
+      "type": "string",
+      "required": false
+    },
+    "webhook_alert": {
+      "title": "Webhook Path: Alert",
+      "type": "string",
+      "required": false
+    },
     "webhook_home": {
       "title": "Webhook Path: Home",
       "type": "string",
@@ -117,6 +127,16 @@
     },
     "webhook_off": {
       "title": "Webhook Path: Off",
+      "type": "string",
+      "required": false
+    },
+    "command_triggered": {
+      "title": "Command: Triggered",
+      "type": "string",
+      "required": false
+    },
+    "command_alert": {
+      "title": "Command: Alert",
       "type": "string",
       "required": false
     },

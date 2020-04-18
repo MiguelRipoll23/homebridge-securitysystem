@@ -9,14 +9,14 @@ const express = require('express');
 const customServices = require('./custom/customServices');
 const customCharacteristics = require('./custom/customCharacteristics');
 
+const app = express();
+
 const MESSAGE_CODE_REQUIRED = 'Code required';
 const MESSAGE_CODE_INVALID = 'Code invalid';
 const MESSAGE_MODE_DISABLED = 'Mode disabled';
 
-const app = express();
-
 let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgeStoragePath = null;
+let homebridgeStoragePath;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -58,6 +58,7 @@ function SecuritySystem(log, config) {
   this.commandAway = config.command_away;
   this.commandNight = config.command_night;
   this.commandOff = config.command_off;
+  this.commandAlert = config.command_alert;
   this.commandTriggered = config.command_triggered;
 
   // Variables
@@ -128,6 +129,7 @@ function SecuritySystem(log, config) {
     this.webhookAway = config.webhook_away;
     this.webhookNight = config.webhook_night;
     this.webhookOff = config.webhook_off;
+    this.webhookAlert = config.webhook_alert;
     this.webhookTriggered = config.webhook_triggered;
   }
   else {
@@ -172,7 +174,7 @@ function SecuritySystem(log, config) {
   this.arming = false;
   this.sirenActive = false;
 
-  // Switch (Optional)
+  // Siren Switch (Optional)
   this.sirenService = new Service.Switch('Siren', 'siren');
 
   this.sirenService
@@ -404,7 +406,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.save();
   }
 
-  // Execute command (if sent)
+  // Execute command (if passed)
   this.executeCommand(state);
 
   // Send Webhook request
@@ -588,6 +590,14 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
         // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       }, this.triggerSeconds * 1000);
+
+      // Execute command
+      this.executeCommand('alert');
+
+      // Send Webhook request
+      if (this.webhook) {
+        this.sendWebhookEvent('alert');
+      }
     }
   }
   else {
@@ -781,6 +791,57 @@ SecuritySystem.prototype.startServer = async function() {
   });
 };
 
+SecuritySystem.prototype.executeCommand = function(state) {
+  let command = null;
+
+  switch (state) {
+    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
+      command = this.commandHome;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
+      command = this.commandAway;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
+      command = this.commandNight;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.DISARMED:
+      command = this.commandOff;
+      break;
+
+    case 'alert':
+      command = this.commandAlert;
+      break;
+
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      command = this.commandTriggered;
+      break;
+
+    default:
+      this.log(`Unknown target state. (${state})`);
+  }
+
+  if (command === undefined || command === null) {
+    return;
+  }
+
+  exec(command, (error, stdout, stderr) => {
+    if (error !== null) {
+      this.log(`Command failed. (${command})\n${error}`);
+      return;
+    }
+
+    if (stderr !== '') {
+      this.log(`Command failed. (${command})\n${stderr}`);
+      return;
+    }
+
+    this.log(`Command output: ${stdout}`);
+  });
+};
+
 SecuritySystem.prototype.sendWebhookEvent = function(state) {
   let path = null;
 
@@ -799,6 +860,10 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       path = this.webhookOff;
+      break;
+
+    case 'alert':
+      path = this.webhookAlert;
       break;
 
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
@@ -828,53 +893,6 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
       this.log(`Request to webhook failed. (${path})`);
       this.log(error);
     });
-};
-
-SecuritySystem.prototype.executeCommand = function(state) {
-  let command = null;
-
-  switch (state) {
-    case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      command = this.commandHome;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      command = this.commandAway;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      command = this.commandNight;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.DISARMED:
-      command = this.commandOff;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      command = this.commandTriggered;
-      break;
-
-    default:
-      this.log(`Unknown target state. (${state})`);
-  }
-
-  if (command === undefined || command === null) {
-    return;
-  }
-
-  exec(command, (error, stdout, stderr) => {
-    if (error !== null) {
-      this.log(`Command failed. (${command})\n${error}`);
-      return;
-    }
-
-    if (stderr !== '') {
-      this.log(`Command failed. (${command})\n${stderr}`);
-      return;
-    }
-
-    this.log(`Command output: ${stdout}`);
-  });
 };
 
 // Siren Switch
