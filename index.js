@@ -11,7 +11,7 @@ const customCharacteristics = require('./custom/customCharacteristics');
 
 const MESSAGE_CODE_REQUIRED = 'Code required';
 const MESSAGE_CODE_INVALID = 'Code invalid';
-const MESSAGE_STATE_DISABLED = 'Mode disabled';
+const MESSAGE_MODE_DISABLED = 'Mode disabled';
 
 const app = express();
 
@@ -662,7 +662,7 @@ SecuritySystem.prototype.isModeEnabled = function(req, res) {
 
   const response = {
     'error': true,
-    'message': MESSAGE_STATE_DISABLED
+    'message': MESSAGE_MODE_DISABLED
   };
   
   res.status(400).json(response);
