@@ -43,13 +43,13 @@ Use Eve or a similar app to create automations like these:
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
 ## Server options (optional)
-To enable remote state changes you can set the option `server_port` that will start a web server on your Homebridge device and allow you to change the current state from the security system or trigger it remotely.
+Use the options below to start a HTTP server on the device and interact with the security system.
 
-| Option            | Required | Description                                                                     | Value/s                |
-|-------------------|----------|---------------------------------------------------------------------------------|------------------------|
-| server_port       | Yes      | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
-| server_code       | No       | Code to authenticate requests sent to the security system.                      | any number             |
-| server_arm_delay  | No       | Allows to enable or disable the arming delay.                                   | true/false             |
+| Option            | Description                                                                     | Value/s                |
+|-------------------|---------------------------------------------------------------------------------|------------------------|
+| server_port       | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
+| server_code       | Code to authenticate requests sent to the security system.                      | any number             |
+| server_arm_delay  | Allows to enable or disable the arming delay.                                   | true/false             |
 
 After setting the option, you can call these endpoints:
 
@@ -65,25 +65,24 @@ After setting the option, you can call these endpoints:
 If you're using the `server_code` option, add `?code=[your_code]` at the end of the URL.
 
 ## Webhook options (optional)
-To enable webhooks you can set the option `webhook_url` and requests to the server set will be made when the security system mode changes.
+Use the options below to send requests to a server when the security system mode changes.
 
-| Option             | Required | Description                                                                    | Value/s                |
-|--------------------|----------|--------------------------------------------------------------------------------|------------------------|
-| webhook_url        | Yes      | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
-| webhook_home       | No       | Path of the 'home' mode used on your web server.                               | /your-path             |
-| webhook_away       | No       | Path of the 'away' mode used on your web server.                               | /your-path             |
-| webhook_night      | No       | Path of the 'night' mode used on your web server.                              | /your-path             |
-| webhook_off        | No       | Path of the 'off' mode used on your web server.                                | /your-path             |
-| webhook_triggered  | No       | Path of the 'triggered' mode used on your web server.                          | /your-path             |
+| Option             | Description                                                                    | Value/s                |
+|--------------------|--------------------------------------------------------------------------------| -----------------------|
+| webhook_url        | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
+| webhook_home       | Path of the 'home' mode used on your web server.                               | /your-path             |
+| webhook_away       | Path of the 'away' mode used on your web server.                               | /your-path             |
+| webhook_night      | Path of the 'night' mode used on your web server.                              | /your-path             |
+| webhook_off        | Path of the 'off' mode used on your web server.                                | /your-path             |
+| webhook_triggered  | Path of the 'triggered' mode used on your web server.                          | /your-path             |
 
 ## Command options (optional)
-To enable commands you can set the option `command` and commands on the running device will be executed when the security system mode changes.
+Use the options below to execute commands on the device when the security system mode changes.
 
-| Option             | Required | Description                                                                    | Value/s                |
-|--------------------|----------|--------------------------------------------------------------------------------|------------------------|
-| command            | Yes      | Enables commands on the running device.                                        | true/false             |
-| command_home       | No       | Command of the 'home' mode to execute on the running device.                   | any string             |
-| command_away       | No       | Command of the 'away' mode to execute on the running device.                   | any string             |
-| command_night      | No       | Command of the 'night' mode to execute on the running device.                  | any string             |
-| command_off        | No       | Command of the 'off' mode to execute on the running device.                    | any string             |
-| command_triggered  | No       | Command of the 'triggered' mode to execute on the running device.              | any string             |
+| Option             | Description                                                                    | Value/s                |
+|--------------------|--------------------------------------------------------------------------------|------------------------|
+| command_home       | Command of the 'home' mode to execute on the running device.                   | any string             |
+| command_away       | Command of the 'away' mode to execute on the running device.                   | any string             |
+| command_night      | Command of the 'night' mode to execute on the running device.                  | any string             |
+| command_off        | Command of the 'off' mode to execute on the running device.                    | any string             |
+| command_triggered  | Command of the 'triggered' mode to execute on the running device.              | any string             |
