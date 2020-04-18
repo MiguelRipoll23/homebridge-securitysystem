@@ -231,9 +231,17 @@ function SecuritySystem(log, config) {
   }
 
   if (this.sirenModeSwitches) {
-    this.services.push(this.sirenHomeService);
-    this.services.push(this.sirenAwayService);
-    this.services.push(this.sirenNightService);
+    if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.STAY_ARM)) {
+      this.services.push(this.sirenHomeService);
+    }
+
+    if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.AWAY_ARM)) {
+      this.services.push(this.sirenAwayService);
+    }
+
+    if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.NIGHT_ARM)) {
+      this.services.push(this.sirenNightService);
+    }
   }
 
   // Storage
