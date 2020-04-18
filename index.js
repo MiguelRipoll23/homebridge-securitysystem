@@ -1,6 +1,3 @@
-const customServices = require('./customServices');
-const customCharacteristics = require('./customCharacteristics');
-
 const path = require('path');
 const { exec } = require('child_process');
 const packageJson = require('./package.json');
@@ -8,6 +5,9 @@ const packageJson = require('./package.json');
 const fetch = require('node-fetch');
 const storage = require('node-persist');
 const express = require('express');
+
+const customServices = require('./custom/customServices');
+const customCharacteristics = require('./custom/customCharacteristics');
 
 const MESSAGE_CODE_REQUIRED = 'Code required';
 const MESSAGE_CODE_INVALID = 'Code invalid';
