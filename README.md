@@ -29,15 +29,16 @@ Use Eve or a similar app to create automations like these:
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
 ## Basic options
-| Option           | Required | Description                                                                    | Value/s                   |
-|------------------|----------|--------------------------------------------------------------------------------|---------------------------|
-| default_mode     | No       | Initial mode for the security system when running Homebridge.                  | home\|away\|night\|off    |
-| disabled_modes   | No       | Modes to exclude from the available modes list.                                | \["night", ...\]          |
-| arm_seconds      | No       | Time in seconds to arm the security system after the user requesting it.       | any number                |
-| trigger_seconds  | No       | Time in seconds to be able to disarm the security system before triggering it. | any number                |
-| siren_switch (1) | No       | Shows a switch on the Home app to trigger the security system.                 | true/false                |
-| override_off     | No       | Allows to trigger the security system while disarmed.                          | true/false                |
-| save_state       | No       | State persistence for shutdowns and reboots.                                   | true/false                |
+| Option              | Required | Description                                                                    | Value/s                   |
+|---------------------|----------|--------------------------------------------------------------------------------|---------------------------|
+| default_mode        | No       | Initial mode for the security system when running Homebridge.                  | home\|away\|night\|off    |
+| disabled_modes      | No       | Modes to exclude from the available modes list.                                | \["night", ...\]          |
+| arm_seconds         | No       | Time in seconds to arm the security system after the user requesting it.       | any number                |
+| trigger_seconds     | No       | Time in seconds to be able to disarm the security system before triggering it. | any number                |
+| siren_switch (1)    | No       | Shows a switch on the Home app to trigger the security system.                 | true/false                |
+| siren_mode_switches | No       | Shows switches on the Home app to trigger the security system for each mode.   | true/false                |
+| override_off        | No       | Allows to trigger the security system while disarmed.                          | true/false                |
+| save_state          | No       | State persistence for shutdowns and reboots.                                   | true/false                |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
@@ -54,6 +55,7 @@ After setting the option, you can call these endpoints:
 
 | Method | Endpoint                     | Description                                        |
 |--------|------------------------------|----------------------------------------------------|
+| GET    | /status                      | Gets current status from the security system.      |
 | GET    | /home                        | Changes current security system mode to home.      |
 | GET    | /away                        | Changes current security system mode to away.      |
 | GET    | /night                       | Changes current security system mode to night.     |
