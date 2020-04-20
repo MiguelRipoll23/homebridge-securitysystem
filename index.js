@@ -158,7 +158,7 @@ function SecuritySystem(log, config) {
 
   // Security system
   this.service = new CustomService.SecuritySystem(this.name);
-  this.targetStates = this.getTargetStates();
+  this.targetStates = this.getEnabledStates();
 
   // Services
   this.service
@@ -374,7 +374,7 @@ SecuritySystem.prototype.logState = function(type, state) {
   this.log(`${type} state (${mode})`);
 };
 
-SecuritySystem.prototype.getTargetStates = function() {
+SecuritySystem.prototype.getEnabledStates = function() {
   const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
   const targetStates = targetStateCharacteristic.props.validValues;
 
