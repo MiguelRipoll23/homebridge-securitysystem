@@ -46,7 +46,7 @@ Use Eve or a similar app to create automations like these:
 Use the options below to start a HTTP server on the device and interact with the security system.
 
 | Option            | Default  | Description                                                                     | Value/s                |
-|-------------------|--------------------------------------------------------------------------------------------|------------------------|
+|-------------------|----------|---------------------------------------------------------------------------------|------------------------|
 | server_port       | null     | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
 | server_code       | null     | Code to authenticate requests sent to the security system.                      | any number             |
 | server_arm_delay  | false    | Allows to enable or disable the arming delay.                                   | true/false             |
