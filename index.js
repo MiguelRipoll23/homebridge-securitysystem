@@ -129,6 +129,10 @@ function SecuritySystem(log, config) {
 
   if (isOptionSet(this.webhookUrl)) {
     this.webhook = true;
+    
+    this.webhookTargetHome = config.webhook_target_home;
+    this.webhookTargetAway = config.webhook_target_away;
+    this.webhookTargetNight = config.webhook_target_night;
 
     this.webhookCurrentHome = config.webhook_current_home;
     this.webhookCurrentAway = config.webhook_current_away;
@@ -414,7 +418,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   this.executeCommand('current', state);
 
   if (this.webhook) {
-    this.sendWebhookEvent(state);
+    this.sendWebhookEvent('current', state);
   }
 };
 
@@ -474,6 +478,10 @@ SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
 
   this.handleStateChange();
   this.executeCommand('target', state);
+
+  if (this.webhook) {
+    this.sendWebhookEvent('target', state);
+  }
 
   let armSeconds = 0;
 
@@ -796,7 +804,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
       command = this.commandTriggered;
       break;
-      
+
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
       if (type === 'current') {
         command = this.commandCurrentHome;
@@ -833,7 +841,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
       break;
 
     default:
-      this.log(`Unknown target state. (${state})`);
+      this.log(`Unknown state (${state})`);
   }
 
   if (command === undefined || command === null) {
@@ -842,12 +850,12 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
 
   exec(command, (error, stdout, stderr) => {
     if (error !== null) {
-      this.log(`Command failed. (${command})\n${error}`);
+      this.log(`Command failed (${command})\n${error}`);
       return;
     }
 
     if (stderr !== '') {
-      this.log(`Command failed. (${command})\n${stderr}`);
+      this.log(`Command failed (${command})\n${stderr}`);
       return;
     }
 
@@ -855,20 +863,39 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
   });
 };
 
-SecuritySystem.prototype.sendWebhookEvent = function(state) {
+SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   let path = null;
 
   switch (state) {
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      path = this.webhookTriggered;
+      break;
+
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      path = this.webhookHome;
+      if (type === 'current') {
+        path = this.webhookCurrentHome;
+        break;
+      }
+
+      path = this.webhookTargetHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      path = this.webhookAway;
+      if (type === 'current') {
+        path = this.webhookCurrentAway;
+        break;
+      }
+
+      path = this.webhookTargetAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      path = this.webhookNight;
+      if (type === 'current') {
+        path = this.webhookCurrentNight;
+        break;
+      }
+
+      path = this.webhookTargetNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
@@ -879,12 +906,8 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
       path = this.webhookAlert;
       break;
 
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      path = this.webhookTriggered;
-      break;
-
     default:
-      this.log(`Unknown target state. (${state})`);
+      this.log(`Unknown state (${state})`);
       return;
   }
 

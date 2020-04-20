@@ -104,18 +104,33 @@
       "type": "string",
       "required": false
     },
-    "webhook_home": {
-      "title": "Webhook Path: Home",
+    "webhook_target_home": {
+      "title": "Webhook Path: Target Home",
       "type": "string",
       "required": false
     },
-    "webhook_away": {
-      "title": "Webhook Path: Away",
+    "webhook_target_away": {
+      "title": "Webhook Path: Target Away",
       "type": "string",
       "required": false
     },
-    "webhook_night": {
-      "title": "Webhook Path: Night",
+    "webhook_target_night": {
+      "title": "Webhook Path: Target Night",
+      "type": "string",
+      "required": false
+    },
+    "webhook_current_home": {
+      "title": "Webhook Path: Current Home",
+      "type": "string",
+      "required": false
+    },
+    "webhook_current_away": {
+      "title": "Webhook Path: Current Away",
+      "type": "string",
+      "required": false
+    },
+    "webhook_current_night": {
+      "title": "Webhook Path: Current Night",
       "type": "string",
       "required": false
     },
