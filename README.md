@@ -29,27 +29,27 @@ Use Eve or a similar app to create automations like these:
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
 ## Basic options
-| Option              | Required | Description                                                                    | Value/s                   |
+| Option              | Default  | Description                                                                    | Value/s                   |
 |---------------------|----------|--------------------------------------------------------------------------------|---------------------------|
-| default_mode        | No       | Initial mode for the security system when running Homebridge.                  | home\|away\|night\|off    |
-| disabled_modes      | No       | Modes to exclude from the available modes list.                                | \["night", ...\]          |
-| arm_seconds         | No       | Time in seconds to arm the security system after the user requesting it.       | any number                |
-| trigger_seconds     | No       | Time in seconds to be able to disarm the security system before triggering it. | any number                |
-| siren_switch (1)    | No       | Shows a switch on the Home app to trigger the security system.                 | true/false                |
-| siren_mode_switches | No       | Shows switches on the Home app to trigger the security system for each mode.   | true/false                |
-| override_off        | No       | Allows to trigger the security system while disarmed.                          | true/false                |
-| save_state          | No       | State persistence for shutdowns and reboots.                                   | true/false                |
+| default_mode        | "off"    | Initial mode for the security system when running Homebridge.                  | "home" | "night" | "away" |
+| disabled_modes      | null     | Modes to exclude from the available modes list.                                | \["night", ...\]          |
+| arm_seconds         | 0        | Time in seconds to arm the security system after the user requesting it.       | any number                |
+| trigger_seconds     | 0        | Time in seconds to be able to disarm the security system before triggering it. | any number                |
+| siren_switch (1)    | true     | Shows a switch on the Home app to trigger the security system.                 | true/false                |
+| siren_mode_switches | false    | Shows switches on the Home app to trigger the security system for each mode.   | true/false                |
+| override_off        | false    | Allows to trigger the security system while disarmed.                          | true/false                |
+| save_state          | false    | State persistence for shutdowns and reboots.                                   | true/false                |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
 ## Server options (optional)
 Use the options below to start a HTTP server on the device and interact with the security system.
 
-| Option            | Description                                                                     | Value/s                |
-|-------------------|---------------------------------------------------------------------------------|------------------------|
-| server_port       | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
-| server_code       | Code to authenticate requests sent to the security system.                      | any number             |
-| server_arm_delay  | Allows to enable or disable the arming delay.                                   | true/false             |
+| Option            | Default  | Description                                                                     | Value/s                |
+|-------------------|--------------------------------------------------------------------------------------------|------------------------|
+| server_port       | null     | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
+| server_code       | null     | Code to authenticate requests sent to the security system.                      | any number             |
+| server_arm_delay  | false    | Allows to enable or disable the arming delay.                                   | true/false             |
 
 After setting the option, you can call these endpoints:
 
