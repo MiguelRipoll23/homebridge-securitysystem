@@ -29,27 +29,27 @@ Use Eve or a similar app to create automations like these:
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
 ## Basic options
-| Option              | Default  | Description                                                                    | Value/s                   |
-|---------------------|----------|--------------------------------------------------------------------------------|---------------------------|
-| default_mode        | "off"    | Initial mode for the security system when running Homebridge.                  | "home" | "night" | "away" |
-| disabled_modes      | null     | Modes to exclude from the available modes list.                                | \["night", ...\]          |
-| arm_seconds         | 0        | Time in seconds to arm the security system after the user requesting it.       | any number                |
-| trigger_seconds     | 0        | Time in seconds to be able to disarm the security system before triggering it. | any number                |
-| siren_switch (1)    | true     | Shows a switch on the Home app to trigger the security system.                 | true/false                |
-| siren_mode_switches | false    | Shows switches on the Home app to trigger the security system for each mode.   | true/false                |
-| override_off        | false    | Allows to trigger the security system while disarmed.                          | true/false                |
-| save_state          | false    | State persistence for shutdowns and reboots.                                   | true/false                |
+|        Option       | Description                                                                    | Default |  Example  |
+|:-------------------:|--------------------------------------------------------------------------------|:-------:|:---------:|
+| default_mode        | Initial mode for the security system when running Homebridge.                  | "off"   | "home"    |
+| disabled_modes      | Modes to exclude from the available modes list.                                | []      | ["night"] |
+| arm_seconds         | Time in seconds to arm the security system after the user requesting it.       | 0       | 60        |
+| trigger_seconds     | Time in seconds to be able to disarm the security system before triggering it. | 0       | 15        |
+| siren_switch (1)    | Shows a switch on the Home app to trigger the security system.                 | true    | false     |
+| siren_mode_switches | Shows switches on the Home app to trigger the security system for each mode.   | false   | true      |
+| override_off        | Allows to trigger the security system while disarmed.                          | false   | true      |
+| save_state          | State persistence for shutdowns and reboots.                                   | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 
 ## Server options (optional)
 Use the options below to start a HTTP server on the device and interact with the security system.
 
-| Option            | Default  | Description                                                                     | Value/s                |
-|-------------------|----------|---------------------------------------------------------------------------------|------------------------|
-| server_port       | null     | Port of the web server that will run on your Homebridge device.                 | 0-65535                |
-| server_code       | null     | Code to authenticate requests sent to the security system.                      | any number             |
-| server_arm_delay  | false    | Allows to enable or disable the arming delay.                                   | true/false             |
+|      Option      | Description                                                     | Default | Example |
+|:----------------:|-----------------------------------------------------------------|:-------:|:-------:|
+| server_port      | Port of the web server that will run on your Homebridge device. | null    | 8080    |
+| server_code      | Code to authenticate requests sent to the security system.      | null    | 1234    |
+| server_arm_delay | Allows to enable or disable the arming delay.                   | false   | true    |
 
 After setting the option, you can call these endpoints:
 
@@ -82,9 +82,9 @@ Use the options below to execute commands on the device when the security system
 
 | Option             | Description                                                                    | Value/s                |
 |--------------------|--------------------------------------------------------------------------------|------------------------|
-| command_triggered  | Command of the 'triggered' mode to execute on the device.                      | any string             |
-| command_alert      | Command of the 'alert' state to execute on the device.                         | any string             |
-| command_home       | Command of the 'home' mode to execute on the device.                           | any string             |
-| command_away       | Command of the 'away' mode to execute on the device.                           | any string             |
-| command_night      | Command of the 'night' mode to execute on the device.                          | any string             |
-| command_off        | Command of the 'off' mode to execute on the device.                            | any string             |
+| command_triggered  | Command of the 'triggered' mode to execute on the device.                      | your command           |
+| command_alert      | Command of the 'alert' state to execute on the device.                         | your command           |
+| command_home       | Command of the 'home' mode to execute on the device.                           | your command           |
+| command_away       | Command of the 'away' mode to execute on the device.                           | your command           |
+| command_night      | Command of the 'night' mode to execute on the device.                          | your command           |
+| command_off        | Command of the 'off' mode to execute on the device.                            | your command           |
