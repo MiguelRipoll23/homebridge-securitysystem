@@ -573,11 +573,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
       }, this.triggerSeconds * 1000);
 
       // Execute command
-      this.executeCommand('alert');
+      this.executeCommand('current', 'alert');
 
       // Send Webhook request
       if (this.webhook) {
-        this.sendWebhookEvent('alert');
+        this.sendWebhookEvent('current', 'alert');
       }
     }
   }
@@ -675,7 +675,20 @@ SecuritySystem.prototype.sendOkResponse = function(res) {
   };
 
   res.json(response);
-}
+};
+
+SecuritySystem.prototype.getDelayParameter = function(req) {
+  const delayParameter = req.query.delay;
+
+  if (delayParameter === 'true') {
+    return true;
+  }
+  else if (delayParameter === 'false') {
+    return false;
+  }
+
+  return false;
+};
 
 SecuritySystem.prototype.startServer = async function() {
   app.get('/status', (req, res) => {
@@ -693,6 +706,16 @@ SecuritySystem.prototype.startServer = async function() {
     res.json(response);
   });
 
+  app.get('/triggered', (req, res) => {
+    // Check authentication
+    if (this.isAuthenticated(req, res) === false) {
+      return false;
+    }
+
+    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    this.sendOkResponse(res);
+  });
+
   app.get('/home', (req, res) => {
     if (this.isAuthenticated(req, res) === false) {
       return false;
@@ -704,7 +727,7 @@ SecuritySystem.prototype.startServer = async function() {
 
     this.updateTargetState(
       Characteristic.SecuritySystemTargetState.STAY_ARM,
-      req.query.delay,
+      this.getDelayParameter(req),
       true
     );
 
@@ -722,7 +745,7 @@ SecuritySystem.prototype.startServer = async function() {
 
     this.updateTargetState(
       Characteristic.SecuritySystemTargetState.AWAY_ARM,
-      req.query.delay,
+      this.getDelayParameter(req),
       true
     );
 
@@ -740,7 +763,7 @@ SecuritySystem.prototype.startServer = async function() {
 
     this.updateTargetState(
       Characteristic.SecuritySystemTargetState.NIGHT_ARM,
-      req.query.delay,
+      this.getDelayParameter(req),
       true
     );
 
@@ -758,22 +781,7 @@ SecuritySystem.prototype.startServer = async function() {
 
     this.updateTargetState(
       Characteristic.SecuritySystemTargetState.DISARM,
-      req.query.delay,
-      true
-    );
-
-    this.sendOkResponse(res);
-  });
-
-  app.get('/triggered', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
-    }
-
-    this.updateTargetState(
-      Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED,
-      req.query.delay,
+      this.getDelayParameter(req),
       true
     );
 
@@ -833,6 +841,10 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
+      if (type === 'target') {
+        return;
+      }
+
       command = this.commandOff;
       break;
 
@@ -899,6 +911,10 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
+      if (type === 'target') {
+        return;
+      }
+
       path = this.webhookOff;
       break;
 
@@ -912,7 +928,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   }
 
   if (path === undefined || path === null) {
-    this.log('Missing webhook path for target state.');
+    this.log('Missing webhook path for state.');
     return;
   }
 
