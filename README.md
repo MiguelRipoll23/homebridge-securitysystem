@@ -29,8 +29,9 @@ Use Eve or a similar app to create automations like these:
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
 ## Basic options
-|        Option       | Description                                                                    | Default |  Example  |
-|:-------------------:|--------------------------------------------------------------------------------|:-------:|:---------:|
+
+| Option              | Description                                                                    | Default |  Example  |
+|---------------------|--------------------------------------------------------------------------------|---------|-----------|
 | default_mode        | Initial mode for the security system when running Homebridge.                  | "off"   | "home"    |
 | disabled_modes      | Modes to exclude from the available modes list.                                | []      | ["night"] |
 | arm_seconds         | Time in seconds to arm the security system after the user requesting it.       | 0       | 60        |
@@ -45,8 +46,8 @@ Use Eve or a similar app to create automations like these:
 ## Server options (optional)
 Use the options below to start a HTTP server on the device and interact with the security system.
 
-|      Option      | Description                                                     | Default | Example |
-|:----------------:|-----------------------------------------------------------------|:-------:|:-------:|
+| Option           | Description                                                     | Default | Example |
+|------------------|-----------------------------------------------------------------|---------|---------|
 | server_port      | Port of the web server that will run on your Homebridge device. | null    | 8080    |
 | server_code      | Code to authenticate requests sent to the security system.      | null    | 1234    |
 | server_arm_delay | Allows to enable or disable the arming delay.                   | false   | true    |
