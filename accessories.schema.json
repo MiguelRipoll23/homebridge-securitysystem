@@ -131,6 +131,36 @@
           "type": "string",
           "required": false
         },
+        "command_target_home": {
+          "title": "Command: Target Home",
+          "type": "string",
+          "required": false
+        },
+        "command_target_away": {
+          "title": "Command: Target Home",
+          "type": "string",
+          "required": false
+        },
+        "command_target_night": {
+          "title": "Command: Target Night",
+          "type": "string",
+          "required": false
+        },
+        "command_current_home": {
+          "title": "Command: Current Home",
+          "type": "string",
+          "required": false
+        },
+        "command_current_away": {
+          "title": "Command: Current Away",
+          "type": "string",
+          "required": false
+        },
+        "command_current_night": {
+          "title": "Command: Current Night",
+          "type": "string",
+          "required": false
+        },
         "command_triggered": {
           "title": "Command: Triggered",
           "type": "string",
@@ -138,21 +168,6 @@
         },
         "command_alert": {
           "title": "Command: Alert",
-          "type": "string",
-          "required": false
-        },
-        "command_home": {
-          "title": "Command: Home",
-          "type": "string",
-          "required": false
-        },
-        "command_away": {
-          "title": "Command: Away",
-          "type": "string",
-          "required": false
-        },
-        "command_night": {
-          "title": "Command: Night",
           "type": "string",
           "required": false
         },

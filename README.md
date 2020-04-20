@@ -83,11 +83,14 @@ Use the options below to send requests to a server when the security system mode
 ## Command options (optional)
 Use the options below to execute commands on the device when the security system mode changes.
 
-| Option             | Description                                                                    | Value/s                |
-|--------------------|--------------------------------------------------------------------------------|------------------------|
-| command_triggered  | Command of the 'triggered' mode to execute on the device.                      | your command           |
-| command_alert      | Command of the 'alert' state to execute on the device.                         | your command           |
-| command_home       | Command of the 'home' mode to execute on the device.                           | your command           |
-| command_away       | Command of the 'away' mode to execute on the device.                           | your command           |
-| command_night      | Command of the 'night' mode to execute on the device.                          | your command           |
-| command_off        | Command of the 'off' mode to execute on the device.                            | your command           |
+| Option                | Description                                                 | Example            |
+|-----------------------|-------------------------------------------------------------|--------------------|
+| command_target_home   | Command of the 'home' mode to execute when set as target.   | echo target home   |
+| command_target_away   | Command of the 'away' mode to execute when set as target.   | echo target away   |
+| command_target_night  | Command of the 'night' mode to execute when set as target.  | echo target night  |
+| command_current_home  | Command of the 'home' mode to execute when set as current.  | echo current home  |
+| command_current_away  | Command of the 'away' mode to execute when set as current.  | echo current away  |
+| command_current_night | Command of the 'night' mode to execute when set as current. | echo current night |
+| command_triggered     | Command of the 'triggered' mode to execute.                 | echo triggered     |
+| command_alert         | Command of the 'alert' state to execute.                    | echo alert         |
+| commad_off            | Command of the 'off' mode to execute.                       | echo off           |

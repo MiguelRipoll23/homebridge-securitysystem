@@ -51,15 +51,25 @@ function SecuritySystem(log, config) {
   this.overrideOff = config.override_off;
   this.saveState = config.save_state;
 
-  // Extra features
+  // Optional: server
   this.serverPort = config.server_port;
+
+  // Optional: webhook
   this.webhookUrl = config.webhook_url;
-  this.commandHome = config.command_home;
-  this.commandAway = config.command_away;
-  this.commandNight = config.command_night;
+
+  // Optiona: commands
+  this.commandTargetHome = config.command_target_home;
+  this.commandTargetAway = config.command_target_away;
+  this.commandTargetNight = config.command_target_night;
+
+  this.commandCurrentHome = config.command_current_home;
+  this.commandCurrentAway = config.command_current_away;
+  this.commandCurrentNight = config.command_current_night;
+  
   this.commandOff = config.command_off;
-  this.commandAlert = config.command_alert;
   this.commandTriggered = config.command_triggered;
+
+  this.commandAlert = config.command_alert;
 
   // Variables
   this.defaultState = null;
@@ -120,12 +130,14 @@ function SecuritySystem(log, config) {
   if (isOptionSet(this.webhookUrl)) {
     this.webhook = true;
 
-    this.webhookHome = config.webhook_home;
-    this.webhookAway = config.webhook_away;
-    this.webhookNight = config.webhook_night;
+    this.webhookCurrentHome = config.webhook_current_home;
+    this.webhookCurrentAway = config.webhook_current_away;
+    this.webhookCurrentNight = config.webhook_current_night;
+
     this.webhookOff = config.webhook_off;
-    this.webhookAlert = config.webhook_alert;
     this.webhookTriggered = config.webhook_triggered;
+
+    this.webhookAlert = config.webhook_alert;
   }
   else {
     this.webhook = false;
@@ -399,10 +411,8 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.save();
   }
 
-  // Execute command (if passed)
-  this.executeCommand(state);
+  this.executeCommand('current', state);
 
-  // Send Webhook request
   if (this.webhook) {
     this.sendWebhookEvent(state);
   }
@@ -452,10 +462,6 @@ SecuritySystem.prototype.handleStateChange = function() {
   }
 };
 
-SecuritySystem.prototype.getTargetState = function(callback) {
-  callback(null, this.targetState);
-};
-
 SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
   this.targetState = state;
   this.logState('Target', state);
@@ -467,6 +473,7 @@ SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
   }
 
   this.handleStateChange();
+  this.executeCommand('target', state);
 
   let armSeconds = 0;
 
@@ -500,6 +507,10 @@ SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
         .updateValue(this.arming);
     }
   }, armSeconds * 1000);
+};
+
+SecuritySystem.prototype.getTargetState = function(callback) {
+  callback(null, this.targetState);
 };
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
@@ -778,20 +789,39 @@ SecuritySystem.prototype.startServer = async function() {
   });
 };
 
-SecuritySystem.prototype.executeCommand = function(state) {
+SecuritySystem.prototype.executeCommand = function(type, state) {
   let command = null;
 
   switch (state) {
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      command = this.commandTriggered;
+      break;
+      
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      command = this.commandHome;
+      if (type === 'current') {
+        command = this.commandCurrentHome;
+        break;
+      }
+
+      command = this.commandTargetHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      command = this.commandAway;
+      if (type === 'current') {
+        command = this.commandCurrentAway;
+        break;
+      }
+
+      command = this.commandTargetAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      command = this.commandNight;
+      if (type === 'current') {
+        command = this.commandCurrentNight;
+        break;
+      }
+
+      command = this.commandTargetNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
@@ -800,10 +830,6 @@ SecuritySystem.prototype.executeCommand = function(state) {
 
     case 'alert':
       command = this.commandAlert;
-      break;
-
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      command = this.commandTriggered;
       break;
 
     default:
