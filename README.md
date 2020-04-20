@@ -50,7 +50,6 @@ Use the options below to start a HTTP server on the device and interact with the
 |------------------|-----------------------------------------------------------------|---------|---------|
 | server_port      | Port of the web server that will run on your Homebridge device. | null    | 8080    |
 | server_code      | Code to authenticate requests sent to the security system.      | null    | 1234    |
-| server_arm_delay | Allows to enable or disable the arming delay.                   | false   | true    |
 
 After setting the option, you can call these endpoints:
 
@@ -63,7 +62,10 @@ After setting the option, you can call these endpoints:
 | GET    | /off                         | Changes current security system mode to off.       |
 | GET    | /triggered                   | Changes current security system mode to triggered. |
 
-If you're using the `server_code` option, add `?code=[your_code]` at the end of the URL.
+| Parameter | Description                           | Default |
+|-----------|---------------------------------------|---------|
+| code      | Code used to authorize your request.  | null    |
+| delay     | Add delay to arm the security system. | false   |
 
 ## Webhook options (optional)
 Use the options below to send requests to a server when the security system mode changes.

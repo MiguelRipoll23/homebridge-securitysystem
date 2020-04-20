@@ -108,11 +108,6 @@ function SecuritySystem(log, config) {
 
   if (isOptionSet(this.serverPort)) {
     this.serverCode = config.server_code;
-    this.serverArmDelay = config.server_arm_delay;
-
-    if (isOptionSet(this.serverArmDelay)) {
-      this.serverArmDelay = true;
-    }
 
     if (this.serverPort < 0 || this.serverPort > 65535) {
       this.log('Server port is invalid.');
@@ -461,52 +456,16 @@ SecuritySystem.prototype.getTargetState = function(callback) {
   callback(null, this.targetState);
 };
 
-SecuritySystem.prototype.setTargetState = function(state, callback) {
+SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
   this.targetState = state;
   this.logState('Target', state);
-  this.handleStateChange();
 
-  let armSeconds = 0;
-
-  // Add arm delay if alarm is not triggered
-  if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      armSeconds = this.armSeconds;
-
-      // Update arming status
-      this.arming = true;
-      this.service
-        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-        .updateValue(this.arming);
-    }
+  if (server) {
+    this.service
+    .getCharacteristic(Characteristic.SecuritySystemTargetState)
+    .updateValue(this.targetState);
   }
 
-  // Update current state
-  this.armingTimeout = setTimeout(() => {
-    this.armingTimeout = null;
-    this.setCurrentState(state);
-
-    // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      this.arming = false;
-      this.service
-        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-        .updateValue(this.arming);
-    }
-  }, armSeconds * 1000);
-
-  callback(null);
-};
-
-SecuritySystem.prototype.updateTargetState = function(state) {
-  this.targetState = state;
-  this.logState('Target', state);
-
-  this.service
-  .getCharacteristic(Characteristic.SecuritySystemTargetState)
-  .updateValue(this.targetState);
-
   this.handleStateChange();
 
   let armSeconds = 0;
@@ -515,8 +474,8 @@ SecuritySystem.prototype.updateTargetState = function(state) {
   if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Only if set to a mode excluding off
     if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      // Only if server arm delay is enabled
-      if (this.serverArmDelay === true) {
+      // Only if delay is enabled
+      if (delay) {
         armSeconds = this.armSeconds;
 
         // Update arming status
@@ -541,6 +500,11 @@ SecuritySystem.prototype.updateTargetState = function(state) {
         .updateValue(this.arming);
     }
   }, armSeconds * 1000);
+};
+
+SecuritySystem.prototype.setTargetState = function(state, callback) {
+  this.updateTargetState(state, true, false);
+  callback(null);
 };
 
 SecuritySystem.prototype.sensorTriggered = function(state, callback) {
@@ -719,7 +683,12 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM);
+    this.updateTargetState(
+      Characteristic.SecuritySystemTargetState.STAY_ARM,
+      req.query.delay,
+      true
+    );
+
     this.sendOkResponse(res);
   });
 
@@ -732,7 +701,12 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
+    this.updateTargetState(
+      Characteristic.SecuritySystemTargetState.AWAY_ARM,
+      req.query.delay,
+      true
+    );
+
     this.sendOkResponse(res);
   });
 
@@ -745,7 +719,12 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
+    this.updateTargetState(
+      Characteristic.SecuritySystemTargetState.NIGHT_ARM,
+      req.query.delay,
+      true
+    );
+
     this.sendOkResponse(res);
   });
 
@@ -758,7 +737,12 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM);
+    this.updateTargetState(
+      Characteristic.SecuritySystemTargetState.DISARM,
+      req.query.delay,
+      true
+    );
+
     this.sendOkResponse(res);
   });
 
@@ -768,7 +752,12 @@ SecuritySystem.prototype.startServer = async function() {
       return false;
     }
 
-    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    this.updateTargetState(
+      Characteristic.SecuritySystemTargetState.ALARM_TRIGGERED,
+      req.query.delay,
+      true
+    );
+
     this.sendOkResponse(res);
   });
 

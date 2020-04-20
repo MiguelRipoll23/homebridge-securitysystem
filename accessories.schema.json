@@ -95,12 +95,6 @@
           "required": false,
           "minimum": 0
         },
-        "server_arm_delay": {
-          "title": "Add Arming Delay to Mode Changes Using Server",
-          "type": "boolean",
-          "default": false,
-          "required": false
-        },
         "webhook_url": {
           "title": "Webhook Base URL",
           "type": "string",
