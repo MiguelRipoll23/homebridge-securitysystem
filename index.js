@@ -472,6 +472,11 @@ SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
     return;
   }
 
+  // Check if state enabled
+  if (this.targetStates.includes(state) === false) {
+    return;
+  }
+
   this.targetState = state;
   this.logState('Target', state);
 
