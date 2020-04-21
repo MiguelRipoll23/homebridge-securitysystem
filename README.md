@@ -70,15 +70,18 @@ After setting the option, you can call these endpoints:
 ## Webhook options (optional)
 Use the options below to send requests to a server when the security system mode changes.
 
-| Option             | Description                                                                    | Value/s                |
-|--------------------|--------------------------------------------------------------------------------| -----------------------|
-| webhook_url        | URL of a web server if you would like to use webhooks.                         | http://example.ltd     |
-| webhook_triggered  | Path of the 'triggered' mode used on your web server.                          | /your-path             |
-| webhook_alert      | Path of the 'alert' state used on your web server.                             | /your-path             |
-| webhook_home       | Path of the 'home' mode used on your web server.                               | /your-path             |
-| webhook_away       | Path of the 'away' mode used on your web server.                               | /your-path             |
-| webhook_night      | Path of the 'night' mode used on your web server.                              | /your-path             |
-| webhook_off        | Path of the 'off' mode used on your web server.                                | /your-path             |
+| Option                | Description                                           | Example          |
+|-----------------------|-------------------------------------------------------|------------------|
+| webhook_url           | Base URL of the webhook server.                       | http://localhost |
+| webhook_target_home   | Path of the 'home' mode to call when set as target.   | /target/home     |
+| webhook_target_away   | Path of the 'away' mode to call when set as target.   | /target/away     |
+| webhook_target_night  | Path of the 'night' mode to call when set as target.  | /target/night    |
+| webhook_current_home  | Path of the 'home' mode to call when set as current.  | /current/home    |
+| webhook_current_away  | Path of the 'away' mode to call when set as current.  | /current/away    |
+| webhook_current_night | Path of the 'night' mode to call when set as current. | /current/night   |
+| webhook_triggered     | Path of the 'triggered' mode to call.                 | /triggered       |
+| webhook_alert         | Path of the 'alert' state to call.                    | /alert           |
+| webhook_off           | Path of the 'off' mode to call.                       | /off             |
 
 ## Command options (optional)
 Use the options below to execute commands on the device when the security system mode changes.
