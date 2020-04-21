@@ -53,6 +53,7 @@ function SecuritySystem(log, config) {
 
   // Optional: server
   this.serverPort = config.server_port;
+  this.serverCode = config.server_code;
 
   // Optional: webhook
   this.webhookUrl = config.webhook_url;
@@ -630,7 +631,7 @@ SecuritySystem.prototype.isCodeSent = function(req) {
 
   if (code === undefined) {
     // Check if auth is disabled
-    if (this.serverCode === null) {
+    if (isOptionSet(this.serverCode) === false) {
       return true;
     }
 
@@ -642,7 +643,7 @@ SecuritySystem.prototype.isCodeSent = function(req) {
 
 SecuritySystem.prototype.isCodeValid = function(req) {
   // Check if auth is disabled
-  if (this.serverCode === null) {
+  if (isOptionSet(this.serverCode) === false) {
     return true;
   }
 
