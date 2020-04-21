@@ -620,40 +620,14 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   }
 };
 
-SecuritySystem.prototype.isAuthenticated = function(req, res) {
-  let userCode = req.query.code;
+SecuritySystem.prototype.isCodeSent = function(req) {
+  let code = req.query.code;
 
-  // Skip authentication if disabled
-  if (this.serverCode === undefined) {
-    return true;
-  }
-
-  // Check if code was sent
-  if (userCode === undefined) {
-    this.log('Code required (Server)')
-
-    const codeRequiredResponse = {
-      'error': true,
-      'message': MESSAGE_CODE_REQUIRED
-    };
-
-    res.status(401).json(codeRequiredResponse);
-
-    return false;
-  }
-
-  // Compare codes
-  userCode = parseInt(userCode);
-
-  if (userCode !== this.serverCode) {
-    this.log('Code invalid (Server)')
-
-    const codeInvalidResponse = {
-      'error': true,
-      'message': MESSAGE_CODE_INVALID
-    };
-
-    res.status(403).json(codeInvalidResponse);
+  if (code === undefined) {
+    // Check if auth is disabled
+    if (this.serverCode === null) {
+      return true;
+    }
 
     return false;
   }
@@ -661,30 +635,20 @@ SecuritySystem.prototype.isAuthenticated = function(req, res) {
   return true;
 };
 
-SecuritySystem.prototype.isModeEnabled = function(req, res) {
-  const mode = req.path.substring(1);
-  const state = this.mode2State(mode);
-
-  if (this.targetStates.includes(state)) {
+SecuritySystem.prototype.isCodeValid = function(req) {
+  // Check if auth is disabled
+  if (this.serverCode === null) {
     return true;
   }
 
-  const response = {
-    'error': true,
-    'message': MESSAGE_MODE_DISABLED
-  };
-  
-  res.status(400).json(response);
+  let userCode = req.query.code;
+  userCode = parseInt(userCode);
 
-  return false;
-};
+  if (userCode !== this.serverCode) {
+    return false;
+  }
 
-SecuritySystem.prototype.sendOkResponse = function(res) {
-  const response = {
-    'error': false
-  };
-
-  res.json(response);
+  return true;
 };
 
 SecuritySystem.prototype.getDelayParameter = function(req) {
@@ -700,11 +664,57 @@ SecuritySystem.prototype.getDelayParameter = function(req) {
   return false;
 };
 
+SecuritySystem.prototype.sendCodeRequiredError = function(res) {
+  this.log('Code required (Server)')
+
+  const response = {
+    'error': true,
+    'message': MESSAGE_CODE_REQUIRED
+  };
+
+  res.status(401).json(response);
+};
+
+SecuritySystem.prototype.sendCodeInvalidError = function(res) {
+  this.log('Code invalid (Server)')
+
+  const codeInvalidResponse = {
+    'error': true,
+    'message': MESSAGE_CODE_INVALID
+  };
+
+  res.status(403).json(codeInvalidResponse);
+};
+
+SecuritySystem.prototype.sendModeDisabledError = function(res) {
+  this.log('Mode disabled (Server)')
+
+  const response = {
+    'error': true,
+    'message': MESSAGE_MODE_DISABLED
+  };
+  
+  res.status(400).json(response);
+};
+
+SecuritySystem.prototype.sendOkResponse = function(res) {
+  const response = {
+    'error': false
+  };
+
+  res.json(response);
+};
+
 SecuritySystem.prototype.startServer = async function() {
   app.get('/status', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
+    }
+
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(res);
+      return;
     }
 
     const response = {
@@ -717,9 +727,14 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   app.get('/triggered', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
+    }
+
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(res);
+      return;
     }
 
     this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
@@ -727,74 +742,94 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   app.get('/home', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(res);
+      return;
     }
 
-    this.updateTargetState(
-      Characteristic.SecuritySystemTargetState.STAY_ARM,
-      this.getDelayParameter(req),
-      true
-    );
+    const state = Characteristic.SecuritySystemTargetState.STAY_ARM;
 
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
   app.get('/away', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(res);
+      return;
     }
 
-    this.updateTargetState(
-      Characteristic.SecuritySystemTargetState.AWAY_ARM,
-      this.getDelayParameter(req),
-      true
-    );
+    const state = Characteristic.SecuritySystemTargetState.AWAY_ARM;
 
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
   app.get('/night', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(res);
+      return;
     }
 
-    this.updateTargetState(
-      Characteristic.SecuritySystemTargetState.NIGHT_ARM,
-      this.getDelayParameter(req),
-      true
-    );
+    const state = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
 
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
   app.get('/off', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(res);
+      return;
     }
 
-    this.updateTargetState(
-      Characteristic.SecuritySystemTargetState.DISARM,
-      this.getDelayParameter(req),
-      true
-    );
+    const state = Characteristic.SecuritySystemTargetState.DISARM;
 
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
