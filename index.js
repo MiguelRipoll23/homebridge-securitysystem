@@ -467,6 +467,11 @@ SecuritySystem.prototype.handleStateChange = function() {
 };
 
 SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
+  // Check if mode already selected
+  if (this.currentState === state) {
+    return;
+  }
+
   this.targetState = state;
   this.logState('Target', state);
 
@@ -562,6 +567,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     }
     else {
       this.log('Sensor/s (Triggered)');
+
+      // Sensor already triggered
+      if (this.triggerTimeout !== null) {
+        return;
+      }
 
       this.triggerTimeout = setTimeout(() => {
         // Reset
