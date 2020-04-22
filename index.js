@@ -762,7 +762,13 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
-    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    if (this.getDelayParameter(req)) {
+      this.sensorTriggered(true, null);
+    }
+    else {
+      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    }
+
     this.sendOkResponse(res);
   });
 
