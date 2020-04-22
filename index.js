@@ -410,6 +410,11 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
 };
 
 SecuritySystem.prototype.setCurrentState = function(state) {
+  // Check if mode already set
+  if (this.currentState === state) {
+    return;
+  }
+
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
@@ -471,7 +476,7 @@ SecuritySystem.prototype.handleStateChange = function() {
 };
 
 SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
-  // Check if mode already selected
+  // Check if mode already set
   if (this.currentState === state) {
     return;
   }
