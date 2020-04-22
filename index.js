@@ -11,8 +11,10 @@ const customCharacteristics = require('./custom/customCharacteristics');
 
 const app = express();
 
+const MAX_CODE_ATTEMPTS = 25;
 const MESSAGE_CODE_REQUIRED = 'Code required';
 const MESSAGE_CODE_INVALID = 'Code invalid';
+const MESSAGE_CODE_BLOCKED = 'Code blocked';
 const MESSAGE_MODE_DISABLED = 'Mode disabled';
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
@@ -78,6 +80,7 @@ function SecuritySystem(log, config) {
   this.armingTimeout = null;
   this.triggerTimeout = null;
   this.modeChanged = false;
+  this.invalidCodeAttempts = 0;
   this.webhook = false;
 
   // Check for optional options
@@ -647,12 +650,22 @@ SecuritySystem.prototype.isCodeValid = function(req) {
     return true;
   }
 
+  // Check brute force
+  if (this.invalidCodeAttempts > MAX_CODE_ATTEMPTS) {
+    req.blocked = true;
+    return false;
+  }
+
   let userCode = req.query.code;
   userCode = parseInt(userCode);
 
   if (userCode !== this.serverCode) {
+    this.invalidCodeAttempts++;
     return false;
   }
+
+  // Reset
+  this.invalidCodeAttempts = 0;
 
   return true;
 };
@@ -681,15 +694,21 @@ SecuritySystem.prototype.sendCodeRequiredError = function(res) {
   res.status(401).json(response);
 };
 
-SecuritySystem.prototype.sendCodeInvalidError = function(res) {
-  this.log('Code invalid (Server)')
-
-  const codeInvalidResponse = {
-    'error': true,
-    'message': MESSAGE_CODE_INVALID
+SecuritySystem.prototype.sendCodeInvalidError = function(req, res) {
+  const response = {
+    'error': true
   };
 
-  res.status(403).json(codeInvalidResponse);
+  if (req.blocked) {
+    this.log('Code blocked (Server)');
+    response.message = MESSAGE_CODE_BLOCKED;
+  }
+  else {
+    this.log('Code invalid (Server)');
+    response.message = MESSAGE_CODE_INVALID;
+  }
+
+  res.status(403).json(response);
 };
 
 SecuritySystem.prototype.sendModeDisabledError = function(res) {
@@ -719,7 +738,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(res);
+      this.sendCodeInvalidError(req, res);
       return;
     }
 
@@ -739,7 +758,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(res);
+      this.sendCodeInvalidError(req, res);
       return;
     }
 
@@ -754,7 +773,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(res);
+      this.sendCodeInvalidError(req, res);
       return;
     }
 
@@ -777,7 +796,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(res);
+      this.sendCodeInvalidError(req, res);
       return;
     }
 
@@ -800,7 +819,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(res);
+      this.sendCodeInvalidError(req, res);
       return;
     }
 
@@ -823,7 +842,7 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(res);
+      this.sendCodeInvalidError(req, res);
       return;
     }
 
