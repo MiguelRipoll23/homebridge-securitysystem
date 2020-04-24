@@ -32,16 +32,17 @@ Use Eve or a similar app to create automations like these:
 
 ## Basic options
 
-| Option              | Description                                                                    | Default |  Example  |
-|---------------------|--------------------------------------------------------------------------------|---------|-----------|
-| default_mode        | Initial mode for the security system when running Homebridge.                  | "off"   | "home"    |
-| disabled_modes      | Modes to exclude from the available modes list.                                | []      | ["night"] |
-| arm_seconds         | Time in seconds to arm the security system after the user requesting it.       | 0       | 60        |
-| trigger_seconds     | Time in seconds to be able to disarm the security system before triggering it. | 0       | 15        |
-| siren_switch (1)    | Shows a switch on the Home app to trigger the security system.                 | true    | false     |
-| siren_mode_switches | Shows switches on the Home app to trigger the security system for each mode.   | false   | true      |
-| override_off        | Allows to trigger the security system while disarmed.                          | false   | true      |
-| save_state          | State persistence for shutdowns and reboots.                                   | false   | true      |
+| Option               | Description                                                                    | Default |  Example  |
+|----------------------|--------------------------------------------------------------------------------|---------|-----------|
+| default_mode         | Initial mode for the security system when running Homebridge.                  | "off"   | "home"    |
+| disabled_modes       | Modes to exclude from the available modes list.                                | []      | ["night"] |
+| arm_seconds          | Time in seconds to arm the security system after the user requesting it.       | 0       | 60        |
+| trigger_seconds      | Time in seconds to be able to disarm the security system before triggering it. | 0       | 15        |
+| siren_switch (1)     | Shows a switch on the Home app to trigger the security system.                 | true    | false     |
+| siren_mode_switches  | Shows switches on the Home app to trigger the security system for each mode.   | false   | true      |
+| unsafe_mode_switches | Shows switches on the Home app for each mode to bypass confirmation.           | false   | true      |
+| override_off         | Allows to trigger the security system while disarmed.                          | false   | true      |
+| save_state           | State persistence for shutdowns and reboots.                                   | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
 

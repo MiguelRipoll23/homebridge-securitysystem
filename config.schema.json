@@ -58,6 +58,12 @@
       "default": true,
       "required": false
     },
+    "unsafe_mode_switches": {
+      "title": "(Not recommeded) Show Mode Switches",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
     "siren_mode_switches": {
       "title": "Show Siren Mode Switches",
       "type": "boolean",
