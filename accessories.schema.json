@@ -95,12 +95,6 @@
           "required": false,
           "minimum": 0
         },
-        "server_arm_delay": {
-          "title": "Add Arming Delay to Mode Changes Using Server",
-          "type": "boolean",
-          "default": false,
-          "required": false
-        },
         "webhook_url": {
           "title": "Webhook Base URL",
           "type": "string",
@@ -117,18 +111,33 @@
           "type": "string",
           "required": false
         },
-        "webhook_home": {
-          "title": "Webhook Path: Home",
+        "webhook_target_home": {
+          "title": "Webhook Path: Target Home",
           "type": "string",
           "required": false
         },
-        "webhook_away": {
-          "title": "Webhook Path: Away",
+        "webhook_target_away": {
+          "title": "Webhook Path: Target Away",
           "type": "string",
           "required": false
         },
-        "webhook_night": {
-          "title": "Webhook Path: Night",
+        "webhook_target_night": {
+          "title": "Webhook Path: Target Night",
+          "type": "string",
+          "required": false
+        },
+        "webhook_current_home": {
+          "title": "Webhook Path: Current Home",
+          "type": "string",
+          "required": false
+        },
+        "webhook_current_away": {
+          "title": "Webhook Path: Current Away",
+          "type": "string",
+          "required": false
+        },
+        "webhook_current_night": {
+          "title": "Webhook Path: Current Night",
           "type": "string",
           "required": false
         },
@@ -147,18 +156,33 @@
           "type": "string",
           "required": false
         },
-        "command_home": {
-          "title": "Command: Home",
+        "command_target_home": {
+          "title": "Command: Target Home",
           "type": "string",
           "required": false
         },
-        "command_away": {
-          "title": "Command: Away",
+        "command_target_away": {
+          "title": "Command: Target Home",
           "type": "string",
           "required": false
         },
-        "command_night": {
-          "title": "Command: Night",
+        "command_target_night": {
+          "title": "Command: Target Night",
+          "type": "string",
+          "required": false
+        },
+        "command_current_home": {
+          "title": "Command: Current Home",
+          "type": "string",
+          "required": false
+        },
+        "command_current_away": {
+          "title": "Command: Current Away",
+          "type": "string",
+          "required": false
+        },
+        "command_current_night": {
+          "title": "Command: Current Night",
           "type": "string",
           "required": false
         },

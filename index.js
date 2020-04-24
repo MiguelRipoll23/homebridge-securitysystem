@@ -11,8 +11,10 @@ const customCharacteristics = require('./custom/customCharacteristics');
 
 const app = express();
 
+const MAX_CODE_ATTEMPTS = 25;
 const MESSAGE_CODE_REQUIRED = 'Code required';
 const MESSAGE_CODE_INVALID = 'Code invalid';
+const MESSAGE_CODE_BLOCKED = 'Code blocked';
 const MESSAGE_MODE_DISABLED = 'Mode disabled';
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
@@ -51,15 +53,26 @@ function SecuritySystem(log, config) {
   this.overrideOff = config.override_off;
   this.saveState = config.save_state;
 
-  // Extra features
+  // Optional: server
   this.serverPort = config.server_port;
+  this.serverCode = config.server_code;
+
+  // Optional: webhook
   this.webhookUrl = config.webhook_url;
-  this.commandHome = config.command_home;
-  this.commandAway = config.command_away;
-  this.commandNight = config.command_night;
+
+  // Optiona: commands
+  this.commandTargetHome = config.command_target_home;
+  this.commandTargetAway = config.command_target_away;
+  this.commandTargetNight = config.command_target_night;
+
+  this.commandCurrentHome = config.command_current_home;
+  this.commandCurrentAway = config.command_current_away;
+  this.commandCurrentNight = config.command_current_night;
+  
   this.commandOff = config.command_off;
-  this.commandAlert = config.command_alert;
   this.commandTriggered = config.command_triggered;
+
+  this.commandAlert = config.command_alert;
 
   // Variables
   this.defaultState = null;
@@ -67,6 +80,7 @@ function SecuritySystem(log, config) {
   this.armingTimeout = null;
   this.triggerTimeout = null;
   this.modeChanged = false;
+  this.invalidCodeAttempts = 0;
   this.webhook = false;
 
   // Check for optional options
@@ -108,11 +122,6 @@ function SecuritySystem(log, config) {
 
   if (isOptionSet(this.serverPort)) {
     this.serverCode = config.server_code;
-    this.serverArmDelay = config.server_arm_delay;
-
-    if (isOptionSet(this.serverArmDelay)) {
-      this.serverArmDelay = true;
-    }
 
     if (this.serverPort < 0 || this.serverPort > 65535) {
       this.log('Server port is invalid.');
@@ -124,13 +133,19 @@ function SecuritySystem(log, config) {
 
   if (isOptionSet(this.webhookUrl)) {
     this.webhook = true;
+    
+    this.webhookTargetHome = config.webhook_target_home;
+    this.webhookTargetAway = config.webhook_target_away;
+    this.webhookTargetNight = config.webhook_target_night;
 
-    this.webhookHome = config.webhook_home;
-    this.webhookAway = config.webhook_away;
-    this.webhookNight = config.webhook_night;
+    this.webhookCurrentHome = config.webhook_current_home;
+    this.webhookCurrentAway = config.webhook_current_away;
+    this.webhookCurrentNight = config.webhook_current_night;
+
     this.webhookOff = config.webhook_off;
-    this.webhookAlert = config.webhook_alert;
     this.webhookTriggered = config.webhook_triggered;
+
+    this.webhookAlert = config.webhook_alert;
   }
   else {
     this.webhook = false;
@@ -147,7 +162,7 @@ function SecuritySystem(log, config) {
 
   // Security system
   this.service = new CustomService.SecuritySystem(this.name);
-  this.targetStates = this.getTargetStates();
+  this.targetStates = this.getEnabledStates();
 
   // Services
   this.service
@@ -363,7 +378,7 @@ SecuritySystem.prototype.logState = function(type, state) {
   this.log(`${type} state (${mode})`);
 };
 
-SecuritySystem.prototype.getTargetStates = function() {
+SecuritySystem.prototype.getEnabledStates = function() {
   const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
   const targetStates = targetStateCharacteristic.props.validValues;
 
@@ -395,6 +410,11 @@ SecuritySystem.prototype.getCurrentState = function(callback) {
 };
 
 SecuritySystem.prototype.setCurrentState = function(state) {
+  // Check if mode already set
+  if (this.currentState === state) {
+    return;
+  }
+
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logState('Current', state);
@@ -404,12 +424,10 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.save();
   }
 
-  // Execute command (if passed)
-  this.executeCommand(state);
+  this.executeCommand('current', state);
 
-  // Send Webhook request
   if (this.webhook) {
-    this.sendWebhookEvent(state);
+    this.sendWebhookEvent('current', state);
   }
 };
 
@@ -457,57 +475,32 @@ SecuritySystem.prototype.handleStateChange = function() {
   }
 };
 
-SecuritySystem.prototype.getTargetState = function(callback) {
-  callback(null, this.targetState);
-};
-
-SecuritySystem.prototype.setTargetState = function(state, callback) {
-  this.targetState = state;
-  this.logState('Target', state);
-  this.handleStateChange();
-
-  let armSeconds = 0;
-
-  // Add arm delay if alarm is not triggered
-  if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      armSeconds = this.armSeconds;
-
-      // Update arming status
-      this.arming = true;
-      this.service
-        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-        .updateValue(this.arming);
-    }
+SecuritySystem.prototype.updateTargetState = function(state, delay, server) {
+  // Check if mode already set
+  if (this.currentState === state) {
+    return;
   }
 
-  // Update current state
-  this.armingTimeout = setTimeout(() => {
-    this.armingTimeout = null;
-    this.setCurrentState(state);
+  // Check if state enabled
+  if (this.targetStates.includes(state) === false) {
+    return;
+  }
 
-    // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      this.arming = false;
-      this.service
-        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-        .updateValue(this.arming);
-    }
-  }, armSeconds * 1000);
-
-  callback(null);
-};
-
-SecuritySystem.prototype.updateTargetState = function(state) {
   this.targetState = state;
   this.logState('Target', state);
 
-  this.service
-  .getCharacteristic(Characteristic.SecuritySystemTargetState)
-  .updateValue(this.targetState);
+  if (server) {
+    this.service
+    .getCharacteristic(Characteristic.SecuritySystemTargetState)
+    .updateValue(this.targetState);
+  }
 
   this.handleStateChange();
+  this.executeCommand('target', state);
+
+  if (this.webhook) {
+    this.sendWebhookEvent('target', state);
+  }
 
   let armSeconds = 0;
 
@@ -515,8 +508,8 @@ SecuritySystem.prototype.updateTargetState = function(state) {
   if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Only if set to a mode excluding off
     if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
-      // Only if server arm delay is enabled
-      if (this.serverArmDelay === true) {
+      // Only if delay is enabled
+      if (delay) {
         armSeconds = this.armSeconds;
 
         // Update arming status
@@ -541,6 +534,15 @@ SecuritySystem.prototype.updateTargetState = function(state) {
         .updateValue(this.arming);
     }
   }, armSeconds * 1000);
+};
+
+SecuritySystem.prototype.getTargetState = function(callback) {
+  callback(null, this.targetState);
+};
+
+SecuritySystem.prototype.setTargetState = function(state, callback) {
+  this.updateTargetState(state, true, false);
+  callback(null);
 };
 
 SecuritySystem.prototype.sensorTriggered = function(state, callback) {
@@ -580,6 +582,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     else {
       this.log('Sensor/s (Triggered)');
 
+      // Sensor already triggered
+      if (this.triggerTimeout !== null) {
+        return;
+      }
+
       this.triggerTimeout = setTimeout(() => {
         // Reset
         this.triggerTimeout = null;
@@ -590,11 +597,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
       }, this.triggerSeconds * 1000);
 
       // Execute command
-      this.executeCommand('alert');
+      this.executeCommand('current', 'alert');
 
       // Send Webhook request
       if (this.webhook) {
-        this.sendWebhookEvent('alert');
+        this.sendWebhookEvent('current', 'alert');
       }
     }
   }
@@ -627,40 +634,14 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   }
 };
 
-SecuritySystem.prototype.isAuthenticated = function(req, res) {
-  let userCode = req.query.code;
+SecuritySystem.prototype.isCodeSent = function(req) {
+  let code = req.query.code;
 
-  // Skip authentication if disabled
-  if (this.serverCode === undefined) {
-    return true;
-  }
-
-  // Check if code was sent
-  if (userCode === undefined) {
-    this.log('Code required (Server)')
-
-    const codeRequiredResponse = {
-      'error': true,
-      'message': MESSAGE_CODE_REQUIRED
-    };
-
-    res.status(401).json(codeRequiredResponse);
-
-    return false;
-  }
-
-  // Compare codes
-  userCode = parseInt(userCode);
-
-  if (userCode !== this.serverCode) {
-    this.log('Code invalid (Server)')
-
-    const codeInvalidResponse = {
-      'error': true,
-      'message': MESSAGE_CODE_INVALID
-    };
-
-    res.status(403).json(codeInvalidResponse);
+  if (code === undefined) {
+    // Check if auth is disabled
+    if (isOptionSet(this.serverCode) === false) {
+      return true;
+    }
 
     return false;
   }
@@ -668,13 +649,75 @@ SecuritySystem.prototype.isAuthenticated = function(req, res) {
   return true;
 };
 
-SecuritySystem.prototype.isModeEnabled = function(req, res) {
-  const mode = req.path.substring(1);
-  const state = this.mode2State(mode);
-
-  if (this.targetStates.includes(state)) {
+SecuritySystem.prototype.isCodeValid = function(req) {
+  // Check if auth is disabled
+  if (isOptionSet(this.serverCode) === false) {
     return true;
   }
+
+  // Check brute force
+  if (this.invalidCodeAttempts > MAX_CODE_ATTEMPTS) {
+    req.blocked = true;
+    return false;
+  }
+
+  let userCode = req.query.code;
+  userCode = parseInt(userCode);
+
+  if (userCode !== this.serverCode) {
+    this.invalidCodeAttempts++;
+    return false;
+  }
+
+  // Reset
+  this.invalidCodeAttempts = 0;
+
+  return true;
+};
+
+SecuritySystem.prototype.getDelayParameter = function(req) {
+  const delayParameter = req.query.delay;
+
+  if (delayParameter === 'true') {
+    return true;
+  }
+  else if (delayParameter === 'false') {
+    return false;
+  }
+
+  return false;
+};
+
+SecuritySystem.prototype.sendCodeRequiredError = function(res) {
+  this.log('Code required (Server)')
+
+  const response = {
+    'error': true,
+    'message': MESSAGE_CODE_REQUIRED
+  };
+
+  res.status(401).json(response);
+};
+
+SecuritySystem.prototype.sendCodeInvalidError = function(req, res) {
+  const response = {
+    'error': true
+  };
+
+  if (req.blocked) {
+    this.log('Code blocked (Server)');
+    response.message = MESSAGE_CODE_BLOCKED;
+  }
+  else {
+    this.log('Code invalid (Server)');
+    response.message = MESSAGE_CODE_INVALID;
+  }
+
+  res.status(403).json(response);
+};
+
+SecuritySystem.prototype.sendModeDisabledError = function(res) {
+  this.log('Mode disabled (Server)')
 
   const response = {
     'error': true,
@@ -682,8 +725,6 @@ SecuritySystem.prototype.isModeEnabled = function(req, res) {
   };
   
   res.status(400).json(response);
-
-  return false;
 };
 
 SecuritySystem.prototype.sendOkResponse = function(res) {
@@ -692,13 +733,18 @@ SecuritySystem.prototype.sendOkResponse = function(res) {
   };
 
   res.json(response);
-}
+};
 
 SecuritySystem.prototype.startServer = async function() {
   app.get('/status', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
+    }
+
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
     }
 
     const response = {
@@ -710,65 +756,116 @@ SecuritySystem.prototype.startServer = async function() {
     res.json(response);
   });
 
+  app.get('/triggered', (req, res) => {
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
+    }
+
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
+    }
+
+    if (this.getDelayParameter(req)) {
+      this.sensorTriggered(true, null);
+    }
+    else {
+      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    }
+
+    this.sendOkResponse(res);
+  });
+
   app.get('/home', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM);
+    const state = Characteristic.SecuritySystemTargetState.STAY_ARM;
+
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
   app.get('/away', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM);
+    const state = Characteristic.SecuritySystemTargetState.AWAY_ARM;
+
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
   app.get('/night', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM);
+    const state = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
+    }
+
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
   app.get('/off', (req, res) => {
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
     }
 
-    if (this.isModeEnabled(req, res) === false) {
-      return false;
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
     }
 
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM);
-    this.sendOkResponse(res);
-  });
+    const state = Characteristic.SecuritySystemTargetState.DISARM;
 
-  app.get('/triggered', (req, res) => {
-    // Check authentication
-    if (this.isAuthenticated(req, res) === false) {
-      return false;
+    // Check if state enabled
+    if (this.targetStates.includes(state) === false) {
+      this.sendModeDisabledError(res);
+      return;
     }
 
-    this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
+    this.updateTargetState(state, this.getDelayParameter(req), true);
     this.sendOkResponse(res);
   });
 
@@ -789,23 +886,46 @@ SecuritySystem.prototype.startServer = async function() {
   });
 };
 
-SecuritySystem.prototype.executeCommand = function(state) {
+SecuritySystem.prototype.executeCommand = function(type, state) {
   let command = null;
 
   switch (state) {
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      command = this.commandTriggered;
+      break;
+
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      command = this.commandHome;
+      if (type === 'current') {
+        command = this.commandCurrentHome;
+        break;
+      }
+
+      command = this.commandTargetHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      command = this.commandAway;
+      if (type === 'current') {
+        command = this.commandCurrentAway;
+        break;
+      }
+
+      command = this.commandTargetAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      command = this.commandNight;
+      if (type === 'current') {
+        command = this.commandCurrentNight;
+        break;
+      }
+
+      command = this.commandTargetNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
+      if (type === 'target') {
+        return;
+      }
+
       command = this.commandOff;
       break;
 
@@ -813,12 +933,8 @@ SecuritySystem.prototype.executeCommand = function(state) {
       command = this.commandAlert;
       break;
 
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      command = this.commandTriggered;
-      break;
-
     default:
-      this.log(`Unknown target state. (${state})`);
+      this.log(`Unknown state (${state})`);
   }
 
   if (command === undefined || command === null) {
@@ -827,12 +943,12 @@ SecuritySystem.prototype.executeCommand = function(state) {
 
   exec(command, (error, stdout, stderr) => {
     if (error !== null) {
-      this.log(`Command failed. (${command})\n${error}`);
+      this.log(`Command failed (${command})\n${error}`);
       return;
     }
 
     if (stderr !== '') {
-      this.log(`Command failed. (${command})\n${stderr}`);
+      this.log(`Command failed (${command})\n${stderr}`);
       return;
     }
 
@@ -840,23 +956,46 @@ SecuritySystem.prototype.executeCommand = function(state) {
   });
 };
 
-SecuritySystem.prototype.sendWebhookEvent = function(state) {
+SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   let path = null;
 
   switch (state) {
+    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
+      path = this.webhookTriggered;
+      break;
+
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
-      path = this.webhookHome;
+      if (type === 'current') {
+        path = this.webhookCurrentHome;
+        break;
+      }
+
+      path = this.webhookTargetHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
-      path = this.webhookAway;
+      if (type === 'current') {
+        path = this.webhookCurrentAway;
+        break;
+      }
+
+      path = this.webhookTargetAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
-      path = this.webhookNight;
+      if (type === 'current') {
+        path = this.webhookCurrentNight;
+        break;
+      }
+
+      path = this.webhookTargetNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
+      if (type === 'target') {
+        return;
+      }
+
       path = this.webhookOff;
       break;
 
@@ -864,17 +1003,13 @@ SecuritySystem.prototype.sendWebhookEvent = function(state) {
       path = this.webhookAlert;
       break;
 
-    case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      path = this.webhookTriggered;
-      break;
-
     default:
-      this.log(`Unknown target state. (${state})`);
+      this.log(`Unknown state (${state})`);
       return;
   }
 
   if (path === undefined || path === null) {
-    this.log('Missing webhook path for target state.');
+    this.log('Missing webhook path for state.');
     return;
   }
 
