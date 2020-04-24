@@ -346,9 +346,7 @@ SecuritySystem.prototype.load = async function() {
 
       this.currentState = state.currentState;
       this.targetState = state.targetState;
-      this.sirenActive = state.sirenActive;
-      this.sirenOn = state.sirenOn;
-
+      
       this.logState('Saved', this.currentState);
     })
     .catch(error => {
@@ -646,11 +644,6 @@ SecuritySystem.prototype.setTargetState = function(state, callback) {
 };
 
 SecuritySystem.prototype.sensorTriggered = function(state, callback) {
-  // Save state to file
-  if (this.saveState) {
-    this.save();
-  }
-
   // Ignore if the security system
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
