@@ -350,6 +350,7 @@ SecuritySystem.prototype.load = async function() {
       const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
       armingDelayCharacteristic.updateValue(state.armingDelay);
 
+      this.updateModeSwitches();
       this.logState('Saved', this.currentState);
     })
     .catch(error => {
@@ -538,32 +539,7 @@ SecuritySystem.prototype.handleStateChange = function() {
 
   // Update mode switches
   this.resetModeSwitches();
-
-  switch (this.targetState) {
-    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-      this.modeHomeService
-        .getCharacteristic(Characteristic.On)
-        .updateValue(true);
-      break;
-
-    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-      this.modeAwayService
-        .getCharacteristic(Characteristic.On)
-        .updateValue(true);
-      break;
-
-    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-      this.modeNightService
-        .getCharacteristic(Characteristic.On)
-        .updateValue(true);
-      break;
-
-    case Characteristic.SecuritySystemTargetState.DISARM:
-      this.modeOffService
-        .getCharacteristic(Characteristic.On)
-        .updateValue(true);
-      break;
-  }
+  this.updateModeSwitches();
 };
 
 SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
@@ -1166,6 +1142,34 @@ SecuritySystem.prototype.resetModeSwitches = function() {
       .updateValue(false);
   }
 }
+
+SecuritySystem.prototype.updateModeSwitches = function() {
+  switch (this.targetState) {
+    case Characteristic.SecuritySystemTargetState.STAY_ARM:
+      this.modeHomeService
+        .getCharacteristic(Characteristic.On)
+        .updateValue(true);
+      break;
+
+    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+      this.modeAwayService
+        .getCharacteristic(Characteristic.On)
+        .updateValue(true);
+      break;
+
+    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+      this.modeNightService
+        .getCharacteristic(Characteristic.On)
+        .updateValue(true);
+      break;
+
+    case Characteristic.SecuritySystemTargetState.DISARM:
+      this.modeOffService
+        .getCharacteristic(Characteristic.On)
+        .updateValue(true);
+      break;
+  }
+};
 
 SecuritySystem.prototype.getModeHomeState = function(callback) {
   const value = this.modeHomeService.getCharacteristic(Characteristic.On).value;
