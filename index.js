@@ -1173,7 +1173,8 @@ SecuritySystem.prototype.resetModeSwitches = function() {
 }
 
 SecuritySystem.prototype.getModeHomeState = function(callback) {
-  callback(null, this.modeHomeOn);
+  const value = this.modeHomeService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
 };
 
 SecuritySystem.prototype.setModeHomeState = function(state, callback) {
@@ -1190,7 +1191,8 @@ SecuritySystem.prototype.setModeHomeState = function(state, callback) {
 };
 
 SecuritySystem.prototype.getModeAwayState = function(callback) {
-  callback(null, this.modeAwayOn);
+  const value = this.modeAwayService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
 };
 
 SecuritySystem.prototype.setModeAwayState = function(state, callback) {
@@ -1207,7 +1209,8 @@ SecuritySystem.prototype.setModeAwayState = function(state, callback) {
 };
 
 SecuritySystem.prototype.getModeNightState = function(callback) {
-  callback(null, this.modeNightOn);
+  const value = this.modeNightService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
 };
 
 SecuritySystem.prototype.setModeNightState = function(state, callback) {
@@ -1224,7 +1227,8 @@ SecuritySystem.prototype.setModeNightState = function(state, callback) {
 };
 
 SecuritySystem.prototype.getModeOffState = function(callback) {
-  callback(null, this.modeOffOn);
+  const value = this.modeOffService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
 };
 
 SecuritySystem.prototype.setModeOffState = function(state, callback) {
