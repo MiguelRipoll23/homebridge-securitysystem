@@ -170,11 +170,10 @@ function SecuritySystem(log, config) {
     this.log('Webhook (' + this.webhookUrl + ')');
   }
 
-  // Security system
+  // Security System
   this.service = new CustomService.SecuritySystem(this.name);
   this.targetStates = this.getEnabledStates();
 
-  // Services
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
   this.arming = false;
@@ -219,7 +218,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getSirenState2.bind(this))
     .on('set', this.setSirenState2.bind(this));
 
-  // Mode Switches
+  // Mode Switches (Optional)
   this.modeHomeService = new Service.Switch('Mode Home', 'mode-home');
 
   this.modeHomeService
@@ -280,7 +279,7 @@ function SecuritySystem(log, config) {
   this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'Generic');
   this.accessoryInformationService.setCharacteristic(Characteristic.FirmwareRevision, packageJson.version);
 
-  // Services
+  // Services List
   this.services = [
     this.service,
     this.accessoryInformationService
