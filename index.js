@@ -558,12 +558,14 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
   }
 
   if (update) {
-    this.service
-      .getCharacteristic(Characteristic.SecuritySystemTargetState)
-      .updateValue(this.targetState);
+    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
   }
 
   this.handleStateChange();
+
+  if (delay) {
+    delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
+  }
 
   let armSeconds = 0;
 
@@ -584,7 +586,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
     }
   }
 
-  // Update current state
+  // Arming
   this.armingTimeout = setTimeout(() => {
     this.armingTimeout = null;
     this.setCurrentState(state);

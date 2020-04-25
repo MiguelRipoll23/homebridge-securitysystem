@@ -26,7 +26,7 @@ function CustomCharacteristic(Characteristic) {
       perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
     });
 
-    this.value = this.getDefaultValue();
+    this.value = true;
   };
 
   inherits(this.SecuritySystemArmingDelay, Characteristic);
