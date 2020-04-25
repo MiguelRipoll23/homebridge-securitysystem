@@ -1132,15 +1132,6 @@ SecuritySystem.prototype.setSirenState = function(state, callback) {
 };
 
 // Mode Switches
-SecuritySystem.prototype.isModeSwitchStateOff = function(state, callback) {
-  if (state === false) {
-    callback('Mode switches can\'t be turn off.');
-    return true;
-  }
-
-  return false;
-};
-
 SecuritySystem.prototype.resetModeSwitches = function() {
   const modeHomeCharacteristicOn = this.modeHomeService.getCharacteristic(Characteristic.On);
   const modeAwayCharacteristicOn = this.modeAwayService.getCharacteristic(Characteristic.On);
@@ -1178,14 +1169,15 @@ SecuritySystem.prototype.getModeHomeState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeHomeState = function(state, callback) {
-  if (this.isModeSwitchStateOff(state, callback)) {
-    return;
+  if (state) {
+    const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
+
+    this.resetModeSwitches();
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true, delay);
   }
-
-  const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-
-  this.resetModeSwitches();
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true, delay);
+  else {
+    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+  }
 
   callback(null);
 };
@@ -1196,14 +1188,15 @@ SecuritySystem.prototype.getModeAwayState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeAwayState = function(state, callback) {
-  if (this.isModeSwitchStateOff(state, callback)) {
-    return;
+  if (state) {
+    const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
+
+    this.resetModeSwitches();
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, delay);
   }
-
-  const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-
-  this.resetModeSwitches();
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, delay);
+  else {
+    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+  }
 
   callback(null);
 };
@@ -1214,14 +1207,15 @@ SecuritySystem.prototype.getModeNightState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeNightState = function(state, callback) {
-  if (this.isModeSwitchStateOff(state, callback)) {
-    return;
+  if (state) {
+    const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
+
+    this.resetModeSwitches();
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true, delay);
   }
-
-  const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-
-  this.resetModeSwitches();
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true, delay);
+  else {
+    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+  }
 
   callback(null);
 };
@@ -1232,12 +1226,13 @@ SecuritySystem.prototype.getModeOffState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeOffState = function(state, callback) {
-  if (this.isModeSwitchStateOff(state, callback)) {
-    return;
+  if (state) {
+    this.resetModeSwitches();
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false);
   }
-
-  this.resetModeSwitches();
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false);
+  else {
+    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+  }
 
   callback(null);
 };
