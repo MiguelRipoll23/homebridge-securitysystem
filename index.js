@@ -344,14 +344,14 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
-      this.currentState = state.currentState;
+      this.currentState = state.targetState;
       this.targetState = state.targetState;
 
       const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
       armingDelayCharacteristic.updateValue(state.armingDelay);
 
       this.updateModeSwitches();
-      this.logState('Saved', this.currentState);
+      this.logState('Saved', this.targetState);
     })
     .catch(error => {
       this.log('Unable to load state.');
@@ -367,7 +367,6 @@ SecuritySystem.prototype.save = async function() {
   const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
 
   const state = {
-    'currentState': this.currentState,
     'targetState': this.targetState,
     'armingDelay': armingDelayCharacteristic.value
   };
