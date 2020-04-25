@@ -998,7 +998,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
       break;
 
     default:
-      this.log(`Unknown state (${state})`);
+      this.log(`Unknown ${type} state (${state})`);
   }
 
   if (command === undefined || command === null) {
@@ -1069,12 +1069,11 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       break;
 
     default:
-      this.log(`Unknown state (${state})`);
+      this.log(`Unknown ${type} state (${state})`);
       return;
   }
 
   if (path === undefined || path === null) {
-    this.log('Missing webhook path for state.');
     return;
   }
 
