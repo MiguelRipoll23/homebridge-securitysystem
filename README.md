@@ -41,6 +41,7 @@ Use Eve or a similar app to create automations like these:
 | siren_switch (1)     | Shows a switch on the Home app to trigger the security system.                 | true    | false     |
 | siren_mode_switches  | Shows switches on the Home app to trigger the security system for each mode.   | false   | true      |
 | unsafe_mode_switches | Shows switches on the Home app for each mode to bypass confirmation.           | false   | true      |
+| hide_mode_off_switch | Hides the `Mode Off` switch on the Home app if you enabled mode switches.      | false   | true      |
 | override_off         | Allows to trigger the security system while disarmed.                          | false   | true      |
 | save_state           | State persistence for shutdowns and reboots.                                   | false   | true      |
 

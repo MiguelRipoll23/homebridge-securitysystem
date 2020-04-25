@@ -50,6 +50,7 @@ function SecuritySystem(log, config) {
   this.triggerSeconds = config.trigger_seconds;
   this.sirenSwitch = config.siren_switch;
   this.modeSwitches = config.unsafe_mode_switches;
+  this.hideModeOffSwitch = config.hide_mode_off_switch;
   this.sirenModeSwitches = config.siren_mode_switches;
   this.overrideOff = config.override_off;
   this.saveState = config.save_state;
@@ -103,6 +104,14 @@ function SecuritySystem(log, config) {
 
   if (isOptionSet(this.triggerSeconds) === false) {
     this.triggerSeconds = 0;
+  }
+
+  if (isOptionSet(this.modeSwitches) === false) {
+    this.modeSwitches = false;
+  }
+
+  if (isOptionSet(this.hideModeOffSwitch) === false) {
+    this.hideModeOffSwitch = false;
   }
 
   if (!isOptionSet(this.sirenSwitch)) {
@@ -304,7 +313,9 @@ function SecuritySystem(log, config) {
   }
 
   if (this.modeSwitches) {
-    this.services.push(this.modeOffService);
+    if (this.hideModeOffSwitch === false) {
+      this.services.push(this.modeOffService);
+    }
   }
 
   // Storage

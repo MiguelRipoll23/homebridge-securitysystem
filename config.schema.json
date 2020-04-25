@@ -59,7 +59,13 @@
       "required": false
     },
     "unsafe_mode_switches": {
-      "title": "(Not recommeded) Show Mode Switches",
+      "title": "(Unsafe) Show Mode Switches",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
+    "hide_mode_off_switch": {
+      "title": "Hide Mode Off Switch",
       "type": "boolean",
       "default": false,
       "required": false
