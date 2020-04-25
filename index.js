@@ -175,11 +175,23 @@ function SecuritySystem(log, config) {
   this.targetStates = this.getEnabledStates();
 
   // Services
+  this.currentState = this.defaultState;
+  this.targetState = this.defaultState;
+  this.arming = false;
+
+  this.service
+    .getCharacteristic(Characteristic.SecuritySystemTargetState)
+    .value = this.targetState;
+
   this.service
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
     .setProps({validValues: this.targetStates})
     .on('get', this.getTargetState.bind(this))
     .on('set', this.setTargetState.bind(this));
+
+  this.service
+    .getCharacteristic(Characteristic.SecuritySystemCurrentState)
+    .value = this.currentState;
 
   this.service
     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
@@ -198,10 +210,6 @@ function SecuritySystem(log, config) {
     .getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay)
     .on('get', this.getArmingDelay.bind(this))
     .on('set', this.setArmingDelay.bind(this));
-
-  this.currentState = this.defaultState;
-  this.targetState = this.defaultState;
-  this.arming = false;
 
   // Siren Switch (Optional)
   this.sirenService = new Service.Switch('Siren', 'siren');
