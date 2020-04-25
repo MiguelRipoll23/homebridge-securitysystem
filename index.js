@@ -347,6 +347,9 @@ SecuritySystem.prototype.load = async function() {
       this.currentState = state.currentState;
       this.targetState = state.targetState;
 
+      const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
+      armingDelayCharacteristic.updateValue(state.armingDelay);
+
       this.logState('Saved', this.currentState);
     })
     .catch(error => {
@@ -360,11 +363,12 @@ SecuritySystem.prototype.save = async function() {
     return;
   }
 
+  const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
+
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'sirenActive': this.sirenActive,
-    'sirenOn': this.sirenOn
+    'armingDelay': armingDelayCharacteristic.value
   };
 
   await storage.setItem('state', state)
