@@ -346,7 +346,7 @@ SecuritySystem.prototype.load = async function() {
 
       this.currentState = state.currentState;
       this.targetState = state.targetState;
-      
+
       this.logState('Saved', this.currentState);
     })
     .catch(error => {
@@ -605,7 +605,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
   // Add arm delay if alarm is not triggered
   if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
+    if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
       // Only if delay is enabled
       if (delay) {
         armSeconds = this.armSeconds;
@@ -625,7 +625,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
     this.setCurrentState(state);
 
     // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemCurrentState.DISARMED) {
+    if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
       this.arming = false;
       this.service
         .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
@@ -658,7 +658,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
 
   // Ignore if the security system
   // is arming
-  if (this.armingTimeout !== null) {
+  if (this.arming) {
     if (callback !== null) {
       callback('Security system not armed yet.');
     }
