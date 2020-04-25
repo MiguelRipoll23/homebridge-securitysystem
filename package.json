@@ -19,7 +19,7 @@
     "url": "git://github.com/MiguelRipoll23/homebridge-securitysystem.git"
   },
   "author": "MiguelRipoll23",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "http://github.com/MiguelRipoll23/homebridge-securitysystem/issues"
   },
