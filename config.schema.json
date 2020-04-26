@@ -70,6 +70,18 @@
       "default": false,
       "required": false
     },
+    "unsafe_mode_switches": {
+      "title": "(Unsafe) Show Mode Switches",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
+    "hide_mode_off_switch": {
+      "title": "Hide Mode Off Switch",
+      "type": "boolean",
+      "default": false,
+      "required": false
+    },
     "save_state": {
       "title": "Save State On Mode Change",
       "type": "boolean",
@@ -80,109 +92,130 @@
       "title": "Server Port",
       "type": "integer",
       "required": false,
-      "minimum": 0
+      "minimum": 0,
+      "placeholder": 80
     },
     "server_code": {
-      "title": "Server Code (for authentication)",
+      "title": "Server Code: Authentication",
       "type": "integer",
       "required": false,
-      "minimum": 0
+      "minimum": 0,
+      "placeholder": 1234
     },
     "webhook_url": {
       "title": "Webhook Base URL",
       "type": "string",
       "required": false,
-      "format": "uri"
+      "format": "uri",
+      "placeholder": "http://localhost"
     },
     "webhook_triggered": {
       "title": "Webhook Path: Triggered",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/triggered"
     },
     "webhook_alert": {
       "title": "Webhook Path: Alert",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/alert"
     },
     "webhook_target_home": {
       "title": "Webhook Path: Target Home",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/target/home"
     },
     "webhook_target_away": {
       "title": "Webhook Path: Target Away",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/target/away"
     },
     "webhook_target_night": {
       "title": "Webhook Path: Target Night",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/target/night"
     },
     "webhook_current_home": {
       "title": "Webhook Path: Current Home",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/current/home"
     },
     "webhook_current_away": {
       "title": "Webhook Path: Current Away",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/current/away"
     },
     "webhook_current_night": {
       "title": "Webhook Path: Current Night",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/current/night"
     },
     "webhook_off": {
       "title": "Webhook Path: Off",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "/off"
     },
     "command_triggered": {
       "title": "Command: Triggered",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo triggered"
     },
     "command_alert": {
       "title": "Command: Alert",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo alert"
     },
     "command_target_home": {
       "title": "Command: Target Home",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo target home"
     },
     "command_target_away": {
-      "title": "Command: Target Home",
+      "title": "Command: Target Away",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo target away"
     },
     "command_target_night": {
       "title": "Command: Target Night",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo target night"
     },
     "command_current_home": {
       "title": "Command: Current Home",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo current home"
     },
     "command_current_away": {
       "title": "Command: Current Away",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo current away"
     },
     "command_current_night": {
       "title": "Command: Current Night",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo current night"
     },
     "command_off": {
       "title": "Command: Off",
       "type": "string",
-      "required": false
+      "required": false,
+      "placeholder": "echo off"
     }
   }
 }

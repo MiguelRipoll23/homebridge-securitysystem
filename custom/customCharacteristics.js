@@ -16,7 +16,22 @@ function CustomCharacteristic(Characteristic) {
 
   inherits(this.SecuritySystemArming, Characteristic);
 
-  this.SecuritySystemSirenActive = function() {
+  this.SecuritySystemArmingDelay = function() {
+    this.UUID = '00003007-0000-1000-8000-135D67EC4377';
+
+    Characteristic.call(this, 'Security System Arming Delay', this.UUID);
+
+    this.setProps({
+      format: Characteristic.Formats.BOOL,
+      perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+    });
+
+    this.value = true;
+  };
+
+  inherits(this.SecuritySystemArmingDelay, Characteristic);
+
+  this.SecuritySystemSiren = function() {
     this.UUID = '00003006-0000-1000-8000-135D67EC4377';
 
     Characteristic.call(this, 'Security System Siren', this.UUID);
@@ -29,7 +44,7 @@ function CustomCharacteristic(Characteristic) {
     this.value = this.getDefaultValue();
   };
 
-  inherits(this.SecuritySystemSirenActive, Characteristic);
+  inherits(this.SecuritySystemSiren, Characteristic);
 
   return this;
 }
