@@ -62,7 +62,7 @@ function SecuritySystem(log, config) {
   // Optional: webhook
   this.webhookUrl = config.webhook_url;
 
-  // Optiona: commands
+  // Optional: commands
   this.commandTargetHome = config.command_target_home;
   this.commandTargetAway = config.command_target_away;
   this.commandTargetNight = config.command_target_night;
