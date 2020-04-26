@@ -163,11 +163,11 @@ function SecuritySystem(log, config) {
 
   // Log options value
   this.logState('Default', this.defaultState);
-  this.log('Arm delay (' + this.armSeconds + ' second/s)');
-  this.log('Trigger delay (' + this.triggerSeconds + ' second/s)');
+  this.log(`Arm delay (${this.armSeconds} second/s)`);
+  this.log(`Trigger delay (${this.triggerSeconds} second/s)`);
 
   if (this.webhook) {
-    this.log('Webhook (' + this.webhookUrl + ')');
+    this.log(`Webhook (${this.webhookUrl})`);
   }
 
   // Security System
