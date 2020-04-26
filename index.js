@@ -62,7 +62,7 @@ function SecuritySystem(log, config) {
   // Optional: webhook
   this.webhookUrl = config.webhook_url;
 
-  // Optiona: commands
+  // Optional: commands
   this.commandTargetHome = config.command_target_home;
   this.commandTargetAway = config.command_target_away;
   this.commandTargetNight = config.command_target_night;
@@ -573,7 +573,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
 
   this.handleStateChange();
 
-  if (delay) {
+  if (delay === undefined) {
     delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
   }
 
@@ -616,7 +616,7 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 };
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
-  this.updateTargetState(state, false, true);
+  this.updateTargetState(state, false);
   callback(null);
 };
 
@@ -998,7 +998,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
-      if (type === 'target') {
+      if (type === 'current') {
         return;
       }
 
@@ -1069,7 +1069,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
-      if (type === 'target') {
+      if (type === 'current') {
         return;
       }
 
@@ -1247,10 +1247,8 @@ SecuritySystem.prototype.getModeHomeState = function(callback) {
 
 SecuritySystem.prototype.setModeHomeState = function(state, callback) {
   if (state) {
-    const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-
     this.resetModeSwitches();
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true, delay);
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true);
   }
   else {
     this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
@@ -1266,10 +1264,8 @@ SecuritySystem.prototype.getModeAwayState = function(callback) {
 
 SecuritySystem.prototype.setModeAwayState = function(state, callback) {
   if (state) {
-    const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-
     this.resetModeSwitches();
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, delay);
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true);
   }
   else {
     this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
@@ -1285,10 +1281,8 @@ SecuritySystem.prototype.getModeNightState = function(callback) {
 
 SecuritySystem.prototype.setModeNightState = function(state, callback) {
   if (state) {
-    const delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-
     this.resetModeSwitches();
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true, delay);
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true);
   }
   else {
     this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
@@ -1305,7 +1299,7 @@ SecuritySystem.prototype.getModeOffState = function(callback) {
 SecuritySystem.prototype.setModeOffState = function(state, callback) {
   if (state) {
     this.resetModeSwitches();
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false);
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true);
   }
   else {
     this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
