@@ -998,7 +998,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
-      if (type === 'target') {
+      if (type === 'current') {
         return;
       }
 
@@ -1069,7 +1069,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
-      if (type === 'target') {
+      if (type === 'current') {
         return;
       }
 
