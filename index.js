@@ -176,6 +176,7 @@ function SecuritySystem(log, config) {
 
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
+  this.armingDelay = true;
   this.arming = false;
 
   this.service
@@ -369,7 +370,10 @@ SecuritySystem.prototype.load = async function() {
 
       // Check if arming delay set
       if (isOptionSet(armingDelay) === false) {
-        armingDelay = true;
+        this.armingDelay = true;
+      }
+      else {
+        this.armingDelay = armingDelay;
       }
 
       // Update characteristics values
@@ -380,7 +384,7 @@ SecuritySystem.prototype.load = async function() {
       currentStateCharacteristic.updateValue(this.currentState);
 
       const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
-      armingDelayCharacteristic.updateValue(armingDelay);
+      armingDelayCharacteristic.updateValue(this.armingDelay);
 
       this.updateModeSwitches();
       this.logState('Saved', this.currentState);
@@ -396,11 +400,10 @@ SecuritySystem.prototype.save = async function() {
     return;
   }
 
-  const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'armingDelay': armingDelayCharacteristic.value
+    'armingDelay': this.armingDelay
   };
 
   await storage.setItem('state', state)
@@ -491,6 +494,13 @@ SecuritySystem.prototype.getArmingDelay = function(callback) {
 };
 
 SecuritySystem.prototype.setArmingDelay = function(state, callback) {
+  this.armingDelay = state;
+
+  // Save state to file
+  if (this.saveState) {
+    this.save();
+  }
+
   callback(null);
 };
 
