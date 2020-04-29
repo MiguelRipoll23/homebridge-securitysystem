@@ -176,6 +176,7 @@ function SecuritySystem(log, config) {
 
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
+  this.armingDelay = true;
   this.arming = false;
 
   this.service
@@ -353,17 +354,37 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
-      this.currentState = state.currentState;
+      const currentState = state.currentState || this.defaultState;
+      const targetState = state.targetState || this.defaultState;
+      let armingDelay = state.armingDelay;
 
-      if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-        this.targetState = state.targetState;
+      // Change target state if triggered
+      if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+        this.targetState = targetState;
       }
       else {
-        this.targetState = state.currentState;
+        this.targetState = currentState;
       }
 
+      this.currentState = currentState;
+
+      // Check if arming delay set
+      if (isOptionSet(armingDelay) === false) {
+        this.armingDelay = true;
+      }
+      else {
+        this.armingDelay = armingDelay;
+      }
+
+      // Update characteristics values
+      const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
+      targetStateCharacteristic.updateValue(this.targetState);
+
+      const currentStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState);
+      currentStateCharacteristic.updateValue(this.currentState);
+
       const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
-      armingDelayCharacteristic.updateValue(state.armingDelay);
+      armingDelayCharacteristic.updateValue(this.armingDelay);
 
       this.updateModeSwitches();
       this.logState('Saved', this.currentState);
@@ -379,11 +400,10 @@ SecuritySystem.prototype.save = async function() {
     return;
   }
 
-  const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'armingDelay': armingDelayCharacteristic.value
+    'armingDelay': this.armingDelay
   };
 
   await storage.setItem('state', state)
@@ -474,6 +494,13 @@ SecuritySystem.prototype.getArmingDelay = function(callback) {
 };
 
 SecuritySystem.prototype.setArmingDelay = function(state, callback) {
+  this.armingDelay = state;
+
+  // Save state to file
+  if (this.saveState) {
+    this.save();
+  }
+
   callback(null);
 };
 
