@@ -353,17 +353,34 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
-      this.currentState = state.currentState;
+      const currentState = state.currentState || this.defaultState;
+      const targetState = state.targetState || this.defaultState;
+      let armingDelay = state.armingDelay;
 
-      if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-        this.targetState = state.targetState;
+      // Change target state if triggered
+      if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+        this.targetState = targetState;
       }
       else {
-        this.targetState = state.currentState;
+        this.targetState = currentState;
       }
 
+      this.currentState = currentState;
+
+      // Check if arming delay set
+      if (isOptionSet(armingDelay) === false) {
+        armingDelay = true;
+      }
+
+      // Update characteristics values
+      const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
+      targetStateCharacteristic.updateValue(this.targetState);
+
+      const currentStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemCurrentState);
+      currentStateCharacteristic.updateValue(this.currentState);
+
       const armingDelayCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
-      armingDelayCharacteristic.updateValue(state.armingDelay);
+      armingDelayCharacteristic.updateValue(armingDelay);
 
       this.updateModeSwitches();
       this.logState('Saved', this.currentState);
