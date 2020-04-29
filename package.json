@@ -1,6 +1,6 @@
 {
   "name": "homebridge-securitysystem",
-  "version": "2.6.2-beta.1",
+  "version": "2.6.2",
   "description": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.",
   "main": "index.js",
   "scripts": {
