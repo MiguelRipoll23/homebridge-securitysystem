@@ -8,14 +8,9 @@ const express = require('express');
 
 const customServices = require('./custom/customServices');
 const customCharacteristics = require('./custom/customCharacteristics');
+const serverConstants = require('./constants/server.js');
 
 const app = express();
-
-const MAX_CODE_ATTEMPTS = 25;
-const MESSAGE_CODE_REQUIRED = 'Code required';
-const MESSAGE_CODE_INVALID = 'Code invalid';
-const MESSAGE_CODE_BLOCKED = 'Code blocked';
-const MESSAGE_MODE_DISABLED = 'Mode disabled';
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
 let homebridgeStoragePath;
@@ -161,8 +156,8 @@ function SecuritySystem(log, config) {
     this.webhook = false;
   }
 
-  // Log options value
-  this.logState('Default', this.defaultState);
+  // Log
+  this.logMode('Default', this.defaultState);
   this.log(`Arm delay (${this.armSeconds} second/s)`);
   this.log(`Trigger delay (${this.triggerSeconds} second/s)`);
 
@@ -170,7 +165,7 @@ function SecuritySystem(log, config) {
     this.log(`Webhook (${this.webhookUrl})`);
   }
 
-  // Security System
+  // Security system
   this.service = new CustomService.SecuritySystem(this.name);
   this.targetStates = this.getEnabledStates();
 
@@ -211,7 +206,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getArmingDelay.bind(this))
     .on('set', this.setArmingDelay.bind(this));
 
-  // Siren Switch (Optional)
+  // Siren switch (Optional)
   this.sirenService = new Service.Switch('Siren', 'siren');
 
   this.sirenService
@@ -219,7 +214,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getSirenState2.bind(this))
     .on('set', this.setSirenState2.bind(this));
 
-  // Mode Switches (Optional)
+  // Mode switches (Optional)
   this.modeHomeService = new Service.Switch('Mode Home', 'mode-home');
 
   this.modeHomeService
@@ -280,7 +275,7 @@ function SecuritySystem(log, config) {
   this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'Generic');
   this.accessoryInformationService.setCharacteristic(Characteristic.FirmwareRevision, packageJson.version);
 
-  // Services List
+  // Services list
   this.services = [
     this.service,
     this.accessoryInformationService
@@ -354,9 +349,11 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
+      this.log('Saved state (Found)')
+
       const currentState = state.currentState || this.defaultState;
       const targetState = state.targetState || this.defaultState;
-      let armingDelay = state.armingDelay;
+      const armingDelay = (isOptionSet(state.armingDelay) === false) ? true : state.armingDelay;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
@@ -367,14 +364,7 @@ SecuritySystem.prototype.load = async function() {
       }
 
       this.currentState = currentState;
-
-      // Check if arming delay set
-      if (isOptionSet(armingDelay) === false) {
-        this.armingDelay = true;
-      }
-      else {
-        this.armingDelay = armingDelay;
-      }
+      this.armingDelay = armingDelay;
 
       // Update characteristics values
       const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
@@ -387,10 +377,13 @@ SecuritySystem.prototype.load = async function() {
       armingDelayCharacteristic.updateValue(this.armingDelay);
 
       this.updateModeSwitches();
-      this.logState('Saved', this.currentState);
+
+      // Log
+      this.logMode('Current', this.currentState);
+      this.log(`Arming delay (${this.armingDelay === true ? 'On' : 'Off'})`);
     })
     .catch(error => {
-      this.log('Unable to load state.');
+      this.log('Saved state (Error)');
       this.log(error);
     });
 };
@@ -463,11 +456,11 @@ SecuritySystem.prototype.mode2State = function(mode) {
   }
 };
 
-SecuritySystem.prototype.logState = function(type, state) {
+SecuritySystem.prototype.logMode = function(type, state) {
   let mode = this.state2Mode(state);
   mode = mode.charAt(0).toUpperCase() + mode.slice(1);
 
-  this.log(`${type} state (${mode})`);
+  this.log(`${type} mode (${mode})`);
 };
 
 SecuritySystem.prototype.getEnabledStates = function() {
@@ -495,6 +488,7 @@ SecuritySystem.prototype.getArmingDelay = function(callback) {
 
 SecuritySystem.prototype.setArmingDelay = function(state, callback) {
   this.armingDelay = state;
+  this.log(`Arming delay (${(this.armingDelay) ? 'On' : 'Off'})`);
 
   // Save state to file
   if (this.saveState) {
@@ -516,7 +510,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
 
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
-  this.logState('Current', state);
+  this.logMode('Current', state);
 
   // Save state to file
   if (this.saveState) {
@@ -583,7 +577,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
   }
 
   this.targetState = state;
-  this.logState('Target', state);
+  this.logMode('Target', state);
   this.executeCommand('target', state);
 
   if (this.webhook) {
@@ -758,7 +752,7 @@ SecuritySystem.prototype.isCodeValid = function(req) {
   }
 
   // Check brute force
-  if (this.invalidCodeAttempts > MAX_CODE_ATTEMPTS) {
+  if (this.invalidCodeAttempts > serverConstants.MAX_CODE_ATTEMPTS) {
     req.blocked = true;
     return false;
   }
@@ -795,7 +789,7 @@ SecuritySystem.prototype.sendCodeRequiredError = function(res) {
 
   const response = {
     'error': true,
-    'message': MESSAGE_CODE_REQUIRED
+    'message': serverConstants.MESSAGE_CODE_REQUIRED
   };
 
   res.status(401).json(response);
@@ -808,11 +802,11 @@ SecuritySystem.prototype.sendCodeInvalidError = function(req, res) {
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
-    response.message = MESSAGE_CODE_BLOCKED;
+    response.message = serverConstants.MESSAGE_CODE_BLOCKED;
   }
   else {
     this.log('Code invalid (Server)');
-    response.message = MESSAGE_CODE_INVALID;
+    response.message = serverConstants.MESSAGE_CODE_INVALID;
   }
 
   res.status(403).json(response);
@@ -823,7 +817,7 @@ SecuritySystem.prototype.sendModeDisabledError = function(res) {
 
   const response = {
     'error': true,
-    'message': MESSAGE_MODE_DISABLED
+    'message': serverConstants.MESSAGE_MODE_DISABLED
   };
   
   res.status(400).json(response);
