@@ -157,7 +157,7 @@ function SecuritySystem(log, config) {
   }
 
   // Log
-  this.logState('Default', this.defaultState);
+  this.logMode('Default', this.defaultState);
   this.log(`Arm delay (${this.armSeconds} second/s)`);
   this.log(`Trigger delay (${this.triggerSeconds} second/s)`);
 
@@ -349,9 +349,11 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
+      this.log('Saved state (Found)')
+
       const currentState = state.currentState || this.defaultState;
       const targetState = state.targetState || this.defaultState;
-      let armingDelay = state.armingDelay;
+      const armingDelay = (isOptionSet(state.armingDelay) === false) ? true : state.armingDelay;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
@@ -362,14 +364,7 @@ SecuritySystem.prototype.load = async function() {
       }
 
       this.currentState = currentState;
-
-      // Check if arming delay set
-      if (isOptionSet(armingDelay) === false) {
-        this.armingDelay = true;
-      }
-      else {
-        this.armingDelay = armingDelay;
-      }
+      this.armingDelay = armingDelay;
 
       // Update characteristics values
       const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
@@ -382,11 +377,13 @@ SecuritySystem.prototype.load = async function() {
       armingDelayCharacteristic.updateValue(this.armingDelay);
 
       this.updateModeSwitches();
-      this.logState('Saved', this.currentState);
+
+      // Log
+      this.logMode('Current', this.currentState);
       this.log(`Arming delay (${this.armingDelay === true ? 'On' : 'Off'})`);
     })
     .catch(error => {
-      this.log('Unable to load state.');
+      this.log('Saved state (Error)');
       this.log(error);
     });
 };
@@ -459,11 +456,11 @@ SecuritySystem.prototype.mode2State = function(mode) {
   }
 };
 
-SecuritySystem.prototype.logState = function(type, state) {
+SecuritySystem.prototype.logMode = function(type, state) {
   let mode = this.state2Mode(state);
   mode = mode.charAt(0).toUpperCase() + mode.slice(1);
 
-  this.log(`${type} state (${mode})`);
+  this.log(`${type} mode (${mode})`);
 };
 
 SecuritySystem.prototype.getEnabledStates = function() {
@@ -513,7 +510,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
 
   this.currentState = state;
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
-  this.logState('Current', state);
+  this.logMode('Current', state);
 
   // Save state to file
   if (this.saveState) {
@@ -580,7 +577,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
   }
 
   this.targetState = state;
-  this.logState('Target', state);
+  this.logMode('Target', state);
   this.executeCommand('target', state);
 
   if (this.webhook) {
