@@ -12,7 +12,8 @@
     "homekit",
     "security",
     "system",
-    "alarm"
+    "alarm",
+    "category-security"
   ],
   "repository": {
     "type": "git",
