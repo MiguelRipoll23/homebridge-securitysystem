@@ -43,6 +43,7 @@ function SecuritySystem(log, config) {
   this.disabledModes = config.disabled_modes;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
+  this.resetMinutes = config.reset_minutes;
   this.sirenSwitch = config.siren_switch;
   this.modeSwitches = config.unsafe_mode_switches;
   this.hideModeOffSwitch = config.hide_mode_off_switch;
@@ -76,6 +77,7 @@ function SecuritySystem(log, config) {
   this.targetStates = null;
   this.armingTimeout = null;
   this.triggerTimeout = null;
+  this.resetTimeout = null;
   this.modeChanged = false;
   this.invalidCodeAttempts = 0;
   this.webhook = false;
@@ -99,6 +101,10 @@ function SecuritySystem(log, config) {
 
   if (isOptionSet(this.triggerSeconds) === false) {
     this.triggerSeconds = 0;
+  }
+
+  if (isOptionSet(this.resetMinutes) === false) {
+    this.resetMinutes = 10;
   }
 
   if (isOptionSet(this.modeSwitches) === false) {
@@ -522,6 +528,16 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   if (this.webhook) {
     this.sendWebhookEvent('current', state);
   }
+
+  // Automatically reset when being triggered
+  // after x minutes
+  if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.resetTimeout = setTimeout(() => {
+      this.resetTimeout = null;
+      this.handleStateChange();
+      this.setCurrentState(this.targetState);
+    }, this.resetMinutes * 60 * 1000);
+  }
 };
 
 SecuritySystem.prototype.handleStateChange = function() {
@@ -556,10 +572,16 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
     return;
   }
 
-  // Clear timeout
+  // Clear arming timeout
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
     this.armingTimeout = null;
+  }
+
+  // Clear reset timeout
+  if (this.resetTimeout !== null) {
+    clearTimeout(this.resetTimeout);
+    this.resetTimeout = null;
   }
 
   // Check if mode already set
@@ -571,8 +593,9 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
   }
   else if (this.triggerTimeout !== null) {
     // Mode changed
-    // Cancel pending alarm
-    clearInterval(this.triggerTimeout);
+
+    // Clear trigger timeout
+    clearTimeout(this.triggerTimeout);
     this.triggerTimeout = null;
   }
 

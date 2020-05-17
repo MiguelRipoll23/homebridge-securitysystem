@@ -55,6 +55,13 @@
         "required": false,
         "minimum": 0
       },
+      "reset_minutes": {
+        "title": "Auto-Reset Delay Minutes",
+        "type": "integer",
+        "default": 10,
+        "required": false,
+        "minimum": 0
+      },
       "siren_switch": {
         "title": "Show Siren Switch",
         "type": "boolean",
@@ -241,11 +248,12 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "unsafe_mode_switches",
-        "hide_mode_off_switch",
         "siren_mode_switches",
         "siren_switch",
         "override_off",
+        "reset_minutes",
+        "unsafe_mode_switches",
+        "hide_mode_off_switch",
         "disabled_modes"
       ]
     },
