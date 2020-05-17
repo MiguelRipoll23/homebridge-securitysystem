@@ -51,6 +51,13 @@
         "required": false,
         "minimum": 0
       },
+      "pause_minutes": {
+        "title": "Pause Time Minutes",
+        "type": "integer",
+        "default": 0,
+        "required": false,
+        "minimum": 0
+      },
       "trigger_seconds": {
         "title": "Trigger Delay Seconds",
         "type": "integer",
@@ -254,6 +261,7 @@
         "siren_mode_switches",
         "siren_switch",
         "override_off",
+        "pause_minutes",
         "reset_minutes",
         "unsafe_mode_switches",
         "hide_mode_off_switch",
