@@ -1,221 +1,301 @@
 {
   "pluginAlias": "security-system",
   "pluginType": "accessory",
-  "headerDisplay": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.",
+  "headerDisplay": "Create a security system accessory that can be triggered by HomeKit accessories.",
   "footerDisplay": "Need help? [Go to the issues page](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) and ask a question!",
   "schema": {
-    "name": {
-      "title": "Name",
-      "type": "string",
-      "default": "Security system",
-      "required": true
-    },
-    "default_mode": {
-      "title": "Default Mode",
-      "type": "string",
-      "default": "Off",
-      "required": true,
-      "enum": [
-        "Off",
-        "Home",
-        "Night",
-        "Away"
-      ]
-    },
-    "disabled_modes": {
-      "title": "Disabled Modes",
-      "type": "array",
-      "required": false,
-      "items": {
-        "title": "Mode",
+    "title": "Security System",
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
         "type": "string",
+        "default": "Security system",
+        "required": true
+      },
+      "default_mode": {
+        "title": "Default Mode",
+        "type": "string",
+        "default": "Off",
+        "required": true,
         "enum": [
           "Off",
           "Home",
           "Night",
           "Away"
-        ],
-        "uniqueItems": true
+        ]
+      },
+      "disabled_modes": {
+        "title": "Modes Disabled",
+        "type": "array",
+        "required": false,
+        "items": {
+          "title": "Mode",
+          "type": "string",
+          "enum": [
+            "Off",
+            "Home",
+            "Night",
+            "Away"
+          ],
+          "uniqueItems": true
+        }
+      },
+      "arm_seconds": {
+        "title": "Arming Delay Seconds",
+        "type": "integer",
+        "default": 0,
+        "required": false,
+        "minimum": 0
+      },
+      "trigger_seconds": {
+        "title": "Trigger Delay Seconds",
+        "type": "integer",
+        "default": 0,
+        "required": false,
+        "minimum": 0
+      },
+      "siren_switch": {
+        "title": "Show Siren Switch",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "siren_mode_switches": {
+        "title": "Show Siren Mode Switches",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "override_off": {
+        "title": "Siren Switch Overrides Off Mode",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "unsafe_mode_switches": {
+        "title": "Show Mode Switches (not recommended)",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "hide_mode_off_switch": {
+        "title": "Hide Mode Off Switch",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "save_state": {
+        "title": "Save State Using Device Storage",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "server_port": {
+        "title": "Port",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "placeholder": 80
+      },
+      "server_code": {
+        "title": "Code",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "placeholder": 1234
+      },
+      "webhook_url": {
+        "title": "Base URL",
+        "type": "string",
+        "required": false,
+        "format": "uri",
+        "placeholder": "http://localhost"
+      },
+      "webhook_triggered": {
+        "title": "Current Mode: Triggered",
+        "type": "string",
+        "required": false,
+        "placeholder": "/triggered"
+      },
+      "webhook_alert": {
+        "title": "Current Event: Alert",
+        "type": "string",
+        "required": false,
+        "placeholder": "/alert"
+      },
+      "webhook_target_home": {
+        "title": "Target Mode: Home",
+        "type": "string",
+        "required": false,
+        "placeholder": "/target/home"
+      },
+      "webhook_target_away": {
+        "title": "Target Mode: Away",
+        "type": "string",
+        "required": false,
+        "placeholder": "/target/away"
+      },
+      "webhook_target_night": {
+        "title": "Target Mode: Night",
+        "type": "string",
+        "required": false,
+        "placeholder": "/target/night"
+      },
+      "webhook_current_home": {
+        "title": "Current Mode: Home",
+        "type": "string",
+        "required": false,
+        "placeholder": "/current/home"
+      },
+      "webhook_current_away": {
+        "title": "Current Mode: Away",
+        "type": "string",
+        "required": false,
+        "placeholder": "/current/away"
+      },
+      "webhook_current_night": {
+        "title": "Current Mode: Night",
+        "type": "string",
+        "required": false,
+        "placeholder": "/current/night"
+      },
+      "webhook_off": {
+        "title": "Current Mode: Off",
+        "type": "string",
+        "required": false,
+        "placeholder": "/off"
+      },
+      "command_triggered": {
+        "title": "Current Mode: Triggered",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo triggered"
+      },
+      "command_alert": {
+        "title": "Current Event: Alert",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo alert"
+      },
+      "command_target_home": {
+        "title": "Target Mode: Home",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo target home"
+      },
+      "command_target_away": {
+        "title": "Target Mode: Away",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo target away"
+      },
+      "command_target_night": {
+        "title": "Target Mode: Night",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo target night"
+      },
+      "command_current_home": {
+        "title": "Current Mode: Home",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo current home"
+      },
+      "command_current_away": {
+        "title": "Current Mode: Away",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo current away"
+      },
+      "command_current_night": {
+        "title": "Current Mode: Night",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo current night"
+      },
+      "command_off": {
+        "title": "Current Mode: Off",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo off"
       }
-    },
-    "arm_seconds": {
-      "title": "Arm Seconds",
-      "type": "integer",
-      "default": 0,
-      "required": false,
-      "minimum": 0
-    },
-    "trigger_seconds": {
-      "title": "Trigger Seconds",
-      "type": "integer",
-      "default": 0,
-      "required": false,
-      "minimum": 0
-    },
-    "siren_switch": {
-      "title": "Show Siren Switch",
-      "type": "boolean",
-      "default": true,
-      "required": false
-    },
-    "siren_mode_switches": {
-      "title": "Show Siren Mode Switches",
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
-    "override_off": {
-      "title": "Siren Switch Overrides Off Mode",
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
-    "unsafe_mode_switches": {
-      "title": "(Unsafe) Show Mode Switches",
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
-    "hide_mode_off_switch": {
-      "title": "Hide Mode Off Switch",
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
-    "save_state": {
-      "title": "Save State On Mode Change",
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
-    "server_port": {
-      "title": "Server Port",
-      "type": "integer",
-      "required": false,
-      "minimum": 0,
-      "placeholder": 80
-    },
-    "server_code": {
-      "title": "Server Code: Authentication",
-      "type": "integer",
-      "required": false,
-      "minimum": 0,
-      "placeholder": 1234
-    },
-    "webhook_url": {
-      "title": "Webhook Base URL",
-      "type": "string",
-      "required": false,
-      "format": "uri",
-      "placeholder": "http://localhost"
-    },
-    "webhook_triggered": {
-      "title": "Webhook Path: Triggered",
-      "type": "string",
-      "required": false,
-      "placeholder": "/triggered"
-    },
-    "webhook_alert": {
-      "title": "Webhook Path: Alert",
-      "type": "string",
-      "required": false,
-      "placeholder": "/alert"
-    },
-    "webhook_target_home": {
-      "title": "Webhook Path: Target Home",
-      "type": "string",
-      "required": false,
-      "placeholder": "/target/home"
-    },
-    "webhook_target_away": {
-      "title": "Webhook Path: Target Away",
-      "type": "string",
-      "required": false,
-      "placeholder": "/target/away"
-    },
-    "webhook_target_night": {
-      "title": "Webhook Path: Target Night",
-      "type": "string",
-      "required": false,
-      "placeholder": "/target/night"
-    },
-    "webhook_current_home": {
-      "title": "Webhook Path: Current Home",
-      "type": "string",
-      "required": false,
-      "placeholder": "/current/home"
-    },
-    "webhook_current_away": {
-      "title": "Webhook Path: Current Away",
-      "type": "string",
-      "required": false,
-      "placeholder": "/current/away"
-    },
-    "webhook_current_night": {
-      "title": "Webhook Path: Current Night",
-      "type": "string",
-      "required": false,
-      "placeholder": "/current/night"
-    },
-    "webhook_off": {
-      "title": "Webhook Path: Off",
-      "type": "string",
-      "required": false,
-      "placeholder": "/off"
-    },
-    "command_triggered": {
-      "title": "Command: Triggered",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo triggered"
-    },
-    "command_alert": {
-      "title": "Command: Alert",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo alert"
-    },
-    "command_target_home": {
-      "title": "Command: Target Home",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo target home"
-    },
-    "command_target_away": {
-      "title": "Command: Target Away",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo target away"
-    },
-    "command_target_night": {
-      "title": "Command: Target Night",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo target night"
-    },
-    "command_current_home": {
-      "title": "Command: Current Home",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo current home"
-    },
-    "command_current_away": {
-      "title": "Command: Current Away",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo current away"
-    },
-    "command_current_night": {
-      "title": "Command: Current Night",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo current night"
-    },
-    "command_off": {
-      "title": "Command: Off",
-      "type": "string",
-      "required": false,
-      "placeholder": "echo off"
     }
-  }
+  },
+  "layout": [
+    "name",
+    "default_mode",
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "arm_seconds",
+        "trigger_seconds"
+      ]
+    },
+    "save_state",
+    {
+      "type": "fieldset",
+      "title": "Advanced Options",
+      "description": "Need more options? You know what do do.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "unsafe_mode_switches",
+        "hide_mode_off_switch",
+        "siren_mode_switches",
+        "siren_switch",
+        "override_off",
+        "disabled_modes"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Server (Optional)",
+      "description": "Create a web server to interact with the security system.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "server_port",
+        "server_code"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Webhooks (Optional)",
+      "description": "Send security system events to a web server.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "webhook_url",
+        "webhook_target_home",
+        "webhook_target_away",
+        "webhook_target_night",
+        "webhook_current_home",
+        "webhook_current_away",
+        "webhook_current_night",
+        "webhook_triggered",
+        "webhook_alert",
+        "webhook_off"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Commands (Optional)",
+      "description": "Execute commands on the device based on events.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "command_target_home",
+        "command_target_away",
+        "command_target_night",
+        "command_current_home",
+        "command_current_away",
+        "command_current_night",
+        "command_triggered",
+        "command_alert",
+        "command_off"
+      ]
+    }
+  ]
 }

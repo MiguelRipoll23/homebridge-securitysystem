@@ -270,9 +270,9 @@ function SecuritySystem(log, config) {
 
   this.accessoryInformationService.setCharacteristic(Characteristic.Identify, true);
   this.accessoryInformationService.setCharacteristic(Characteristic.Manufacturer, 'MiguelRipoll23');
-  this.accessoryInformationService.setCharacteristic(Characteristic.Model, 'Generic');
+  this.accessoryInformationService.setCharacteristic(Characteristic.Model, 'DIY');
   this.accessoryInformationService.setCharacteristic(Characteristic.Name, 'homebridge-securitysystem');
-  this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'Generic');
+  this.accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, 'S3CUR1TYSYST3M');
   this.accessoryInformationService.setCharacteristic(Characteristic.FirmwareRevision, packageJson.version);
 
   // Services list
