@@ -679,12 +679,9 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 };
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
-  // Check if mode paused
-  if (this.isModePaused(callback)) {
-    return;
-  }
-
+  this.resetModePauseSwitch();
   this.updateTargetState(state, false);
+
   callback(null);
 };
 
@@ -921,16 +918,11 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
-    // Check if mode paused
-    if (this.pauseTimeout !== null) {
-      this.sendModePausedError(res);
-      return;
-    }
-
     if (this.getDelayParameter(req)) {
       this.sensorTriggered(true, null);
     }
     else {
+      this.resetModePauseSwitch();
       this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
     }
 
@@ -956,12 +948,7 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
-    // Check if mode paused
-    if (this.pauseTimeout !== null) {
-      this.sendModePausedError(res);
-      return;
-    }
-
+    this.resetModePauseSwitch();
     this.updateTargetState(state, true, this.getDelayParameter(req));
     this.sendOkResponse(res);
   });
@@ -985,12 +972,7 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
-    // Check if mode paused
-    if (this.pauseTimeout !== null) {
-      this.sendModePausedError(res);
-      return;
-    }
-
+    this.resetModePauseSwitch();
     this.updateTargetState(state, true, this.getDelayParameter(req));
     this.sendOkResponse(res);
   });
@@ -1043,12 +1025,7 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
-    // Check if mode paused
-    if (this.pauseTimeout !== null) {
-      this.sendModePausedError(res);
-      return;
-    }
-
+    this.resetModePauseSwitch();
     this.updateTargetState(state, true, this.getDelayParameter(req));
     this.sendOkResponse(res);
   });
@@ -1355,10 +1332,7 @@ SecuritySystem.prototype.getModeHomeState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeHomeState = function(state, callback) {
-  // Check if mode paused
-  if (this.isModePaused(callback)) {
-    return;
-  }
+  this.resetModePauseSwitch();
 
   if (state) {
     this.resetModeSwitches();
@@ -1377,10 +1351,7 @@ SecuritySystem.prototype.getModeAwayState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeAwayState = function(state, callback) {
-  // Check if mode paused
-  if (this.isModePaused(callback)) {
-    return;
-  }
+  this.resetModePauseSwitch();
 
   if (state) {
     this.resetModeSwitches();
@@ -1399,10 +1370,7 @@ SecuritySystem.prototype.getModeNightState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeNightState = function(state, callback) {
-  // Check if mode paused
-  if (this.isModePaused(callback)) {
-    return;
-  }
+  this.resetModePauseSwitch();
 
   if (state) {
     this.resetModeSwitches();
@@ -1421,10 +1389,7 @@ SecuritySystem.prototype.getModeOffState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeOffState = function(state, callback) {
-  // Check if mode paused
-  if (this.isModePaused(callback)) {
-    return;
-  }
+  this.resetModePauseSwitch();
 
   if (state) {
     this.resetModeSwitches();
@@ -1437,13 +1402,17 @@ SecuritySystem.prototype.setModeOffState = function(state, callback) {
   callback(null);
 };
 
-SecuritySystem.prototype.isModePaused = function(callback) {
+SecuritySystem.prototype.resetModePauseSwitch = function() {
   if (this.pauseTimeout !== null) {
-    callback('Security system mode is paused.');
-    return true;
+    clearTimeout(this.pauseTimeout);
+    this.pauseTimeout = null;
   }
 
-  return false;
+  const modePauseCharacteristicOn = this.modePauseService.getCharacteristic(Characteristic.On);
+
+  if (modePauseCharacteristicOn.value) {
+    this.modePauseService.getCharacteristic(Characteristic.On).updateValue(false);
+  }
 };
 
 SecuritySystem.prototype.getModePauseState = function(callback) {
@@ -1463,21 +1432,27 @@ SecuritySystem.prototype.setModePauseState = function(state, callback) {
       return;
     }
 
+    this.log('Pause (Started)');
+
     this.originalState = this.currentState;
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false);
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true);
 
     this.pauseTimeout = setTimeout(() => {
-      this.pauseTimeout = null;
+      this.log('Pause (Finished)');
 
-      this.modePauseService.getCharacteristic(Characteristic.On).updateValue(false);
+      this.resetModePauseSwitch();
       this.updateTargetState(this.originalState, true, true);
     }, this.pauseMinutes * 60 * 1000);
   }
   else {
-    clearTimeout(this.pauseTimeout);
-    this.pauseTimeout = null;
+    this.log('Pause (Cancelled)');
 
-    this.updateTargetState(this.originalState, true, false);
+    if (this.pauseTimeout !== null) {
+      clearTimeout(this.pauseTimeout);
+      this.pauseTimeout = null;
+    }
+
+    this.updateTargetState(this.originalState, true, true);
   }
 
   callback(null);
