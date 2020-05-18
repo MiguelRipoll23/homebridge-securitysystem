@@ -878,6 +878,17 @@ SecuritySystem.prototype.sendModePausedError = function(res) {
   res.status(400).json(response);
 };
 
+SecuritySystem.prototype.sendModeOffError = function(res) {
+  this.log('Mode off (Server)')
+
+  const response = {
+    'error': true,
+    'message': serverConstants.MESSAGE_MODE_OFF
+  };
+  
+  res.status(400).json(response);
+};
+
 SecuritySystem.prototype.sendOkResponse = function(res) {
   const response = {
     'error': false
@@ -916,6 +927,14 @@ SecuritySystem.prototype.startServer = async function() {
     if (this.isCodeValid(req) === false) {
       this.sendCodeInvalidError(req, res);
       return;
+    }
+
+    // Check if security system is disarmed
+    if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
+      if (this.overrideOff === false) {
+        this.sendModeOffError(res);
+        return;
+      }
     }
 
     if (this.getDelayParameter(req)) {

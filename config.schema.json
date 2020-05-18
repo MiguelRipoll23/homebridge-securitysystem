@@ -82,7 +82,7 @@
         "required": false
       },
       "override_off": {
-        "title": "Siren Switch Overrides Off Mode",
+        "title": "Trigger During Off Mode",
         "type": "boolean",
         "default": false,
         "required": false
