@@ -1,7 +1,10 @@
-const MAX_CODE_ATTEMPTS = 25;
+module.exports = { 
+  MAX_CODE_ATTEMPTS: 25,
 
-// Messages
-const MESSAGE_CODE_REQUIRED = 'Code required';
-const MESSAGE_CODE_INVALID = 'Code invalid';
-const MESSAGE_CODE_BLOCKED = 'Code blocked';
-const MESSAGE_MODE_DISABLED = 'Mode disabled';
+  // Messages
+  MESSAGE_CODE_REQUIRED: 'Code required',
+  MESSAGE_CODE_INVALID: 'Code invalid',
+  MESSAGE_CODE_BLOCKED: 'Code blocked',
+  MESSAGE_MODE_DISABLED: 'Mode disabled',
+  MESSAGE_MODE_PAUSED: 'Mode paused'
+};

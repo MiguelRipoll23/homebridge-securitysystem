@@ -43,6 +43,8 @@ function SecuritySystem(log, config) {
   this.disabledModes = config.disabled_modes;
   this.armSeconds = config.arm_seconds;
   this.triggerSeconds = config.trigger_seconds;
+  this.pauseMinutes = config.pause_minutes;
+  this.resetMinutes = config.reset_minutes;
   this.sirenSwitch = config.siren_switch;
   this.modeSwitches = config.unsafe_mode_switches;
   this.hideModeOffSwitch = config.hide_mode_off_switch;
@@ -74,11 +76,15 @@ function SecuritySystem(log, config) {
   // Variables
   this.defaultState = null;
   this.targetStates = null;
-  this.armingTimeout = null;
-  this.triggerTimeout = null;
-  this.modeChanged = false;
+  this.originalState = null;
+  this.stateChanged = false;
   this.invalidCodeAttempts = 0;
   this.webhook = false;
+
+  this.armingTimeout = null;
+  this.pauseTimeout = null;
+  this.triggerTimeout = null;
+  this.resetTimeout = null;
 
   // Check for optional options
   if (isOptionSet(this.defaultMode)) {
@@ -101,12 +107,20 @@ function SecuritySystem(log, config) {
     this.triggerSeconds = 0;
   }
 
+  if (isOptionSet(this.resetMinutes) === false) {
+    this.resetMinutes = 10;
+  }
+
   if (isOptionSet(this.modeSwitches) === false) {
     this.modeSwitches = false;
   }
 
   if (isOptionSet(this.hideModeOffSwitch) === false) {
     this.hideModeOffSwitch = false;
+  }
+
+  if (isOptionSet(this.pauseMinutes) === false) {
+    this.pauseMinutes = 0;
   }
 
   if (!isOptionSet(this.sirenSwitch)) {
@@ -243,6 +257,13 @@ function SecuritySystem(log, config) {
     .on('get', this.getModeOffState.bind(this))
     .on('set', this.setModeOffState.bind(this));
 
+  this.modePauseService = new Service.Switch('Mode Pause', 'mode-pause');
+
+  this.modePauseService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getModePauseState.bind(this))
+    .on('set', this.setModePauseState.bind(this));
+
   // Siren Mode Switches (Optional)
   this.sirenHomeService = new Service.Switch('Siren Home', 'siren-home');
 
@@ -319,6 +340,10 @@ function SecuritySystem(log, config) {
     if (this.hideModeOffSwitch === false) {
       this.services.push(this.modeOffService);
     }
+  }
+
+  if (this.pauseMinutes !== 0) {
+    this.services.push(this.modePauseService);
   }
 
   // Storage
@@ -522,6 +547,16 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   if (this.webhook) {
     this.sendWebhookEvent('current', state);
   }
+
+  // Automatically reset when being triggered
+  // after x minutes
+  if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.resetTimeout = setTimeout(() => {
+      this.resetTimeout = null;
+      this.handleStateChange();
+      this.setCurrentState(this.targetState);
+    }, this.resetMinutes * 60 * 1000);
+  }
 };
 
 SecuritySystem.prototype.handleStateChange = function() {
@@ -529,7 +564,7 @@ SecuritySystem.prototype.handleStateChange = function() {
   // selected from the user
   // during triggered state
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.modeChanged = true;
+    this.stateChanged = true;
   }
 
   // Update characteristics & switches
@@ -550,16 +585,22 @@ SecuritySystem.prototype.handleStateChange = function() {
   this.updateModeSwitches();
 };
 
-SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
+SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
   // Check if state enabled
   if (this.targetStates.includes(state) === false) {
     return;
   }
 
-  // Clear timeout
+  // Clear arming timeout
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
     this.armingTimeout = null;
+  }
+
+  // Clear reset timeout
+  if (this.resetTimeout !== null) {
+    clearTimeout(this.resetTimeout);
+    this.resetTimeout = null;
   }
 
   // Check if mode already set
@@ -571,8 +612,9 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
   }
   else if (this.triggerTimeout !== null) {
     // Mode changed
-    // Cancel pending alarm
-    clearInterval(this.triggerTimeout);
+
+    // Clear trigger timeout
+    clearTimeout(this.triggerTimeout);
     this.triggerTimeout = null;
   }
 
@@ -588,7 +630,7 @@ SecuritySystem.prototype.updateTargetState = function(state, update, delay) {
     return;
   }
 
-  if (update) {
+  if (notify) {
     this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
   }
 
@@ -637,7 +679,9 @@ SecuritySystem.prototype.getTargetState = function(callback) {
 };
 
 SecuritySystem.prototype.setTargetState = function(state, callback) {
+  this.resetModePauseSwitch();
   this.updateTargetState(state, false);
+
   callback(null);
 };
 
@@ -681,7 +725,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
       this.triggerTimeout = setTimeout(() => {
         // Reset
         this.triggerTimeout = null;
-        this.modeChanged = false;
+        this.stateChanged = false;
 
         // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
@@ -701,7 +745,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren).updateValue(false);
 
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      if (this.modeChanged === false) {
+      if (this.stateChanged === false) {
         this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
       }
     }
@@ -823,6 +867,17 @@ SecuritySystem.prototype.sendModeDisabledError = function(res) {
   res.status(400).json(response);
 };
 
+SecuritySystem.prototype.sendModePausedError = function(res) {
+  this.log('Mode paused (Server)')
+
+  const response = {
+    'error': true,
+    'message': serverConstants.MESSAGE_MODE_PAUSED
+  };
+  
+  res.status(400).json(response);
+};
+
 SecuritySystem.prototype.sendOkResponse = function(res) {
   const response = {
     'error': false
@@ -867,6 +922,7 @@ SecuritySystem.prototype.startServer = async function() {
       this.sensorTriggered(true, null);
     }
     else {
+      this.resetModePauseSwitch();
       this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
     }
 
@@ -892,6 +948,7 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
+    this.resetModePauseSwitch();
     this.updateTargetState(state, true, this.getDelayParameter(req));
     this.sendOkResponse(res);
   });
@@ -915,6 +972,7 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
+    this.resetModePauseSwitch();
     this.updateTargetState(state, true, this.getDelayParameter(req));
     this.sendOkResponse(res);
   });
@@ -935,6 +993,12 @@ SecuritySystem.prototype.startServer = async function() {
     // Check if state enabled
     if (this.targetStates.includes(state) === false) {
       this.sendModeDisabledError(res);
+      return;
+    }
+
+    // Check if mode paused
+    if (this.pauseTimeout !== null) {
+      this.sendModePausedError(res);
       return;
     }
 
@@ -961,6 +1025,7 @@ SecuritySystem.prototype.startServer = async function() {
       return;
     }
 
+    this.resetModePauseSwitch();
     this.updateTargetState(state, true, this.getDelayParameter(req));
     this.sendOkResponse(res);
   });
@@ -1267,6 +1332,8 @@ SecuritySystem.prototype.getModeHomeState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeHomeState = function(state, callback) {
+  this.resetModePauseSwitch();
+
   if (state) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true);
@@ -1284,6 +1351,8 @@ SecuritySystem.prototype.getModeAwayState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeAwayState = function(state, callback) {
+  this.resetModePauseSwitch();
+
   if (state) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true);
@@ -1301,6 +1370,8 @@ SecuritySystem.prototype.getModeNightState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeNightState = function(state, callback) {
+  this.resetModePauseSwitch();
+
   if (state) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true);
@@ -1318,12 +1389,71 @@ SecuritySystem.prototype.getModeOffState = function(callback) {
 };
 
 SecuritySystem.prototype.setModeOffState = function(state, callback) {
+  this.resetModePauseSwitch();
+
   if (state) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true);
   }
   else {
-    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+    callback('Security system mode is already disarmed.');
+    return;
+  }
+
+  callback(null);
+};
+
+SecuritySystem.prototype.resetModePauseSwitch = function() {
+  if (this.pauseTimeout !== null) {
+    clearTimeout(this.pauseTimeout);
+    this.pauseTimeout = null;
+  }
+
+  const modePauseCharacteristicOn = this.modePauseService.getCharacteristic(Characteristic.On);
+
+  if (modePauseCharacteristicOn.value) {
+    this.modePauseService.getCharacteristic(Characteristic.On).updateValue(false);
+  }
+};
+
+SecuritySystem.prototype.getModePauseState = function(callback) {
+  const value = this.modePauseService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setModePauseState = function(state, callback) {
+  if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    callback('Security system is triggered.');
+    return;
+  }
+
+  if (state) {
+    if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
+      callback('Security system is not armed.');
+      return;
+    }
+
+    this.log('Pause (Started)');
+
+    this.originalState = this.currentState;
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true);
+
+    this.pauseTimeout = setTimeout(() => {
+      this.log('Pause (Finished)');
+
+      this.resetModePauseSwitch();
+      this.updateTargetState(this.originalState, true, true);
+    }, this.pauseMinutes * 60 * 1000);
+  }
+  else {
+    this.log('Pause (Cancelled)');
+
+    if (this.pauseTimeout !== null) {
+      clearTimeout(this.pauseTimeout);
+      this.pauseTimeout = null;
+    }
+
+    this.updateTargetState(this.originalState, true, true);
   }
 
   callback(null);
