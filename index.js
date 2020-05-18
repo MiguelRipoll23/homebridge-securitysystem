@@ -1396,7 +1396,8 @@ SecuritySystem.prototype.setModeOffState = function(state, callback) {
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true);
   }
   else {
-    this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+    callback('Security system mode is already disarmed.');
+    return;
   }
 
   callback(null);
