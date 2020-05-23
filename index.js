@@ -10,10 +10,8 @@ const customServices = require('./custom/customServices');
 const customCharacteristics = require('./custom/customCharacteristics');
 const serverConstants = require('./constants/server.js');
 
-const app = express();
-
 let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgeStoragePath;
+let homebridgeStoragePath, app;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -23,6 +21,7 @@ module.exports = function(homebridge) {
   CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
 
   homebridgeStoragePath = homebridge.user.storagePath();
+  app = express();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
