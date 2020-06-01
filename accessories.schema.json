@@ -118,7 +118,7 @@
         ]
       },
       "save_state": {
-        "title": "Save State Using Device Storage",
+        "title": "Save State Using System Storage",
         "type": "boolean",
         "default": false,
         "required": false
