@@ -51,6 +51,7 @@ function SecuritySystem(log, config) {
   this.sirenModeSwitches = config.siren_mode_switches;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
+  this.audioLanguage = config.audio_language;
   this.saveState = config.save_state;
 
   // Optional: server
@@ -138,6 +139,10 @@ function SecuritySystem(log, config) {
 
   if (isValueSet(this.audio) === false) {
     this.audio = false;
+  }
+
+  if (isValueSet(this.audioLanguage) === false) {
+    this.audioLanguage = 'en-US';
   }
 
   if (isValueSet(this.saveState) === false) {
@@ -588,6 +593,9 @@ SecuritySystem.prototype.handleStateChange = function() {
   // during triggered state
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     this.stateChanged = true;
+  }
+  else {
+    this.stateChanged = false;
   }
 
   // Update characteristics & switches
@@ -1245,7 +1253,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
     });
 };
 
-// Command
+// Audio
 SecuritySystem.prototype.playSound = function(type, state) {
   const mode = this.state2Mode(state);
 
@@ -1261,6 +1269,7 @@ SecuritySystem.prototype.playSound = function(type, state) {
 
   let command = '';
 
+  // Kill previous player
   if (platform === 'win32') {
     command += 'taskkill /fi "IMAGENAME eq ffplay.exe" /f && ';
   }
@@ -1268,7 +1277,8 @@ SecuritySystem.prototype.playSound = function(type, state) {
     command += 'killall ffplay || '
   }
 
-  command += `ffplay -nodisp -autoexit ./sounds/${filename}`;
+  // Create new player
+  command += `ffplay -nodisp -autoexit ./sounds/${this.audioLanguage}/${filename}`;
 
   if (mode === 'triggered') {
     command += ' -loop -1';
@@ -1276,12 +1286,12 @@ SecuritySystem.prototype.playSound = function(type, state) {
 
   exec(command, (error, stdout, stderr) => {
     if (error !== null) {
-      this.log.debug(`Command failed (${command})\n${error}`);
+      this.log.error(`Command failed (${command})\n${error}`);
       return;
     }
 
     if (stderr !== '') {
-      this.log.debug(`Command failed (${command})\n${stderr}`);
+      this.log.error(`Command failed (${command})\n${stderr}`);
       return;
     }
   });

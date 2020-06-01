@@ -103,10 +103,19 @@
         "required": false
       },
       "audio": {
-        "title": "Play Audio Using 'ffmpeg'",
+        "title": "Play Audio",
         "type": "boolean",
         "default": false,
         "required": false
+      },
+      "audio_language": {
+        "title": "Audio Language",
+        "type": "string",
+        "default": "en-US",
+        "required": true,
+        "enum": [
+          "en-US"
+        ]
       },
       "save_state": {
         "title": "Save State Using Device Storage",
@@ -256,7 +265,14 @@
         "trigger_seconds"
       ]
     },
-    "audio",
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "audio",
+        "audio_language"
+      ]
+    },
     "save_state",
     {
       "type": "fieldset",
