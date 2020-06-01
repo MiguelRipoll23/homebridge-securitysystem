@@ -99,6 +99,12 @@
         "default": false,
         "required": false
       },
+      "audio": {
+        "title": "Play Audio Using 'ffmpeg'",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "save_state": {
         "title": "Save State Using Device Storage",
         "type": "boolean",
@@ -247,6 +253,7 @@
         "trigger_seconds"
       ]
     },
+    "audio",
     "save_state",
     {
       "type": "fieldset",

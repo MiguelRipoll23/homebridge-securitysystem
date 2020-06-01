@@ -47,6 +47,7 @@ Use Eve or a similar app to create automations like these:
 | unsafe_mode_switches | Shows switches on the Home app for each mode to bypass confirmation.                | false   | true      |
 | hide_mode_off_switch | Hides the `Mode Off` switch on the Home app if you enabled mode switches.           | false   | true      |
 | override_off         | Allows to trigger the security system while disarmed.                               | false   | true      |
+| audio                | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
 | save_state           | State persistence for shutdowns and reboots.                                        | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
