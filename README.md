@@ -32,7 +32,7 @@ Use Eve or a similar app to create automations like these:
 
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
-## Basic options
+## All options
 
 | Option               | Description                                                                         | Default |  Example  |
 |----------------------|-------------------------------------------------------------------------------------|---------|-----------|
@@ -46,6 +46,7 @@ Use Eve or a similar app to create automations like these:
 | siren_mode_switches  | Shows switches on the Home app to trigger the security system for each mode.        | false   | true      |
 | unsafe_mode_switches | Shows switches on the Home app for each mode to bypass confirmation.                | false   | true      |
 | hide_mode_off_switch | Hides the `Mode Off` switch on the Home app if you enabled mode switches.           | false   | true      |
+| show_pause_switch    | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |
 | override_off         | Allows to trigger the security system while disarmed.                               | false   | true      |
 | audio                | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
 | audio_language       | Set language used for the audio warnings.                                           | en-US   | en-US     |

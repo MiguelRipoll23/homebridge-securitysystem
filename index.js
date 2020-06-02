@@ -47,6 +47,7 @@ function SecuritySystem(log, config) {
   this.sirenSwitch = config.siren_switch;
   this.modeSwitches = config.unsafe_mode_switches;
   this.hideModeOffSwitch = config.hide_mode_off_switch;
+  this.showPauseSwitch = config.show_pause_switch;
   this.sirenModeSwitches = config.siren_mode_switches;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
@@ -120,6 +121,10 @@ function SecuritySystem(log, config) {
 
   if (isValueSet(this.hideModeOffSwitch) === false) {
     this.hideModeOffSwitch = false;
+  }
+
+  if (isValueSet(this.showPauseSwitch) === false) {
+    this.showPauseSwitch = false;
   }
 
   if (isValueSet(this.pauseMinutes) === false) {
@@ -360,7 +365,7 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (this.pauseMinutes !== 0) {
+  if (this.showPauseSwitch) {
     this.services.push(this.modePauseService);
   }
 
