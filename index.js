@@ -1,6 +1,5 @@
-const os = require('os');
 const path = require('path');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const packageJson = require('./package.json');
 
 const fetch = require('node-fetch');
@@ -80,8 +79,10 @@ function SecuritySystem(log, config) {
   this.targetStates = null;
   this.originalState = null;
   this.stateChanged = false;
+  this.audioProcess = null;
+
   this.invalidCodeAttempts = 0;
-  this.webhook = false;
+  this.webhook = false
 
   this.armingTimeout = null;
   this.pauseTimeout = null;
@@ -1264,37 +1265,28 @@ SecuritySystem.prototype.playSound = function(type, state) {
     }
   }
 
+  // Close previous player
+  if (this.audioProcess !== null) {
+    this.audioProcess.kill();
+  }
+
   const filename = `${type}-${mode}.mp3`;
-  const platform = os.platform();
-
-  let command = '';
-
-  // Kill previous player
-  if (platform === 'win32') {
-    command += 'taskkill /fi "IMAGENAME eq ffplay.exe" /f && ';
-  }
-  else {
-    command += 'killall ffplay || '
-  }
-
-  // Create new player
-  command += `ffplay -nodisp -autoexit ./sounds/${this.audioLanguage}/${filename}`;
+  const options = ['-loglevel', 'error', '-nodisp', `./sounds/${this.audioLanguage}/${filename}`];
 
   if (mode === 'triggered') {
-    command += ' -loop -1';
+    options.push('-loop');
+    options.push('-1');
   }
-
-  exec(command, (error, stdout, stderr) => {
-    if (error !== null) {
-      this.log.error(`Command failed (${command})\n${error}`);
-      return;
-    }
-
-    if (stderr !== '') {
-      this.log.error(`Command failed (${command})\n${stderr}`);
-      return;
-    }
+ 
+  this.audioProcess = spawn('ffplay', options);
+  
+  this.audioProcess.stderr.on('data', (data) => {
+    this.log.error(`Audio failed\n${data}`);
   });
+
+  this.audioProcess.on('close', function() {
+    this.audioProcess = null;
+	});
 };
 
 // Siren Switch
