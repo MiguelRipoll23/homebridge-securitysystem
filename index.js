@@ -47,7 +47,7 @@ function SecuritySystem(log, config) {
   this.sirenSwitch = config.siren_switch;
   this.modeSwitches = config.unsafe_mode_switches;
   this.hideModeOffSwitch = config.hide_mode_off_switch;
-  this.showPauseSwitch = config.show_pause_switch;
+  this.showModePauseSwitch = config.show_mode_pause_switch;
   this.sirenModeSwitches = config.siren_mode_switches;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
@@ -123,8 +123,8 @@ function SecuritySystem(log, config) {
     this.hideModeOffSwitch = false;
   }
 
-  if (isValueSet(this.showPauseSwitch) === false) {
-    this.showPauseSwitch = false;
+  if (isValueSet(this.showModePauseSwitch) === false) {
+    this.showModePauseSwitch = false;
   }
 
   if (isValueSet(this.pauseMinutes) === false) {
@@ -365,7 +365,7 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (this.showPauseSwitch) {
+  if (this.showModePauseSwitch) {
     this.services.push(this.modePauseService);
   }
 
@@ -677,7 +677,7 @@ SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
   this.handleStateChange();
 
   // Audio
-  if (this.audio && this.stateChanged === false) {
+  if (this.audio && this.stateChanged === false && this.armSeconds > 0) {
     this.playSound('target', state);
   }
 
