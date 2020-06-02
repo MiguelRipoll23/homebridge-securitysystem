@@ -6,8 +6,8 @@ const fetch = require('node-fetch');
 const storage = require('node-persist');
 const express = require('express');
 
-const customServices = require('./custom/customServices');
-const customCharacteristics = require('./custom/customCharacteristics');
+const customServices = require('./homekit/customServices');
+const customCharacteristics = require('./homekit/customCharacteristics');
 const serverConstants = require('./constants/server.js');
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
