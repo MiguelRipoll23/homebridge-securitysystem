@@ -48,8 +48,8 @@
         "required": false,
         "minimum": 0
       },
-      "show_pause_switch": {
-        "title": "Show Pause Switch",
+      "show_mode_pause_switch": {
+        "title": "Show Mode Pause Switch",
         "type": "boolean",
         "default": false,
         "required": false
@@ -295,7 +295,7 @@
           "type": "flex",
           "flex-flow": "row wrap",
           "items": [
-            "show_pause_switch",
+            "show_mode_pause_switch",
             "pause_minutes"
           ]
         },
