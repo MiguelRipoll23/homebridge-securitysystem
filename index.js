@@ -2,13 +2,13 @@ const path = require('path');
 const { exec, spawn } = require('child_process');
 const packageJson = require('./package.json');
 
-const fetch = require('node-fetch');
-const storage = require('node-persist');
-const express = require('express');
-
 const customServices = require('./homekit/customServices');
 const customCharacteristics = require('./homekit/customCharacteristics');
 const serverConstants = require('./constants/server.js');
+
+const fetch = require('node-fetch');
+const storage = require('node-persist');
+const express = require('express');
 
 let Service, Characteristic, CustomService, CustomCharacteristic;
 let homebridgeStoragePath, app;
@@ -1276,7 +1276,7 @@ SecuritySystem.prototype.playSound = function(type, state) {
   }
 
   const filename = `${type}-${mode}.mp3`;
-  const options = ['-loglevel', 'error', '-nodisp', `./sounds/${this.audioLanguage}/${filename}`];
+  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
 
   if (mode === 'triggered') {
     options.push('-loop');
