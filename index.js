@@ -1,19 +1,17 @@
 const path = require('path');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const packageJson = require('./package.json');
+
+const customServices = require('./homekit/customServices');
+const customCharacteristics = require('./homekit/customCharacteristics');
+const serverConstants = require('./constants/server.js');
 
 const fetch = require('node-fetch');
 const storage = require('node-persist');
 const express = require('express');
 
-const customServices = require('./custom/customServices');
-const customCharacteristics = require('./custom/customCharacteristics');
-const serverConstants = require('./constants/server.js');
-
-const app = express();
-
 let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgeStoragePath;
+let homebridgeStoragePath, app;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -23,11 +21,12 @@ module.exports = function(homebridge) {
   CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
 
   homebridgeStoragePath = homebridge.user.storagePath();
+  app = express();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
 
-function isOptionSet(value) {
+function isValueSet(value) {
   if (value === undefined || value === null) {
     return false;
   }
@@ -48,8 +47,11 @@ function SecuritySystem(log, config) {
   this.sirenSwitch = config.siren_switch;
   this.modeSwitches = config.unsafe_mode_switches;
   this.hideModeOffSwitch = config.hide_mode_off_switch;
+  this.showModePauseSwitch = config.show_mode_pause_switch;
   this.sirenModeSwitches = config.siren_mode_switches;
   this.overrideOff = config.override_off;
+  this.audio = config.audio;
+  this.audioLanguage = config.audio_language;
   this.saveState = config.save_state;
 
   // Optional: server
@@ -78,8 +80,10 @@ function SecuritySystem(log, config) {
   this.targetStates = null;
   this.originalState = null;
   this.stateChanged = false;
+  this.audioProcess = null;
+
   this.invalidCodeAttempts = 0;
-  this.webhook = false;
+  this.webhook = false
 
   this.armingTimeout = null;
   this.pauseTimeout = null;
@@ -87,7 +91,7 @@ function SecuritySystem(log, config) {
   this.resetTimeout = null;
 
   // Check for optional options
-  if (isOptionSet(this.defaultMode)) {
+  if (isValueSet(this.defaultMode)) {
     this.defaultMode = this.defaultMode.toLowerCase();
     this.defaultState = this.mode2State(this.defaultMode);
   }
@@ -95,51 +99,63 @@ function SecuritySystem(log, config) {
     this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
   }
 
-  if (isOptionSet(this.disabledModes) === false) {
+  if (isValueSet(this.disabledModes) === false) {
     this.disabledModes = [];
   }
 
-  if (isOptionSet(this.armSeconds) === false) {
+  if (isValueSet(this.armSeconds) === false) {
     this.armSeconds = 0;
   }
 
-  if (isOptionSet(this.triggerSeconds) === false) {
+  if (isValueSet(this.triggerSeconds) === false) {
     this.triggerSeconds = 0;
   }
 
-  if (isOptionSet(this.resetMinutes) === false) {
+  if (isValueSet(this.resetMinutes) === false) {
     this.resetMinutes = 10;
   }
 
-  if (isOptionSet(this.modeSwitches) === false) {
+  if (isValueSet(this.modeSwitches) === false) {
     this.modeSwitches = false;
   }
 
-  if (isOptionSet(this.hideModeOffSwitch) === false) {
+  if (isValueSet(this.hideModeOffSwitch) === false) {
     this.hideModeOffSwitch = false;
   }
 
-  if (isOptionSet(this.pauseMinutes) === false) {
+  if (isValueSet(this.showModePauseSwitch) === false) {
+    this.showModePauseSwitch = false;
+  }
+
+  if (isValueSet(this.pauseMinutes) === false) {
     this.pauseMinutes = 0;
   }
 
-  if (!isOptionSet(this.sirenSwitch)) {
+  if (isValueSet(this.sirenSwitch) === false) {
     this.sirenSwitch = true;
   }
 
-  if (!isOptionSet(this.sirenModeSwitches)) {
+  if (isValueSet(this.sirenModeSwitches) === false) {
     this.sirenModeSwitches = false;
   }
 
-  if (!isOptionSet(this.overrideOff)) {
+  if (isValueSet(this.overrideOff) === false) {
     this.overrideOff = false;
   }
 
-  if (!isOptionSet(this.saveState)) {
+  if (isValueSet(this.audio) === false) {
+    this.audio = false;
+  }
+
+  if (isValueSet(this.audioLanguage) === false) {
+    this.audioLanguage = 'en-US';
+  }
+
+  if (isValueSet(this.saveState) === false) {
     this.saveState = false;
   }
 
-  if (isOptionSet(this.serverPort)) {
+  if (isValueSet(this.serverPort)) {
     this.serverCode = config.server_code;
 
     if (this.serverPort < 0 || this.serverPort > 65535) {
@@ -150,7 +166,7 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (isOptionSet(this.webhookUrl)) {
+  if (isValueSet(this.webhookUrl)) {
     this.webhook = true;
     
     this.webhookTargetHome = config.webhook_target_home;
@@ -174,6 +190,13 @@ function SecuritySystem(log, config) {
   this.logMode('Default', this.defaultState);
   this.log(`Arm delay (${this.armSeconds} second/s)`);
   this.log(`Trigger delay (${this.triggerSeconds} second/s)`);
+
+  if (this.audio) {
+    this.log('Audio (Enabled)');
+  }
+  else {
+    this.log('Audio (Disabled)');
+  }
 
   if (this.webhook) {
     this.log(`Webhook (${this.webhookUrl})`);
@@ -342,7 +365,7 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (this.pauseMinutes !== 0) {
+  if (this.showModePauseSwitch) {
     this.services.push(this.modePauseService);
   }
 
@@ -378,7 +401,7 @@ SecuritySystem.prototype.load = async function() {
 
       const currentState = state.currentState || this.defaultState;
       const targetState = state.targetState || this.defaultState;
-      const armingDelay = (isOptionSet(state.armingDelay) === false) ? true : state.armingDelay;
+      const armingDelay = (isValueSet(state.armingDelay) === false) ? true : state.armingDelay;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
@@ -455,8 +478,12 @@ SecuritySystem.prototype.state2Mode = function(state) {
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       return 'off';
 
+    // Custom
+    case 'alert':
+      return state;
+
     default:
-      this.log(`Unknown state (${state}).`);
+      this.log.error(`Unknown state (${state}).`);
       return 'unknown';
   }
 };
@@ -476,7 +503,7 @@ SecuritySystem.prototype.mode2State = function(mode) {
       return Characteristic.SecuritySystemCurrentState.DISARMED;
 
     default:
-      this.log(`Unknown mode (${mode}).`);
+      this.log.error(`Unknown mode (${mode}).`);
       return -1;
   }
 };
@@ -542,10 +569,17 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.save();
   }
 
+  // Commands
   this.executeCommand('current', state);
 
+  // Webhooks
   if (this.webhook) {
     this.sendWebhookEvent('current', state);
+  }
+
+  // Audio
+  if (this.audio) {
+    this.playSound('current', state);
   }
 
   // Automatically reset when being triggered
@@ -565,6 +599,9 @@ SecuritySystem.prototype.handleStateChange = function() {
   // during triggered state
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     this.stateChanged = true;
+  }
+  else {
+    this.stateChanged = false;
   }
 
   // Update characteristics & switches
@@ -620,8 +657,11 @@ SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
 
   this.targetState = state;
   this.logMode('Target', state);
+
+  // Commands
   this.executeCommand('target', state);
 
+  // Webhooks
   if (this.webhook) {
     this.sendWebhookEvent('target', state);
   }
@@ -635,6 +675,11 @@ SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
   }
 
   this.handleStateChange();
+
+  // Audio
+  if (this.audio && this.stateChanged === false && this.armSeconds > 0) {
+    this.playSound('target', state);
+  }
 
   if (delay === undefined) {
     delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
@@ -738,6 +783,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
       if (this.webhook) {
         this.sendWebhookEvent('current', 'alert');
       }
+
+      // Audio
+      if (this.audio) {
+        this.playSound('current', 'alert');
+      }
     }
   }
   else {
@@ -779,7 +829,7 @@ SecuritySystem.prototype.isCodeSent = function(req) {
 
   if (code === undefined) {
     // Check if auth is disabled
-    if (isOptionSet(this.serverCode) === false) {
+    if (isValueSet(this.serverCode) === false) {
       return true;
     }
 
@@ -791,7 +841,7 @@ SecuritySystem.prototype.isCodeSent = function(req) {
 
 SecuritySystem.prototype.isCodeValid = function(req) {
   // Check if auth is disabled
-  if (isOptionSet(this.serverCode) === false) {
+  if (isValueSet(this.serverCode) === false) {
     return true;
   }
 
@@ -878,6 +928,17 @@ SecuritySystem.prototype.sendModePausedError = function(res) {
   res.status(400).json(response);
 };
 
+SecuritySystem.prototype.sendModeOffError = function(res) {
+  this.log('Mode off (Server)')
+
+  const response = {
+    'error': true,
+    'message': serverConstants.MESSAGE_MODE_OFF
+  };
+  
+  res.status(400).json(response);
+};
+
 SecuritySystem.prototype.sendOkResponse = function(res) {
   const response = {
     'error': false
@@ -916,6 +977,14 @@ SecuritySystem.prototype.startServer = async function() {
     if (this.isCodeValid(req) === false) {
       this.sendCodeInvalidError(req, res);
       return;
+    }
+
+    // Check if security system is disarmed
+    if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
+      if (this.overrideOff === false) {
+        this.sendModeOffError(res);
+        return;
+      }
     }
 
     if (this.getDelayParameter(req)) {
@@ -1042,8 +1111,8 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   server.on('error', (error) => {
-    this.log('Error while starting server.');
-    this.log(error);
+    this.log.error('Error while starting server.');
+    this.log.error(error);
   });
 };
 
@@ -1096,21 +1165,21 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
       break;
 
     default:
-      this.log(`Unknown ${type} state (${state})`);
+      this.log.error(`Unknown ${type} state (${state})`);
   }
 
-  if (command === undefined || command === null) {
+  if (isValueSet(command) === false) {
     return;
   }
 
   exec(command, (error, stdout, stderr) => {
     if (error !== null) {
-      this.log(`Command failed (${command})\n${error}`);
+      this.log.error(`Command failed (${command})\n${error}`);
       return;
     }
 
     if (stderr !== '') {
-      this.log(`Command failed (${command})\n${stderr}`);
+      this.log.error(`Command failed (${command})\n${stderr}`);
       return;
     }
 
@@ -1167,11 +1236,11 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       break;
 
     default:
-      this.log(`Unknown ${type} state (${state})`);
+      this.log.error(`Unknown ${type} state (${state})`);
       return;
   }
 
-  if (path === undefined || path === null) {
+  if (isValueSet(path) === false) {
     return;
   }
 
@@ -1185,9 +1254,44 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       this.log('Webhook event (Sent)');
     })
     .catch(error => {
-      this.log(`Request to webhook failed. (${path})`);
-      this.log(error);
+      this.log.error(`Request to webhook failed. (${path})`);
+      this.log.error(error);
     });
+};
+
+// Audio
+SecuritySystem.prototype.playSound = function(type, state) {
+  const mode = this.state2Mode(state);
+
+  // Ignore 'Current Off' event
+  if (mode === 'off') {
+    if (type === 'target') {
+      return;
+    }
+  }
+
+  // Close previous player
+  if (this.audioProcess !== null) {
+    this.audioProcess.kill();
+  }
+
+  const filename = `${type}-${mode}.mp3`;
+  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
+
+  if (mode === 'triggered') {
+    options.push('-loop');
+    options.push('-1');
+  }
+ 
+  this.audioProcess = spawn('ffplay', options);
+  
+  this.audioProcess.stderr.on('data', (data) => {
+    this.log.error(`Audio failed\n${data}`);
+  });
+
+  this.audioProcess.on('close', function() {
+    this.audioProcess = null;
+	});
 };
 
 // Siren Switch

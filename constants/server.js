@@ -6,5 +6,6 @@ module.exports = {
   MESSAGE_CODE_INVALID: 'Code invalid',
   MESSAGE_CODE_BLOCKED: 'Code blocked',
   MESSAGE_MODE_DISABLED: 'Mode disabled',
-  MESSAGE_MODE_PAUSED: 'Mode paused'
+  MESSAGE_MODE_PAUSED: 'Mode paused',
+  MESSAGE_MODE_OFF: 'Mode off'
 };

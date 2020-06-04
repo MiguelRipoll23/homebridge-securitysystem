@@ -48,8 +48,14 @@
         "required": false,
         "minimum": 0
       },
+      "show_mode_pause_switch": {
+        "title": "Show Mode Pause Switch",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "pause_minutes": {
-        "title": "Pause Time Minutes",
+        "title": "Minutes",
         "type": "integer",
         "default": 0,
         "required": false,
@@ -63,7 +69,7 @@
         "minimum": 0
       },
       "reset_minutes": {
-        "title": "Auto-Reset Delay Minutes",
+        "title": "Reset Delay Minutes",
         "type": "integer",
         "default": 10,
         "required": false,
@@ -82,7 +88,7 @@
         "required": false
       },
       "override_off": {
-        "title": "Siren Switch Overrides Off Mode",
+        "title": "Trigger During Off Mode",
         "type": "boolean",
         "default": false,
         "required": false
@@ -99,8 +105,24 @@
         "default": false,
         "required": false
       },
+      "audio": {
+        "title": "Play Audio",
+        "description": "sudo apt install ffmpeg",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "audio_language": {
+        "title": "Language",
+        "type": "string",
+        "default": "en-US",
+        "required": true,
+        "enum": [
+          "en-US"
+        ]
+      },
       "save_state": {
-        "title": "Save State Using Device Storage",
+        "title": "Save Using System Storage",
         "type": "boolean",
         "default": false,
         "required": false
@@ -244,7 +266,16 @@
       "flex-flow": "row wrap",
       "items": [
         "arm_seconds",
-        "trigger_seconds"
+        "trigger_seconds",
+        "reset_minutes"
+      ]
+    },
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "audio",
+        "audio_language"
       ]
     },
     "save_state",
@@ -255,13 +286,19 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "siren_mode_switches",
-        "siren_switch",
-        "override_off",
-        "pause_minutes",
-        "reset_minutes",
         "unsafe_mode_switches",
         "hide_mode_off_switch",
+        "siren_switch",
+        "siren_mode_switches",
+        "override_off",
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "show_mode_pause_switch",
+            "pause_minutes"
+          ]
+        },
         "disabled_modes"
       ]
     },
