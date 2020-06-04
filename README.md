@@ -32,7 +32,7 @@ Use Eve or a similar app to create automations like these:
 
 **Important:** Use a NFC tag to arm/disarm the security system easily and securely without using the Home app.
 
-## All options
+## General options
 
 | Option               | Description                                                                         | Default |  Example  |
 |----------------------|-------------------------------------------------------------------------------------|---------|-----------|
