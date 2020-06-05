@@ -118,7 +118,8 @@
         "default": "en-US",
         "required": true,
         "enum": [
-          "en-US"
+          "en-US",
+          "de-DE"
         ]
       },
       "save_state": {
