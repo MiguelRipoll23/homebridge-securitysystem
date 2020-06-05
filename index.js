@@ -49,6 +49,8 @@ function SecuritySystem(log, config) {
   this.hideModeOffSwitch = config.hide_mode_off_switch;
   this.showModePauseSwitch = config.show_mode_pause_switch;
   this.sirenModeSwitches = config.siren_mode_switches;
+  this.sirenSensor = config.siren_sensor;
+  this.sirenSensorSeconds = config.siren_sensor_minutes;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
   this.audioLanguage = config.audio_language;
@@ -88,6 +90,7 @@ function SecuritySystem(log, config) {
   this.armingTimeout = null;
   this.pauseTimeout = null;
   this.triggerTimeout = null;
+  this.sirenInterval = null;
   this.resetTimeout = null;
 
   // Check for optional options
@@ -133,6 +136,14 @@ function SecuritySystem(log, config) {
 
   if (isValueSet(this.sirenSwitch) === false) {
     this.sirenSwitch = true;
+  }
+
+  if (isValueSet(this.sirenSensor) === false) {
+    this.sirenSesor = false;
+  }
+
+  if (isValueSet(this.sirenSensorSeconds) === false) {
+    this.sirenSensorSeconds = 5;
   }
 
   if (isValueSet(this.sirenModeSwitches) === false) {
@@ -244,12 +255,19 @@ function SecuritySystem(log, config) {
     .on('set', this.setArmingDelay.bind(this));
 
   // Siren switch (Optional)
-  this.sirenService = new Service.Switch('Siren', 'siren');
+  this.sirenSwitchService = new Service.Switch('Siren', 'siren');
 
-  this.sirenService
+  this.sirenSwitchService
     .getCharacteristic(Characteristic.On)
     .on('get', this.getSirenState2.bind(this))
     .on('set', this.setSirenState2.bind(this));
+
+  // Siren sensor (Optional)
+  this.sirenSensorService = new Service.MotionSensor('Siren sensor', 'siren-sensor');
+
+  this.sirenSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getSirenSensorState.bind(this));
 
   // Mode switches (Optional)
   this.modeHomeService = new Service.Switch('Mode Home', 'mode-home');
@@ -326,7 +344,11 @@ function SecuritySystem(log, config) {
   ];
 
   if (this.sirenSwitch) {
-    this.services.push(this.sirenService);
+    this.services.push(this.sirenSwitchService);
+  }
+
+  if (this.sirenSensor) {
+    this.services.push(this.sirenSensorService);
   }
 
   if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.STAY_ARM)) {
@@ -582,9 +604,18 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     this.playSound('current', state);
   }
 
-  // Automatically reset when being triggered
-  // after x minutes
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    // Change motion sensor state to detected every x seconds
+    // to allow multiple notifications
+    this.sirenInterval = setInterval(() => {
+      this.sirenSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(true);
+
+      setTimeout(() => {
+        this.sirenSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
+      }, 750);
+    }, this.sirenSensorSeconds * 1000);
+
+    // Automatically reset when being triggered after x minutes
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
       this.handleStateChange();
@@ -606,7 +637,7 @@ SecuritySystem.prototype.handleStateChange = function() {
 
   // Update characteristics & switches
   const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
-  const sirenOnCharacteristic = this.sirenService.getCharacteristic(Characteristic.On);
+  const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
 
   if (sirenCharacteristic.value) {
     sirenCharacteristic.updateValue(false);
@@ -626,6 +657,12 @@ SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
   // Check if state enabled
   if (this.targetStates.includes(state) === false) {
     return;
+  }
+
+  // Clear siren interval
+  if (this.sirenInterval !== null) {
+    clearInterval(this.sirenInterval);
+    this.sirenInterval = null;
   }
 
   // Clear arming timeout
@@ -1296,12 +1333,18 @@ SecuritySystem.prototype.playSound = function(type, state) {
 
 // Siren Switch
 SecuritySystem.prototype.getSirenState2 = function(callback) {
-  const value = this.sirenService.getCharacteristic(Characteristic.On).value;
+  const value = this.sirenSwitchService.getCharacteristic(Characteristic.On).value;
   callback(null, value);
 };
 
 SecuritySystem.prototype.setSirenState2 = function(state, callback) {
   this.sensorTriggered(state, callback);
+};
+
+// Siren Sensor
+SecuritySystem.prototype.getSirenSensorState = function(callback) {
+  const value = this.sirenSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
 };
 
 // Siren Mode Switches

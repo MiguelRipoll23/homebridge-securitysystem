@@ -44,6 +44,8 @@ Use Eve or a similar app to create automations like these:
 | reset_minutes          | Time in minutes to wait to return to mode set after being triggered.                | 10      | 15        |
 | siren_switch (1)       | Shows a switch on the Home app to trigger the security system.                      | true    | false     |
 | siren_mode_switches    | Shows switches on the Home app to trigger the security system for each mode.        | false   | true      |
+| siren_sensor           | Shows a sensor on the Home app to get multiple notifications during `Triggered`.    | false   | true      |
+| siren_sensor_seconds   | Time in seconds to wait until another notification comes in.                        | 5       | 10        |
 | unsafe_mode_switches   | Shows switches on the Home app for each mode to bypass confirmation.                | false   | true      |
 | hide_mode_off_switch   | Hides the `Mode Off` switch on the Home app if you enabled mode switches.           | false   | true      |
 | show_mode_pause_switch | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |

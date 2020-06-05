@@ -84,6 +84,19 @@
         "default": true,
         "required": false
       },
+      "siren_sensor": {
+        "title": "Show Siren Sensor",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "siren_seconds": {
+        "title": "Seconds",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0
+      },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
         "type": "boolean",
@@ -301,6 +314,14 @@
           "items": [
             "show_mode_pause_switch",
             "pause_minutes"
+          ]
+        },
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "siren_sensor",
+            "siren_seconds"
           ]
         },
         "disabled_modes"
