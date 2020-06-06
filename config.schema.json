@@ -126,7 +126,7 @@
         "required": false
       },
       "audio_language": {
-        "title": "Language",
+        "title": "Audio Language",
         "type": "string",
         "default": "en-US",
         "required": true,
@@ -285,11 +285,18 @@
       ]
     },
     {
-      "type": "flex",
-      "flex-flow": "row wrap",
+      "type": "div",
+      "display": "flex",
+      "flex-direction": "row",
       "items": [
-        "audio",
-        "audio_language"
+        {
+          "key": "audio",
+          "flex": "1"
+        },
+        {
+          "key": "audio_language",
+          "flex": "200px"
+        }
       ]
     },
     "save_state",
@@ -306,19 +313,33 @@
         "siren_mode_switches",
         "override_off",
         {
-          "type": "flex",
-          "flex-flow": "row wrap",
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
           "items": [
-            "show_mode_pause_switch",
-            "pause_minutes"
+            {
+              "key": "show_mode_pause_switch",
+              "flex": "1"
+            },
+            {
+              "key": "pause_minutes",
+              "flex": "200px"
+            }
           ]
         },
         {
-          "type": "flex",
-          "flex-flow": "row wrap",
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
           "items": [
-            "siren_sensor",
-            "siren_seconds"
+            {
+              "key": "siren_sensor",
+              "flex": "1"
+            },
+            {
+              "key": "siren_seconds",
+              "flex": "200px"
+            }
           ]
         },
         "disabled_modes"
