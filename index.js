@@ -54,6 +54,7 @@ function SecuritySystem(log, config) {
   this.overrideOff = config.override_off;
   this.audio = config.audio;
   this.audioLanguage = config.audio_language;
+  this.audioAlertLooped = config.audio_alert_looped;
   this.saveState = config.save_state;
 
   // Optional: server
@@ -160,6 +161,10 @@ function SecuritySystem(log, config) {
 
   if (isValueSet(this.audioLanguage) === false) {
     this.audioLanguage = 'en-US';
+  }
+
+  if (isValueSet(this.audioAlertLooped) === false) {
+    this.audioAlertLooped = false;
   }
 
   if (isValueSet(this.saveState) === false) {
@@ -1316,6 +1321,10 @@ SecuritySystem.prototype.playSound = function(type, state) {
   const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
 
   if (mode === 'triggered') {
+    options.push('-loop');
+    options.push('-1');
+  }
+  else if (mode === 'alert' && this.audioAlertLooped) {
     options.push('-loop');
     options.push('-1');
   }

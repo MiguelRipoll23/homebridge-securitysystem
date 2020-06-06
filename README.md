@@ -52,6 +52,7 @@ Use Eve or a similar app to create automations like these:
 | override_off           | Allows to trigger the security system while disarmed.                               | false   | true      |
 | audio                  | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
 | audio_language         | Set language used for the audio warnings.                                           | en-US   | de-DE     |
+| audio_alert_looped     | Loop alert sound that plays when the security system's countdown has started.       | false   | true      |
 | save_state             | State persistence for shutdowns and reboots.                                        | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.

@@ -138,6 +138,12 @@
           "de-DE"
         ]
       },
+      "audio_alert_looped": {
+        "title": "Loop Alert Sound",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "save_state": {
         "title": "Save Using System Storage",
         "type": "boolean",
@@ -312,6 +318,7 @@
       "items": [
         "unsafe_mode_switches",
         "hide_mode_off_switch",
+        "audio_alert_looped",
         "siren_switch",
         "siren_mode_switches",
         "override_off",
