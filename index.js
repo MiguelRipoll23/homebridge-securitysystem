@@ -50,7 +50,7 @@ function SecuritySystem(log, config) {
   this.showModePauseSwitch = config.show_mode_pause_switch;
   this.sirenModeSwitches = config.siren_mode_switches;
   this.sirenSensor = config.siren_sensor;
-  this.sirenSensorSeconds = config.siren_sensor_minutes;
+  this.sirenSensorSeconds = config.siren_sensor_seconds;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
   this.audioLanguage = config.audio_language;
@@ -140,7 +140,7 @@ function SecuritySystem(log, config) {
   }
 
   if (isValueSet(this.sirenSensor) === false) {
-    this.sirenSesor = false;
+    this.sirenSensor = false;
   }
 
   if (isValueSet(this.sirenSensorSeconds) === false) {
