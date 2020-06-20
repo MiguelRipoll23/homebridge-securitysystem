@@ -260,7 +260,7 @@ function SecuritySystem(log, config) {
     .on('set', this.setArmingDelay.bind(this));
 
   // Siren switch (Optional)
-  this.sirenSwitchService = new Service.Switch('Siren', 'siren');
+  this.sirenSwitchService = new Service.Switch('Siren', 'siren-switch');
 
   this.sirenSwitchService
     .getCharacteristic(Characteristic.On)
@@ -268,7 +268,7 @@ function SecuritySystem(log, config) {
     .on('set', this.setSirenState2.bind(this));
 
   // Siren sensor (Optional)
-  this.sirenSensorService = new Service.MotionSensor('Siren sensor', 'siren-sensor');
+  this.sirenSensorService = new Service.MotionSensor('Triggered', 'siren-sensor');
 
   this.sirenSensorService
     .getCharacteristic(Characteristic.MotionDetected)
