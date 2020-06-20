@@ -692,7 +692,7 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
     clearTimeout(this.triggerTimeout);
 
     this.triggerTimeout = null;
-    this.log.debug('Trigger timeout (Fired)');
+    this.log.debug('Trigger timeout (Cleared)');
   }
 
   this.targetState = state;
@@ -796,8 +796,11 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   if (state) {
     // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      // Ignore since alarm
-      // is already triggered
+      if (callback !== null) {
+        callback('Security system already triggered.');
+      }
+
+      return;
     }
     else {
       this.log('Sensor/s (Triggered)');
@@ -832,20 +835,16 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
   }
   else {
     // Off
-    this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren).updateValue(false);
+    this.log('Sensor/s (Cancelled)');
+    this.stopSound();
 
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       if (this.stateChanged === false) {
-        this.service.setCharacteristic(Characteristic.SecuritySystemTargetState, Characteristic.SecuritySystemTargetState.DISARM);
+        this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false);
       }
     }
     else {
-      if (this.triggerTimeout !== null) {
-        clearTimeout(this.triggerTimeout);
-        this.triggerTimeout = null;
-
-        this.log('Sensor/s (Cancelled)');
-      }
+      this.updateTargetState(this.targetState, false, false);
     }
   }
 
@@ -1311,9 +1310,7 @@ SecuritySystem.prototype.playSound = function(type, state) {
   }
 
   // Close previous player
-  if (this.audioProcess !== null) {
-    this.audioProcess.kill();
-  }
+  this.stopSound();
 
   const filename = `${type}-${mode}.mp3`;
   const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
@@ -1336,6 +1333,12 @@ SecuritySystem.prototype.playSound = function(type, state) {
   this.audioProcess.on('close', function() {
     this.audioProcess = null;
 	});
+};
+
+SecuritySystem.prototype.stopSound = function() {
+  if (this.audioProcess !== null) {
+    this.audioProcess.kill();
+  }
 };
 
 // Siren Switch
