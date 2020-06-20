@@ -268,7 +268,7 @@ function SecuritySystem(log, config) {
     .on('set', this.setSirenState2.bind(this));
 
   // Siren sensor (Optional)
-  this.sirenSensorService = new Service.MotionSensor('Triggered', 'siren-sensor');
+  this.sirenSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
 
   this.sirenSensorService
     .getCharacteristic(Characteristic.MotionDetected)
