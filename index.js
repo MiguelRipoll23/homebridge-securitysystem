@@ -623,6 +623,8 @@ SecuritySystem.prototype.setCurrentState = function(state) {
     // Automatically reset when being triggered after x minutes
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
+      this.log.debug('Reset timeout (Fired)');
+
       this.handleStateChange();
       this.setCurrentState(this.targetState);
     }, this.resetMinutes * 60 * 1000);
@@ -630,15 +632,26 @@ SecuritySystem.prototype.setCurrentState = function(state) {
 };
 
 SecuritySystem.prototype.handleStateChange = function() {
+  // Stop siren triggered sensor
+  if (this.sirenInterval !== null) {
+    clearInterval(this.sirenInterval);
+
+    this.sirenInterval = null;
+    this.log.debug('Siren interval (Cleared)');
+  }
+
+  // Clear security system reset timeout
+  if (this.resetTimeout !== null) {
+    clearTimeout(this.resetTimeout);
+
+    this.resetTimeout = null;
+    this.log.debug('Reset timeout (Cleared)');
+  }
+
   // Set security system to mode
   // selected from the user
   // during triggered state
-  if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.stateChanged = true;
-  }
-  else {
-    this.stateChanged = false;
-  }
+  this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   // Update characteristics & switches
   const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
@@ -658,43 +671,28 @@ SecuritySystem.prototype.handleStateChange = function() {
   this.updateModeSwitches();
 };
 
-SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
+SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   // Check if state enabled
   if (this.targetStates.includes(state) === false) {
     return;
   }
 
-  // Clear siren interval
-  if (this.sirenInterval !== null) {
-    clearInterval(this.sirenInterval);
-    this.sirenInterval = null;
-  }
-
   // Clear arming timeout
   if (this.armingTimeout !== null) {
     clearTimeout(this.armingTimeout);
+
     this.armingTimeout = null;
+    this.log.debug('Arming timeout (Cleared)');
   }
 
-  // Clear reset timeout
-  if (this.resetTimeout !== null) {
-    clearTimeout(this.resetTimeout);
-    this.resetTimeout = null;
-  }
+  let modeAlreadySet = state === this.currentState && state === this.targetState;
 
-  // Check if mode already set
-  let modeAlreadySet = false;
-
-  if (state === this.currentState && state === this.targetState) {
-    // Same mode
-    modeAlreadySet = true;
-  }
-  else if (this.triggerTimeout !== null) {
-    // Mode changed
-
-    // Clear trigger timeout
+  // Clear trigger timeout
+  if (modeAlreadySet) {
     clearTimeout(this.triggerTimeout);
+
     this.triggerTimeout = null;
+    this.log.debug('Trigger timeout (Fired)');
   }
 
   this.targetState = state;
@@ -711,8 +709,8 @@ SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
   if (modeAlreadySet) {
     return;
   }
-
-  if (notify) {
+  
+  if (external) {
     this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
   }
 
@@ -746,7 +744,7 @@ SecuritySystem.prototype.updateTargetState = function(state, notify, delay) {
     }
   }
 
-  // Arming
+  // Arm the alarm after delay
   this.armingTimeout = setTimeout(() => {
     this.armingTimeout = null;
     this.setCurrentState(state);
