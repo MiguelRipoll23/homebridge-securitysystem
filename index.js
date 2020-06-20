@@ -565,8 +565,8 @@ SecuritySystem.prototype.getArmingDelay = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setArmingDelay = function(state, callback) {
-  this.armingDelay = state;
+SecuritySystem.prototype.setArmingDelay = function(value, callback) {
+  this.armingDelay = value;
   this.log(`Arming delay (${(this.armingDelay) ? 'On' : 'Off'})`);
 
   // Save state to file
@@ -763,14 +763,14 @@ SecuritySystem.prototype.getTargetState = function(callback) {
   callback(null, this.targetState);
 };
 
-SecuritySystem.prototype.setTargetState = function(state, callback) {
+SecuritySystem.prototype.setTargetState = function(value, callback) {
   this.resetModePauseSwitch();
-  this.updateTargetState(state, false);
+  this.updateTargetState(value, false);
 
   callback(null);
 };
 
-SecuritySystem.prototype.sensorTriggered = function(state, callback) {
+SecuritySystem.prototype.sensorTriggered = function(value, callback) {
   // Ignore if the security system
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
@@ -793,7 +793,7 @@ SecuritySystem.prototype.sensorTriggered = function(state, callback) {
     return;
   }
 
-  if (state) {
+  if (value) {
     // On
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       if (callback !== null) {
@@ -858,8 +858,8 @@ SecuritySystem.prototype.getSirenState1 = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setSirenState1 = function(state, callback) {
-  this.sensorTriggered(state, callback);
+SecuritySystem.prototype.setSirenState1 = function(value, callback) {
+  this.sensorTriggered(value, callback);
 };
 
 // Server
@@ -1347,8 +1347,8 @@ SecuritySystem.prototype.getSirenState2 = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setSirenState2 = function(state, callback) {
-  this.sensorTriggered(state, callback);
+SecuritySystem.prototype.setSirenState2 = function(value, callback) {
+  this.sensorTriggered(value, callback);
 };
 
 // Siren Sensor
@@ -1376,14 +1376,14 @@ SecuritySystem.prototype.resetSirenSwitches = function() {
   }
 };
 
-SecuritySystem.prototype.triggerIfModeSet = function(switchRequiredState, state, callback) {
-  if (state) {
+SecuritySystem.prototype.triggerIfModeSet = function(switchRequiredState, value, callback) {
+  if (value) {
     if (switchRequiredState === this.currentState) {
-      this.sensorTriggered(state, null);
+      this.sensorTriggered(value, null);
       callback(null);
     }
     else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.sensorTriggered(state, null);
+      this.sensorTriggered(value, null);
       callback('Security system is triggered.');
     }
     else {
@@ -1391,7 +1391,7 @@ SecuritySystem.prototype.triggerIfModeSet = function(switchRequiredState, state,
     }
   }
   else {
-    this.sensorTriggered(state, null);
+    this.sensorTriggered(value, null);
     callback(null);
   }
 };
@@ -1401,8 +1401,8 @@ SecuritySystem.prototype.getSirenHomeState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setSirenHomeState = function(state, callback) {
-  this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.STAY_ARM, state, callback);
+SecuritySystem.prototype.setSirenHomeState = function(value, callback) {
+  this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.STAY_ARM, value, callback);
 };
 
 SecuritySystem.prototype.getSirenAwayState = function(callback) {
@@ -1410,8 +1410,8 @@ SecuritySystem.prototype.getSirenAwayState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setSirenAwayState = function(state, callback) {
-  this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.AWAY_ARM, state, callback);
+SecuritySystem.prototype.setSirenAwayState = function(value, callback) {
+  this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.AWAY_ARM, value, callback);
 };
 
 SecuritySystem.prototype.getSirenNightState = function(callback) {
@@ -1419,8 +1419,8 @@ SecuritySystem.prototype.getSirenNightState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setSirenNightState = function(state, callback) {
-  this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, state, callback);
+SecuritySystem.prototype.setSirenNightState = function(value, callback) {
+  this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, value, callback);
 };
 
 // Mode Switches
@@ -1488,10 +1488,10 @@ SecuritySystem.prototype.getModeHomeState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setModeHomeState = function(state, callback) {
+SecuritySystem.prototype.setModeHomeState = function(value, callback) {
   this.resetModePauseSwitch();
 
-  if (state) {
+  if (value) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true);
   }
@@ -1507,10 +1507,10 @@ SecuritySystem.prototype.getModeAwayState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setModeAwayState = function(state, callback) {
+SecuritySystem.prototype.setModeAwayState = function(value, callback) {
   this.resetModePauseSwitch();
 
-  if (state) {
+  if (value) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true);
   }
@@ -1526,10 +1526,10 @@ SecuritySystem.prototype.getModeNightState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setModeNightState = function(state, callback) {
+SecuritySystem.prototype.setModeNightState = function(value, callback) {
   this.resetModePauseSwitch();
 
-  if (state) {
+  if (value) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true);
   }
@@ -1545,10 +1545,10 @@ SecuritySystem.prototype.getModeOffState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setModeOffState = function(state, callback) {
+SecuritySystem.prototype.setModeOffState = function(value, callback) {
   this.resetModePauseSwitch();
 
-  if (state) {
+  if (value) {
     this.resetModeSwitches();
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true);
   }
@@ -1578,13 +1578,13 @@ SecuritySystem.prototype.getModePauseState = function(callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.setModePauseState = function(state, callback) {
+SecuritySystem.prototype.setModePauseState = function(value, callback) {
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     callback('Security system is triggered.');
     return;
   }
 
-  if (state) {
+  if (value) {
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
       callback('Security system is not armed.');
       return;
