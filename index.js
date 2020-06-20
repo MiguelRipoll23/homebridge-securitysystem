@@ -591,11 +591,6 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logMode('Current', state);
 
-  // Save state to file
-  if (this.saveState) {
-    this.save();
-  }
-
   // Commands
   this.executeCommand('current', state);
 
@@ -628,6 +623,11 @@ SecuritySystem.prototype.setCurrentState = function(state) {
       this.handleStateChange();
       this.setCurrentState(this.targetState);
     }, this.resetMinutes * 60 * 1000);
+  }
+
+  // Save state to file
+  if (this.saveState) {
+    this.save();
   }
 };
 
