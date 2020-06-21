@@ -90,7 +90,7 @@
         "default": false,
         "required": false
       },
-      "siren_seconds": {
+      "siren_sensor_seconds": {
         "title": "Seconds",
         "type": "integer",
         "default": 5,
@@ -347,7 +347,7 @@
               "flex": "1"
             },
             {
-              "key": "siren_seconds",
+              "key": "siren_sensor_seconds",
               "flex": "200px"
             }
           ]
