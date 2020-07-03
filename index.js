@@ -424,11 +424,11 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
-      this.log('Saved state (Found)')
+      this.log('Saved state (Found)');
 
-      const currentState = state.currentState || this.defaultState;
-      const targetState = state.targetState || this.defaultState;
-      const armingDelay = (isValueSet(state.armingDelay) === false) ? true : state.armingDelay;
+      const currentState = isValueSet(state.currentState) ? state.currentState : this.defaultState;
+      const targetState = isValueSet(state.targetState) ? state.targetState : this.defaultState;
+      const armingDelay = isValueSet(state.armingDelay) ? state.armingDelay : true;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
