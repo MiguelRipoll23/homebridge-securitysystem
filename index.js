@@ -672,9 +672,22 @@ SecuritySystem.prototype.handleStateChange = function() {
 };
 
 SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
-  // Check if state enabled
+  // Check if state is already arming
+  if (state === this.targetState) {
+    return;
+  }
+
+  // Check if state is enabled
   if (this.targetStates.includes(state) === false) {
     return;
+  }
+
+  // Clear trigger timeout
+  if (this.triggerTimeout !== null) {
+    clearTimeout(this.triggerTimeout);
+
+    this.triggerTimeout = null;
+    this.log.debug('Trigger timeout (Cleared)');
   }
 
   // Clear arming timeout
@@ -683,16 +696,6 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
 
     this.armingTimeout = null;
     this.log.debug('Arming timeout (Cleared)');
-  }
-
-  let modeAlreadySet = state === this.currentState && state === this.targetState;
-
-  // Clear trigger timeout
-  if (modeAlreadySet) {
-    clearTimeout(this.triggerTimeout);
-
-    this.triggerTimeout = null;
-    this.log.debug('Trigger timeout (Cleared)');
   }
 
   this.targetState = state;
@@ -705,16 +708,18 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   if (this.webhook) {
     this.sendWebhookEvent('target', state);
   }
-
-  if (modeAlreadySet) {
-    return;
-  }
   
   if (external) {
     this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
   }
 
   this.handleStateChange();
+
+  // Check if state is currently
+  // selected
+  if (state === this.currentState) {
+    return;
+  }
 
   // Audio
   if (this.audio && this.stateChanged === false && this.armSeconds > 0) {
