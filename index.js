@@ -1155,6 +1155,46 @@ SecuritySystem.prototype.startServer = async function() {
   });
 };
 
+// Audio
+SecuritySystem.prototype.playSound = function(type, state) {
+  const mode = this.state2Mode(state);
+
+  // Ignore 'Current Off' event
+  if (mode === 'off') {
+    if (type === 'target') {
+      return;
+    }
+  }
+
+  // Close previous player
+  this.stopSound();
+
+  const filename = `${type}-${mode}.mp3`;
+  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
+
+  if (mode === 'triggered') {
+    options.push('-loop');
+    options.push('-1');
+  }
+  else if (mode === 'alert' && this.audioAlertLooped) {
+    options.push('-loop');
+    options.push('-1');
+  }
+  else {
+    options.push('-autoexit');
+  }
+ 
+  this.audioProcess = spawn('ffplay', options);
+  
+  this.audioProcess.stderr.on('data', (data) => {
+    this.log.error(`Audio failed\n${data}`);
+  });
+
+  this.audioProcess.on('close', function() {
+    this.audioProcess = null;
+	});
+};
+
 // Command
 SecuritySystem.prototype.executeCommand = function(type, state) {
   let command = null;
@@ -1296,43 +1336,6 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       this.log.error(`Request to webhook failed. (${path})`);
       this.log.error(error);
     });
-};
-
-// Audio
-SecuritySystem.prototype.playSound = function(type, state) {
-  const mode = this.state2Mode(state);
-
-  // Ignore 'Current Off' event
-  if (mode === 'off') {
-    if (type === 'target') {
-      return;
-    }
-  }
-
-  // Close previous player
-  this.stopSound();
-
-  const filename = `${type}-${mode}.mp3`;
-  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
-
-  if (mode === 'triggered') {
-    options.push('-loop');
-    options.push('-1');
-  }
-  else if (mode === 'alert' && this.audioAlertLooped) {
-    options.push('-loop');
-    options.push('-1');
-  }
- 
-  this.audioProcess = spawn('ffplay', options);
-  
-  this.audioProcess.stderr.on('data', (data) => {
-    this.log.error(`Audio failed\n${data}`);
-  });
-
-  this.audioProcess.on('close', function() {
-    this.audioProcess = null;
-	});
 };
 
 SecuritySystem.prototype.stopSound = function() {
