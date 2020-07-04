@@ -839,17 +839,17 @@ SecuritySystem.prototype.sensorTriggered = function(value, callback) {
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       }, this.triggerSeconds * 1000);
 
+      // Audio
+      if (this.audio && this.triggerSeconds !== 0) {
+        this.playSound('current', 'alert');
+      }
+
       // Execute command
       this.executeCommand('current', 'alert');
 
       // Send Webhook request
       if (this.webhook) {
         this.sendWebhookEvent('current', 'alert');
-      }
-
-      // Audio
-      if (this.audio) {
-        this.playSound('current', 'alert');
       }
     }
   }
