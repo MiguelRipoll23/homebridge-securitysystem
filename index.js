@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const packageJson = require('./package.json');
@@ -1161,7 +1162,7 @@ SecuritySystem.prototype.startServer = async function() {
 };
 
 // Audio
-SecuritySystem.prototype.playSound = function(type, state) {
+SecuritySystem.prototype.playSound = async function(type, state) {
   const mode = this.state2Mode(state);
 
   // Ignore 'Current Off' event
@@ -1175,7 +1176,18 @@ SecuritySystem.prototype.playSound = function(type, state) {
   this.stopSound();
 
   const filename = `${type}-${mode}.mp3`;
-  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
+  const filePath = `${__dirname}/sounds/${this.audioLanguage}/${filename}`;
+
+  // Check if file exists
+  try {
+    await fs.promises.access(filePath);
+  }
+  catch (error) {
+    this.log.debug(`Sound file not found (${this.audioLanguage}/${filename})`);
+    return;
+  }
+
+  const options = ['-loglevel', 'error', '-nodisp', `${filePath}`];
 
   if (mode === 'triggered') {
     options.push('-loop');
