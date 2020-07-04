@@ -2,10 +2,9 @@
 [![npm version](https://badgen.net/npm/v/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem) 
 [![npm downloads](https://badgen.net/npm/dt/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem)
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+[![donate](https://badgen.net/badge/donate/paypal.me/pink)](https://www.paypal.me/miguelripoll23)
 
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
-
-[One-time donation](https://paypal.me/miguelripoll23)
 
 ## Installation
 If you already have Homebridge installed, skip to step two!

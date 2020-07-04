@@ -424,11 +424,11 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
-      this.log('Saved state (Found)')
+      this.log('Saved state (Found)');
 
-      const currentState = state.currentState || this.defaultState;
-      const targetState = state.targetState || this.defaultState;
-      const armingDelay = (isValueSet(state.armingDelay) === false) ? true : state.armingDelay;
+      const currentState = isValueSet(state.currentState) ? state.currentState : this.defaultState;
+      const targetState = isValueSet(state.targetState) ? state.targetState : this.defaultState;
+      const armingDelay = isValueSet(state.armingDelay) ? state.armingDelay : true;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
@@ -672,9 +672,22 @@ SecuritySystem.prototype.handleStateChange = function() {
 };
 
 SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
-  // Check if state enabled
+  // Check if state is already arming
+  if (state === this.targetState) {
+    return;
+  }
+
+  // Check if state is enabled
   if (this.targetStates.includes(state) === false) {
     return;
+  }
+
+  // Clear trigger timeout
+  if (this.triggerTimeout !== null) {
+    clearTimeout(this.triggerTimeout);
+
+    this.triggerTimeout = null;
+    this.log.debug('Trigger timeout (Cleared)');
   }
 
   // Clear arming timeout
@@ -683,16 +696,6 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
 
     this.armingTimeout = null;
     this.log.debug('Arming timeout (Cleared)');
-  }
-
-  let modeAlreadySet = state === this.currentState && state === this.targetState;
-
-  // Clear trigger timeout
-  if (modeAlreadySet) {
-    clearTimeout(this.triggerTimeout);
-
-    this.triggerTimeout = null;
-    this.log.debug('Trigger timeout (Cleared)');
   }
 
   this.targetState = state;
@@ -705,16 +708,18 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   if (this.webhook) {
     this.sendWebhookEvent('target', state);
   }
-
-  if (modeAlreadySet) {
-    return;
-  }
   
   if (external) {
     this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
   }
 
   this.handleStateChange();
+
+  // Check if state is currently
+  // selected
+  if (state === this.currentState) {
+    return;
+  }
 
   // Audio
   if (this.audio && this.stateChanged === false && this.armSeconds > 0) {
@@ -1155,6 +1160,46 @@ SecuritySystem.prototype.startServer = async function() {
   });
 };
 
+// Audio
+SecuritySystem.prototype.playSound = function(type, state) {
+  const mode = this.state2Mode(state);
+
+  // Ignore 'Current Off' event
+  if (mode === 'off') {
+    if (type === 'target') {
+      return;
+    }
+  }
+
+  // Close previous player
+  this.stopSound();
+
+  const filename = `${type}-${mode}.mp3`;
+  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
+
+  if (mode === 'triggered') {
+    options.push('-loop');
+    options.push('-1');
+  }
+  else if (mode === 'alert' && this.audioAlertLooped) {
+    options.push('-loop');
+    options.push('-1');
+  }
+  else {
+    options.push('-autoexit');
+  }
+ 
+  this.audioProcess = spawn('ffplay', options);
+  
+  this.audioProcess.stderr.on('data', (data) => {
+    this.log.error(`Audio failed\n${data}`);
+  });
+
+  this.audioProcess.on('close', function() {
+    this.audioProcess = null;
+	});
+};
+
 // Command
 SecuritySystem.prototype.executeCommand = function(type, state) {
   let command = null;
@@ -1296,43 +1341,6 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       this.log.error(`Request to webhook failed. (${path})`);
       this.log.error(error);
     });
-};
-
-// Audio
-SecuritySystem.prototype.playSound = function(type, state) {
-  const mode = this.state2Mode(state);
-
-  // Ignore 'Current Off' event
-  if (mode === 'off') {
-    if (type === 'target') {
-      return;
-    }
-  }
-
-  // Close previous player
-  this.stopSound();
-
-  const filename = `${type}-${mode}.mp3`;
-  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
-
-  if (mode === 'triggered') {
-    options.push('-loop');
-    options.push('-1');
-  }
-  else if (mode === 'alert' && this.audioAlertLooped) {
-    options.push('-loop');
-    options.push('-1');
-  }
- 
-  this.audioProcess = spawn('ffplay', options);
-  
-  this.audioProcess.stderr.on('data', (data) => {
-    this.log.error(`Audio failed\n${data}`);
-  });
-
-  this.audioProcess.on('close', function() {
-    this.audioProcess = null;
-	});
 };
 
 SecuritySystem.prototype.stopSound = function() {
