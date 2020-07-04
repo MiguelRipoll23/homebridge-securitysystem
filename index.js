@@ -1331,6 +1331,9 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
     return;
   }
 
+  // Parameters
+  path = path.replace('${currentMode}', this.state2Mode(this.currentState));
+
   // Send GET request to server
   fetch(this.webhookUrl + path)
     .then(response => {
