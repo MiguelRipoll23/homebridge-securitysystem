@@ -1265,6 +1265,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
   }
 
   if (isValueSet(command) === false) {
+    this.log.debug(`Command option for ${type} mode is not set.`);
     return;
   }
 
@@ -1340,6 +1341,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   }
 
   if (isValueSet(path) === false) {
+    this.log.debug(`Webhook option for ${type} mode is not set.`);
     return;
   }
 
