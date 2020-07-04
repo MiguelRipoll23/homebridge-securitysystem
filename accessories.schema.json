@@ -128,6 +128,12 @@
         "default": false,
         "required": false
       },
+      "audio_custom": {
+        "title": "Use Custom Sounds",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "audio_language": {
         "title": "Audio Language",
         "type": "string",
@@ -328,9 +334,10 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        "audio_custom",
+        "audio_alert_looped",
         "unsafe_mode_switches",
         "hide_mode_off_switch",
-        "audio_alert_looped",
         "siren_switch",
         "siren_mode_switches",
         "override_off",

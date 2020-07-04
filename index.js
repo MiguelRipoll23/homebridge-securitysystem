@@ -54,6 +54,7 @@ function SecuritySystem(log, config) {
   this.sirenSensorSeconds = config.siren_sensor_seconds;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
+  this.audioCustom = config.audio_custom;
   this.audioLanguage = config.audio_language;
   this.audioAlertLooped = config.audio_alert_looped;
   this.saveState = config.save_state;
@@ -180,6 +181,10 @@ function SecuritySystem(log, config) {
 
   if (isValueSet(this.audio) === false) {
     this.audio = false;
+  }
+
+  if (isValueSet(this.audioCustom) === false) {
+    this.audioCustom = false;
   }
 
   if (isValueSet(this.audioLanguage) === false) {
@@ -1199,10 +1204,18 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   // Close previous player
   this.stopSound();
 
-  const filename = `${type}-${mode}.mp3`;
-  const filePath = `${__dirname}/sounds/${this.audioLanguage}/${filename}`;
+  // Filename
+  let filename = `${type}-${mode}`;
+
+  if (this.audioCustom) {
+    filename += '-custom';
+  }
+
+  filename += '.mp3';
 
   // Check if file exists
+  const filePath = `${__dirname}/sounds/${this.audioLanguage}/${filename}`;
+
   try {
     await fs.promises.access(filePath);
   }
@@ -1211,6 +1224,7 @@ SecuritySystem.prototype.playSound = async function(type, state) {
     return;
   }
 
+  // Spawn process
   const options = ['-loglevel', 'error', '-nodisp', `${filePath}`];
 
   if (mode === 'triggered') {
