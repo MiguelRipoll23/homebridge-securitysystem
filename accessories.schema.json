@@ -64,6 +64,19 @@
         "required": false,
         "minimum": 0
       },
+      "siren_sensor": {
+        "title": "Show Siren Sensor",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "siren_sensor_seconds": {
+        "title": "Seconds",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0
+      },
       "trigger_seconds": {
         "title": "Trigger Delay Seconds",
         "type": "integer",
@@ -83,19 +96,6 @@
         "type": "boolean",
         "default": true,
         "required": false
-      },
-      "siren_sensor": {
-        "title": "Show Siren Sensor",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "siren_sensor_seconds": {
-        "title": "Seconds",
-        "type": "integer",
-        "default": 5,
-        "required": false,
-        "minimum": 0
       },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
@@ -171,18 +171,6 @@
         "format": "uri",
         "placeholder": "http://localhost"
       },
-      "webhook_triggered": {
-        "title": "Current Mode: Triggered",
-        "type": "string",
-        "required": false,
-        "placeholder": "/triggered"
-      },
-      "webhook_alert": {
-        "title": "Current Event: Alert",
-        "type": "string",
-        "required": false,
-        "placeholder": "/alert"
-      },
       "webhook_target_home": {
         "title": "Target Mode: Home",
         "type": "string",
@@ -200,6 +188,12 @@
         "type": "string",
         "required": false,
         "placeholder": "/target/night"
+      },
+      "webhook_target_off": {
+        "title": "Target Mode: Off",
+        "type": "string",
+        "required": false,
+        "placeholder": "/target/off"
       },
       "webhook_current_home": {
         "title": "Current Mode: Home",
@@ -219,23 +213,23 @@
         "required": false,
         "placeholder": "/current/night"
       },
-      "webhook_off": {
+      "webhook_current_off": {
         "title": "Current Mode: Off",
         "type": "string",
         "required": false,
-        "placeholder": "/off"
+        "placeholder": "/current/off"
       },
-      "command_triggered": {
-        "title": "Current Mode: Triggered",
-        "type": "string",
-        "required": false,
-        "placeholder": "echo triggered"
-      },
-      "command_alert": {
+      "webhook_alert": {
         "title": "Current Event: Alert",
         "type": "string",
         "required": false,
-        "placeholder": "echo alert"
+        "placeholder": "/event/alert"
+      },
+      "webhook_triggered": {
+        "title": "Current Mode: Triggered",
+        "type": "string",
+        "required": false,
+        "placeholder": "/current/triggered"
       },
       "command_target_home": {
         "title": "Target Mode: Home",
@@ -248,6 +242,12 @@
         "type": "string",
         "required": false,
         "placeholder": "echo target away"
+      },
+      "command_target_off": {
+        "title": "Target Mode: Off",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo target off"
       },
       "command_target_night": {
         "title": "Target Mode: Night",
@@ -273,11 +273,23 @@
         "required": false,
         "placeholder": "echo current night"
       },
-      "command_off": {
+      "command_current_off": {
         "title": "Current Mode: Off",
         "type": "string",
         "required": false,
-        "placeholder": "echo off"
+        "placeholder": "echo current off"
+      },
+      "command_alert": {
+        "title": "Current Event: Alert",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo event alert"
+      },
+      "command_triggered": {
+        "title": "Current Mode: Triggered",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo current triggered"
       }
     }
   }],
@@ -377,12 +389,13 @@
         "webhook_target_home",
         "webhook_target_away",
         "webhook_target_night",
+        "webhook_target_off",
         "webhook_current_home",
         "webhook_current_away",
         "webhook_current_night",
-        "webhook_triggered",
+        "webhook_current_off",
         "webhook_alert",
-        "webhook_off"
+        "webhook_triggered"
       ]
     },
     {
@@ -395,12 +408,13 @@
         "command_target_home",
         "command_target_away",
         "command_target_night",
+        "command_target_off",
         "command_current_home",
         "command_current_away",
         "command_current_night",
-        "command_triggered",
+        "command_current_off",
         "command_alert",
-        "command_off"
+        "command_triggered"
       ]
     }
   ]

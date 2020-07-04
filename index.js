@@ -62,22 +62,44 @@ function SecuritySystem(log, config) {
   this.serverPort = config.server_port;
   this.serverCode = config.server_code;
 
-  // Optional: webhook
-  this.webhookUrl = config.webhook_url;
-
   // Optional: commands
   this.commandTargetHome = config.command_target_home;
   this.commandTargetAway = config.command_target_away;
   this.commandTargetNight = config.command_target_night;
+  this.commandTargetOff = config.command_target_off;
 
   this.commandCurrentHome = config.command_current_home;
   this.commandCurrentAway = config.command_current_away;
   this.commandCurrentNight = config.command_current_night;
-  
-  this.commandOff = config.command_off;
-  this.commandTriggered = config.command_triggered;
+  this.commandCurrentOff = config.command_current_off || config.command_off;
 
   this.commandAlert = config.command_alert;
+  this.commandTriggered = config.command_triggered;
+
+  // Optional: webhook
+  this.webhookUrl = config.webhook_url;
+
+  this.webhookTargetHome = config.webhook_target_home;
+  this.webhookTargetAway = config.webhook_target_away;
+  this.webhookTargetNight = config.webhook_target_night;
+  this.webhookTargetOff = config.webhook_target_off;
+
+  this.webhookCurrentHome = config.webhook_current_home;
+  this.webhookCurrentAway = config.webhook_current_away;
+  this.webhookCurrentNight = config.webhook_current_night;
+  this.webhookCurrentOff = config.webhook_current_off || config.webhook_off;
+
+  this.webhookAlert = config.webhook_alert;
+  this.webhookTriggered = config.webhook_triggered;
+
+  // Deprecated warnings
+  if (isValueSet(config.command_off)) {
+    this.log.error('Option comand_off has been deprecated, use command_current_off instead.');
+  }
+
+  if (isValueSet(config.webhook_off)) {
+    this.log.error('Option webhook_off has been deprecated, use webhook_current_off instead.');
+  }
 
   // Variables
   this.defaultState = null;
@@ -183,25 +205,7 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (isValueSet(this.webhookUrl)) {
-    this.webhook = true;
-    
-    this.webhookTargetHome = config.webhook_target_home;
-    this.webhookTargetAway = config.webhook_target_away;
-    this.webhookTargetNight = config.webhook_target_night;
-
-    this.webhookCurrentHome = config.webhook_current_home;
-    this.webhookCurrentAway = config.webhook_current_away;
-    this.webhookCurrentNight = config.webhook_current_night;
-
-    this.webhookOff = config.webhook_off;
-    this.webhookTriggered = config.webhook_triggered;
-
-    this.webhookAlert = config.webhook_alert;
-  }
-  else {
-    this.webhook = false;
-  }
+  this.webhook = isValueSet(this.webhookUrl);
 
   // Log
   this.logMode('Default', this.defaultState);
@@ -1268,10 +1272,11 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
-        return;
+        command = this.commandCurrentOff;
+        break;
       }
 
-      command = this.commandOff;
+      command = this.commandTargetOff;
       break;
 
     case 'alert':
@@ -1343,10 +1348,11 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
+        path = this.webhookCurrentOff;
         return;
       }
 
-      path = this.webhookOff;
+      path = this.webhookTargetOff;
       break;
 
     case 'alert':
