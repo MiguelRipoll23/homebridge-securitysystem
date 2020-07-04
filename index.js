@@ -741,8 +741,10 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   }
 
   // Audio
-  if (this.audio && this.stateChanged === false && this.armSeconds > 0) {
-    this.playSound('target', state);
+  if (this.audio) {
+    if (this.stateChanged === false && this.armSeconds > 0) {
+      this.playSound('target', state);
+    }
   }
 
   if (delay === undefined) {
