@@ -1350,7 +1350,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   fetch(this.webhookUrl + path)
     .then(response => {
       if (!response.ok) {
-        throw new Error(`Status code (${response.statusCode})`);
+        throw new Error(`Status code (${response.status})`);
       }
 
       this.log('Webhook event (Sent)');
