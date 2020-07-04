@@ -2,7 +2,7 @@
   "pluginAlias": "security-system",
   "pluginType": "accessory",
   "headerDisplay": "Create a security system accessory that can be triggered by HomeKit accessories.",
-  "footerDisplay": "Need help? [Go to the issues page](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) and ask a question!",
+  "footerDisplay": "Need help? [Ask me anything!](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://paypal.me/miguelripoll23)",
   "schema": {
     "title": "Security System",
     "type": "object",
