@@ -621,7 +621,9 @@ SecuritySystem.prototype.setCurrentState = function(state) {
       this.resetTimeout = null;
       this.log.debug('Reset timeout (Fired)');
 
-      this.handleStateChange();
+      this.resetTimers();
+      this.handleStateChange(true);
+
       this.setCurrentState(this.targetState);
     }, this.resetMinutes * 60 * 1000);
   }
@@ -632,57 +634,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   }
 };
 
-SecuritySystem.prototype.handleStateChange = function() {
-  // Stop siren triggered sensor
-  if (this.sirenInterval !== null) {
-    clearInterval(this.sirenInterval);
-
-    this.sirenInterval = null;
-    this.log.debug('Siren interval (Cleared)');
-  }
-
-  // Clear security system reset timeout
-  if (this.resetTimeout !== null) {
-    clearTimeout(this.resetTimeout);
-
-    this.resetTimeout = null;
-    this.log.debug('Reset timeout (Cleared)');
-  }
-
-  // Set security system to mode
-  // selected from the user
-  // during triggered state
-  this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-
-  // Update characteristics & switches
-  const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
-  const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
-
-  if (sirenCharacteristic.value) {
-    sirenCharacteristic.updateValue(false);
-  }
-
-  if (sirenOnCharacteristic.value) {
-    sirenOnCharacteristic.updateValue(false);
-  }
-
-  this.resetSirenSwitches();
-  this.resetModeSwitches();
-
-  this.updateModeSwitches();
-};
-
-SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
-  // Check if state is already arming
-  if (state === this.targetState) {
-    return;
-  }
-
-  // Check if state is enabled
-  if (this.targetStates.includes(state) === false) {
-    return;
-  }
-
+SecuritySystem.prototype.resetTimers = function() {
   // Clear trigger timeout
   if (this.triggerTimeout !== null) {
     clearTimeout(this.triggerTimeout);
@@ -699,8 +651,72 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
     this.log.debug('Arming timeout (Cleared)');
   }
 
+  // Stop siren triggered sensor
+  if (this.sirenInterval !== null) {
+    clearInterval(this.sirenInterval);
+
+    this.sirenInterval = null;
+    this.log.debug('Siren interval (Cleared)');
+  }
+
+  // Clear security system reset timeout
+  if (this.resetTimeout !== null) {
+    clearTimeout(this.resetTimeout);
+
+    this.resetTimeout = null;
+    this.log.debug('Reset timeout (Cleared)');
+  }
+};
+
+SecuritySystem.prototype.handleStateChange = function(external) {
+  // Set security system to mode
+  // selected from the user
+  // during triggered state
+  this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+
+  // Update characteristics
+  if (external) {
+    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
+  }
+
+  const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
+  const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
+
+  if (sirenCharacteristic.value) {
+    sirenCharacteristic.updateValue(false);
+  }
+
+  if (sirenOnCharacteristic.value) {
+    sirenOnCharacteristic.updateValue(false);
+  }
+
+  // Update switches
+  this.resetSirenSwitches();
+  this.resetModeSwitches();
+  this.updateModeSwitches();
+};
+
+SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
+  // Check if state is already arming
+  if (this.targetState === state && 
+      this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    return;
+  }
+
+  // Check if state is enabled
+  if (this.targetStates.includes(state) === false) {
+    return;
+  }
+
+  // Reset timers
+  this.resetTimers();
+
+  // Update target state
   this.targetState = state;
   this.logMode('Target', state);
+
+  // Update characteristics & switches
+  this.handleStateChange(external);
 
   // Commands
   this.executeCommand('target', state);
@@ -709,12 +725,6 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   if (this.webhook) {
     this.sendWebhookEvent('target', state);
   }
-  
-  if (external) {
-    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
-  }
-
-  this.handleStateChange();
 
   // Check if state is currently
   // selected
@@ -850,7 +860,7 @@ SecuritySystem.prototype.sensorTriggered = function(value, callback) {
       }
     }
     else {
-      this.updateTargetState(this.targetState, false, false);
+      this.resetTimers();
     }
   }
 
