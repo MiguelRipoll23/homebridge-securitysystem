@@ -1256,6 +1256,9 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
     return;
   }
 
+  // Parameters
+  command = command.replace('${currentMode}', this.state2Mode(this.currentState));
+
   exec(command, (error, stdout, stderr) => {
     if (error !== null) {
       this.log.error(`Command failed (${command})\n${error}`);
