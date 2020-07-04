@@ -728,8 +728,11 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
 
   // Check if state is currently
   // selected
-  if (state === this.currentState) {
-    this.playSound('current', this.currentState);
+  if (this.currentState === state) {
+    if (this.audio) {
+      this.playSound('current', this.currentState);
+    }
+
     return;
   }
 
@@ -862,7 +865,10 @@ SecuritySystem.prototype.sensorTriggered = function(value, callback) {
     }
     else {
       this.resetTimers();
-      this.playSound('current', this.currentState);
+
+      if (this.audio) {
+        this.playSound('current', this.currentState);
+      }
     }
   }
 
