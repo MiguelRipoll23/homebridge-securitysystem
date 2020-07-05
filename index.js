@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require('path');
 const { exec, spawn } = require('child_process');
 const packageJson = require('./package.json');
@@ -53,6 +54,7 @@ function SecuritySystem(log, config) {
   this.sirenSensorSeconds = config.siren_sensor_seconds;
   this.overrideOff = config.override_off;
   this.audio = config.audio;
+  this.audioCustom = config.audio_custom;
   this.audioLanguage = config.audio_language;
   this.audioAlertLooped = config.audio_alert_looped;
   this.saveState = config.save_state;
@@ -61,22 +63,44 @@ function SecuritySystem(log, config) {
   this.serverPort = config.server_port;
   this.serverCode = config.server_code;
 
-  // Optional: webhook
-  this.webhookUrl = config.webhook_url;
-
   // Optional: commands
   this.commandTargetHome = config.command_target_home;
   this.commandTargetAway = config.command_target_away;
   this.commandTargetNight = config.command_target_night;
+  this.commandTargetOff = config.command_target_off;
 
   this.commandCurrentHome = config.command_current_home;
   this.commandCurrentAway = config.command_current_away;
   this.commandCurrentNight = config.command_current_night;
-  
-  this.commandOff = config.command_off;
-  this.commandTriggered = config.command_triggered;
+  this.commandCurrentOff = config.command_current_off || config.command_off;
 
   this.commandAlert = config.command_alert;
+  this.commandTriggered = config.command_triggered;
+
+  // Optional: webhook
+  this.webhookUrl = config.webhook_url;
+
+  this.webhookTargetHome = config.webhook_target_home;
+  this.webhookTargetAway = config.webhook_target_away;
+  this.webhookTargetNight = config.webhook_target_night;
+  this.webhookTargetOff = config.webhook_target_off;
+
+  this.webhookCurrentHome = config.webhook_current_home;
+  this.webhookCurrentAway = config.webhook_current_away;
+  this.webhookCurrentNight = config.webhook_current_night;
+  this.webhookCurrentOff = config.webhook_current_off || config.webhook_off;
+
+  this.webhookAlert = config.webhook_alert;
+  this.webhookTriggered = config.webhook_triggered;
+
+  // Deprecated warnings
+  if (isValueSet(config.command_off)) {
+    this.log.error('Option comand_off has been deprecated, use command_current_off instead.');
+  }
+
+  if (isValueSet(config.webhook_off)) {
+    this.log.error('Option webhook_off has been deprecated, use webhook_current_off instead.');
+  }
 
   // Variables
   this.defaultState = null;
@@ -159,6 +183,10 @@ function SecuritySystem(log, config) {
     this.audio = false;
   }
 
+  if (isValueSet(this.audioCustom) === false) {
+    this.audioCustom = false;
+  }
+
   if (isValueSet(this.audioLanguage) === false) {
     this.audioLanguage = 'en-US';
   }
@@ -182,25 +210,7 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (isValueSet(this.webhookUrl)) {
-    this.webhook = true;
-    
-    this.webhookTargetHome = config.webhook_target_home;
-    this.webhookTargetAway = config.webhook_target_away;
-    this.webhookTargetNight = config.webhook_target_night;
-
-    this.webhookCurrentHome = config.webhook_current_home;
-    this.webhookCurrentAway = config.webhook_current_away;
-    this.webhookCurrentNight = config.webhook_current_night;
-
-    this.webhookOff = config.webhook_off;
-    this.webhookTriggered = config.webhook_triggered;
-
-    this.webhookAlert = config.webhook_alert;
-  }
-  else {
-    this.webhook = false;
-  }
+  this.webhook = isValueSet(this.webhookUrl);
 
   // Log
   this.logMode('Default', this.defaultState);
@@ -620,7 +630,9 @@ SecuritySystem.prototype.setCurrentState = function(state) {
       this.resetTimeout = null;
       this.log.debug('Reset timeout (Fired)');
 
-      this.handleStateChange();
+      this.resetTimers();
+      this.handleStateChange(true);
+
       this.setCurrentState(this.targetState);
     }, this.resetMinutes * 60 * 1000);
   }
@@ -631,57 +643,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   }
 };
 
-SecuritySystem.prototype.handleStateChange = function() {
-  // Stop siren triggered sensor
-  if (this.sirenInterval !== null) {
-    clearInterval(this.sirenInterval);
-
-    this.sirenInterval = null;
-    this.log.debug('Siren interval (Cleared)');
-  }
-
-  // Clear security system reset timeout
-  if (this.resetTimeout !== null) {
-    clearTimeout(this.resetTimeout);
-
-    this.resetTimeout = null;
-    this.log.debug('Reset timeout (Cleared)');
-  }
-
-  // Set security system to mode
-  // selected from the user
-  // during triggered state
-  this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-
-  // Update characteristics & switches
-  const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
-  const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
-
-  if (sirenCharacteristic.value) {
-    sirenCharacteristic.updateValue(false);
-  }
-
-  if (sirenOnCharacteristic.value) {
-    sirenOnCharacteristic.updateValue(false);
-  }
-
-  this.resetSirenSwitches();
-  this.resetModeSwitches();
-
-  this.updateModeSwitches();
-};
-
-SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
-  // Check if state is already arming
-  if (state === this.targetState) {
-    return;
-  }
-
-  // Check if state is enabled
-  if (this.targetStates.includes(state) === false) {
-    return;
-  }
-
+SecuritySystem.prototype.resetTimers = function() {
   // Clear trigger timeout
   if (this.triggerTimeout !== null) {
     clearTimeout(this.triggerTimeout);
@@ -698,8 +660,72 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
     this.log.debug('Arming timeout (Cleared)');
   }
 
+  // Stop siren triggered sensor
+  if (this.sirenInterval !== null) {
+    clearInterval(this.sirenInterval);
+
+    this.sirenInterval = null;
+    this.log.debug('Siren interval (Cleared)');
+  }
+
+  // Clear security system reset timeout
+  if (this.resetTimeout !== null) {
+    clearTimeout(this.resetTimeout);
+
+    this.resetTimeout = null;
+    this.log.debug('Reset timeout (Cleared)');
+  }
+};
+
+SecuritySystem.prototype.handleStateChange = function(external) {
+  // Set security system to mode
+  // selected from the user
+  // during triggered state
+  this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+
+  // Update characteristics
+  if (external) {
+    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
+  }
+
+  const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
+  const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
+
+  if (sirenCharacteristic.value) {
+    sirenCharacteristic.updateValue(false);
+  }
+
+  if (sirenOnCharacteristic.value) {
+    sirenOnCharacteristic.updateValue(false);
+  }
+
+  // Update switches
+  this.resetSirenSwitches();
+  this.resetModeSwitches();
+  this.updateModeSwitches();
+};
+
+SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
+  // Check if state is already arming
+  if (this.targetState === state && 
+      this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    return;
+  }
+
+  // Check if state is enabled
+  if (this.targetStates.includes(state) === false) {
+    return;
+  }
+
+  // Reset timers
+  this.resetTimers();
+
+  // Update target state
   this.targetState = state;
   this.logMode('Target', state);
+
+  // Update characteristics & switches
+  this.handleStateChange(external);
 
   // Commands
   this.executeCommand('target', state);
@@ -708,22 +734,22 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   if (this.webhook) {
     this.sendWebhookEvent('target', state);
   }
-  
-  if (external) {
-    this.service.getCharacteristic(Characteristic.SecuritySystemTargetState).updateValue(this.targetState);
-  }
-
-  this.handleStateChange();
 
   // Check if state is currently
   // selected
-  if (state === this.currentState) {
+  if (this.currentState === state) {
+    if (this.audio) {
+      this.playSound('current', this.currentState);
+    }
+
     return;
   }
 
   // Audio
-  if (this.audio && this.stateChanged === false && this.armSeconds > 0) {
-    this.playSound('target', state);
+  if (this.audio) {
+    if (this.stateChanged === false && this.armSeconds > 0) {
+      this.playSound('target', state);
+    }
   }
 
   if (delay === undefined) {
@@ -824,17 +850,17 @@ SecuritySystem.prototype.sensorTriggered = function(value, callback) {
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
       }, this.triggerSeconds * 1000);
 
+      // Audio
+      if (this.audio && this.triggerSeconds !== 0) {
+        this.playSound('current', 'alert');
+      }
+
       // Execute command
       this.executeCommand('current', 'alert');
 
       // Send Webhook request
       if (this.webhook) {
         this.sendWebhookEvent('current', 'alert');
-      }
-
-      // Audio
-      if (this.audio) {
-        this.playSound('current', 'alert');
       }
     }
   }
@@ -849,7 +875,11 @@ SecuritySystem.prototype.sensorTriggered = function(value, callback) {
       }
     }
     else {
-      this.updateTargetState(this.targetState, false, false);
+      this.resetTimers();
+
+      if (this.audio) {
+        this.playSound('current', this.currentState);
+      }
     }
   }
 
@@ -1161,7 +1191,7 @@ SecuritySystem.prototype.startServer = async function() {
 };
 
 // Audio
-SecuritySystem.prototype.playSound = function(type, state) {
+SecuritySystem.prototype.playSound = async function(type, state) {
   const mode = this.state2Mode(state);
 
   // Ignore 'Current Off' event
@@ -1174,8 +1204,28 @@ SecuritySystem.prototype.playSound = function(type, state) {
   // Close previous player
   this.stopSound();
 
-  const filename = `${type}-${mode}.mp3`;
-  const options = ['-loglevel', 'error', '-nodisp', `${__dirname}/sounds/${this.audioLanguage}/${filename}`];
+  // Filename
+  let filename = `${type}-${mode}`;
+
+  if (this.audioCustom) {
+    filename += '-custom';
+  }
+
+  filename += '.mp3';
+
+  // Check if file exists
+  const filePath = `${__dirname}/sounds/${this.audioLanguage}/${filename}`;
+
+  try {
+    await fs.promises.access(filePath);
+  }
+  catch (error) {
+    this.log.debug(`Sound file not found (${this.audioLanguage}/${filename})`);
+    return;
+  }
+
+  // Spawn process
+  const options = ['-loglevel', 'error', '-nodisp', `${filePath}`];
 
   if (mode === 'triggered') {
     options.push('-loop');
@@ -1238,10 +1288,11 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
-        return;
+        command = this.commandCurrentOff;
+        break;
       }
 
-      command = this.commandOff;
+      command = this.commandTargetOff;
       break;
 
     case 'alert':
@@ -1253,8 +1304,12 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
   }
 
   if (isValueSet(command) === false) {
+    this.log.debug(`Command option for ${type} mode is not set.`);
     return;
   }
+
+  // Parameters
+  command = command.replace('${currentMode}', this.state2Mode(this.currentState));
 
   exec(command, (error, stdout, stderr) => {
     if (error !== null) {
@@ -1309,10 +1364,11 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
+        path = this.webhookCurrentOff;
         return;
       }
 
-      path = this.webhookOff;
+      path = this.webhookTargetOff;
       break;
 
     case 'alert':
@@ -1325,14 +1381,18 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   }
 
   if (isValueSet(path) === false) {
+    this.log.debug(`Webhook option for ${type} mode is not set.`);
     return;
   }
+
+  // Parameters
+  path = path.replace('${currentMode}', this.state2Mode(this.currentState));
 
   // Send GET request to server
   fetch(this.webhookUrl + path)
     .then(response => {
       if (!response.ok) {
-        throw new Error(`Status code (${response.statusCode})`);
+        throw new Error(`Status code (${response.status})`);
       }
 
       this.log('Webhook event (Sent)');

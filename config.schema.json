@@ -2,7 +2,7 @@
   "pluginAlias": "security-system",
   "pluginType": "accessory",
   "headerDisplay": "Create a security system accessory that can be triggered by HomeKit accessories.",
-  "footerDisplay": "Need help? [Ask me anything!](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://paypal.me/miguelripoll23)",
+  "footerDisplay": "Need help? [Ask me anything](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://paypal.me/miguelripoll23)",
   "schema": {
     "title": "Security System",
     "type": "object",
@@ -125,6 +125,12 @@
         "default": false,
         "required": false
       },
+      "audio_custom": {
+        "title": "Use Custom Sounds",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "audio_language": {
         "title": "Audio Language",
         "type": "string",
@@ -168,18 +174,6 @@
         "format": "uri",
         "placeholder": "http://localhost"
       },
-      "webhook_triggered": {
-        "title": "Current Mode: Triggered",
-        "type": "string",
-        "required": false,
-        "placeholder": "/triggered"
-      },
-      "webhook_alert": {
-        "title": "Current Event: Alert",
-        "type": "string",
-        "required": false,
-        "placeholder": "/alert"
-      },
       "webhook_target_home": {
         "title": "Target Mode: Home",
         "type": "string",
@@ -197,6 +191,12 @@
         "type": "string",
         "required": false,
         "placeholder": "/target/night"
+      },
+      "webhook_target_off": {
+        "title": "Target Mode: Off",
+        "type": "string",
+        "required": false,
+        "placeholder": "/target/off"
       },
       "webhook_current_home": {
         "title": "Current Mode: Home",
@@ -216,23 +216,23 @@
         "required": false,
         "placeholder": "/current/night"
       },
-      "webhook_off": {
+      "webhook_current_off": {
         "title": "Current Mode: Off",
         "type": "string",
         "required": false,
-        "placeholder": "/off"
+        "placeholder": "/current/off"
       },
-      "command_triggered": {
-        "title": "Current Mode: Triggered",
-        "type": "string",
-        "required": false,
-        "placeholder": "echo triggered"
-      },
-      "command_alert": {
+      "webhook_alert": {
         "title": "Current Event: Alert",
         "type": "string",
         "required": false,
-        "placeholder": "echo alert"
+        "placeholder": "/event/alert"
+      },
+      "webhook_triggered": {
+        "title": "Current Mode: Triggered",
+        "type": "string",
+        "required": false,
+        "placeholder": "/current/triggered"
       },
       "command_target_home": {
         "title": "Target Mode: Home",
@@ -245,6 +245,12 @@
         "type": "string",
         "required": false,
         "placeholder": "echo target away"
+      },
+      "command_target_off": {
+        "title": "Target Mode: Off",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo target off"
       },
       "command_target_night": {
         "title": "Target Mode: Night",
@@ -270,11 +276,23 @@
         "required": false,
         "placeholder": "echo current night"
       },
-      "command_off": {
+      "command_current_off": {
         "title": "Current Mode: Off",
         "type": "string",
         "required": false,
-        "placeholder": "echo off"
+        "placeholder": "echo current off"
+      },
+      "command_alert": {
+        "title": "Current Event: Alert",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo event alert"
+      },
+      "command_triggered": {
+        "title": "Current Mode: Triggered",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo current triggered"
       }
     }
   },
@@ -313,9 +331,10 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        "audio_custom",
+        "audio_alert_looped",
         "unsafe_mode_switches",
         "hide_mode_off_switch",
-        "audio_alert_looped",
         "siren_switch",
         "siren_mode_switches",
         "override_off",
@@ -374,12 +393,13 @@
         "webhook_target_home",
         "webhook_target_away",
         "webhook_target_night",
+        "webhook_target_off",
         "webhook_current_home",
         "webhook_current_away",
         "webhook_current_night",
-        "webhook_triggered",
+        "webhook_current_off",
         "webhook_alert",
-        "webhook_off"
+        "webhook_triggered"
       ]
     },
     {
@@ -392,12 +412,13 @@
         "command_target_home",
         "command_target_away",
         "command_target_night",
+        "command_target_off",
         "command_current_home",
         "command_current_away",
         "command_current_night",
-        "command_triggered",
+        "command_current_off",
         "command_alert",
-        "command_off"
+        "command_triggered"
       ]
     }
   ]
