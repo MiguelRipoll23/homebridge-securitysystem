@@ -3,8 +3,8 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const packageJson = require('./package.json');
-const customServices = require('./homekit/customServices');
-const customCharacteristics = require('./homekit/customCharacteristics');
+const customServices = require('./hap/customServices');
+const customCharacteristics = require('./hap/customCharacteristics');
 const serverConstants = require('./constants/server.js');
 
 const fetch = require('node-fetch');
