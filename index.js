@@ -11,8 +11,10 @@ const fetch = require('node-fetch');
 const storage = require('node-persist');
 const express = require('express');
 
+const app = express();
+
 let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgeStoragePath, app;
+let homebridgeStoragePath;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -22,7 +24,6 @@ module.exports = function(homebridge) {
   CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
 
   homebridgeStoragePath = homebridge.user.storagePath();
-  app = express();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
@@ -203,10 +204,7 @@ function SecuritySystem(log, config) {
     this.serverCode = config.server_code;
 
     if (this.serverPort < 0 || this.serverPort > 65535) {
-      this.log('Server port is invalid.');
-    }
-    else {
-      this.startServer();
+      this.log.error('Server port is invalid.');
     }
   }
 
@@ -410,6 +408,11 @@ function SecuritySystem(log, config) {
   if (this.saveState) {
     this.load();
   }
+
+  // Server
+  if (this.serverPort !== null) {
+    this.startServer();
+  }
 }
 
 SecuritySystem.prototype.load = async function() {
@@ -420,8 +423,8 @@ SecuritySystem.prototype.load = async function() {
   await storage.init(options)
     .then()
     .catch((error) => {
-      this.log('Unable to initialize storage.');
-      this.log(error);
+      this.log.error('Unable to initialize storage.');
+      this.log.error(error);
     });
 
   if (storage.defaultInstance === undefined) {
@@ -468,8 +471,8 @@ SecuritySystem.prototype.load = async function() {
       this.log(`Arming delay (${this.armingDelay === true ? 'On' : 'Off'})`);
     })
     .catch(error => {
-      this.log('Saved state (Error)');
-      this.log(error);
+      this.log.error('Saved state (Error)');
+      this.log.error(error);
     });
 };
 
@@ -487,8 +490,8 @@ SecuritySystem.prototype.save = async function() {
   await storage.setItem('state', state)
     .then()
     .catch(error => {
-      this.log('Unable to save state.');
-      this.log(error);
+      this.log.error('Unable to save state.');
+      this.log.error(error);
     });
 };
 
@@ -579,12 +582,12 @@ SecuritySystem.prototype.setArmingDelay = function(value, callback) {
   this.armingDelay = value;
   this.log(`Arming delay (${(this.armingDelay) ? 'On' : 'Off'})`);
 
+  callback(null);
+
   // Save state to file
   if (this.saveState) {
     this.save();
   }
-
-  callback(null);
 };
 
 SecuritySystem.prototype.getCurrentState = function(callback) {
@@ -1176,8 +1179,8 @@ SecuritySystem.prototype.startServer = async function() {
   // Listener
   const server = app.listen(this.serverPort, error => {
     if (error) {
-      this.log('Error while starting server.');
-      this.log(error);
+      this.log.error('Error while starting server.');
+      this.log.error(error);
       return;
     }
     
