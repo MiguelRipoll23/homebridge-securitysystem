@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require('path');
-const { exec, spawn } = require('child_process');
-const packageJson = require('./package.json');
+const { spawn } = require('child_process');
 
+const packageJson = require('./package.json');
 const customServices = require('./homekit/customServices');
 const customCharacteristics = require('./homekit/customCharacteristics');
 const serverConstants = require('./constants/server.js');
@@ -1314,18 +1314,13 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
   // Parameters
   command = command.replace('${currentMode}', this.state2Mode(this.currentState));
 
-  exec(command, (error, stdout, stderr) => {
-    if (error !== null) {
-      this.log.error(`Command failed (${command})\n${error}`);
-      return;
-    }
+  const process = spawn(command, {shell: true});
 
-    if (stderr !== '') {
-      this.log.error(`Command failed (${command})\n${stderr}`);
-      return;
-    }
-
-    this.log(`Command output: ${stdout}`);
+  process.stderr.on('data', (data) => {
+    this.log.error(`Command failed (${command})\n${data}`);
+  });
+  process.stdout.on('data', (data) => {
+    this.log(`Command output: ${data}`);
   });
 };
 
