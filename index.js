@@ -3,9 +3,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const packageJson = require('./package.json');
+const options = require('./options.js');
 const customServices = require('./hap/customServices');
 const customCharacteristics = require('./hap/customCharacteristics');
-const serverConstants = require('./constants/server.js');
+const server = require('./utils/server.js');
 
 const fetch = require('node-fetch');
 const storage = require('node-persist');
@@ -37,197 +38,41 @@ function isValueSet(value) {
 }
 
 function SecuritySystem(log, config) {
-  // Options
   this.log = log;
-  this.name = config.name;
-  this.defaultMode = config.default_mode;
-  this.disabledModes = config.disabled_modes;
-  this.armSeconds = config.arm_seconds;
-  this.triggerSeconds = config.trigger_seconds;
-  this.pauseMinutes = config.pause_minutes;
-  this.resetMinutes = config.reset_minutes;
-  this.sirenSwitch = config.siren_switch;
-  this.modeSwitches = config.unsafe_mode_switches;
-  this.hideModeOffSwitch = config.hide_mode_off_switch;
-  this.showModePauseSwitch = config.show_mode_pause_switch;
-  this.sirenModeSwitches = config.siren_mode_switches;
-  this.sirenSensor = config.siren_sensor;
-  this.sirenSensorSeconds = config.siren_sensor_seconds;
-  this.overrideOff = config.override_off;
-  this.audio = config.audio;
-  this.audioCustom = config.audio_custom;
-  this.audioLanguage = config.audio_language;
-  this.audioAlertLooped = config.audio_alert_looped;
-  this.saveState = config.save_state;
+  options.init(log, config); 
 
-  // Optional: server
-  this.serverPort = config.server_port;
-  this.serverCode = config.server_code;
-
-  // Optional: commands
-  this.commandTargetHome = config.command_target_home;
-  this.commandTargetAway = config.command_target_away;
-  this.commandTargetNight = config.command_target_night;
-  this.commandTargetOff = config.command_target_off;
-
-  this.commandCurrentHome = config.command_current_home;
-  this.commandCurrentAway = config.command_current_away;
-  this.commandCurrentNight = config.command_current_night;
-  this.commandCurrentOff = config.command_current_off || config.command_off;
-
-  this.commandAlert = config.command_alert;
-  this.commandTriggered = config.command_triggered;
-
-  // Optional: webhook
-  this.webhookUrl = config.webhook_url;
-
-  this.webhookTargetHome = config.webhook_target_home;
-  this.webhookTargetAway = config.webhook_target_away;
-  this.webhookTargetNight = config.webhook_target_night;
-  this.webhookTargetOff = config.webhook_target_off;
-
-  this.webhookCurrentHome = config.webhook_current_home;
-  this.webhookCurrentAway = config.webhook_current_away;
-  this.webhookCurrentNight = config.webhook_current_night;
-  this.webhookCurrentOff = config.webhook_current_off || config.webhook_off;
-
-  this.webhookAlert = config.webhook_alert;
-  this.webhookTriggered = config.webhook_triggered;
-
-  // Deprecated warnings
-  if (isValueSet(config.command_off)) {
-    this.log.error('Option comand_off has been deprecated, use command_current_off instead.');
-  }
-
-  if (isValueSet(config.webhook_off)) {
-    this.log.error('Option webhook_off has been deprecated, use webhook_current_off instead.');
-  }
-
-  // Variables
-  this.defaultState = null;
+  this.defaultState = this.mode2State(options.defaultMode);
   this.targetStates = null;
   this.originalState = null;
   this.stateChanged = false;
-  this.audioProcess = null;
 
   this.invalidCodeAttempts = 0;
-  this.webhook = false
-
+  this.audioProcess = null;
+  
   this.armingTimeout = null;
   this.pauseTimeout = null;
   this.triggerTimeout = null;
   this.sirenInterval = null;
   this.resetTimeout = null;
 
-  // Check for optional options
-  if (isValueSet(this.defaultMode)) {
-    this.defaultMode = this.defaultMode.toLowerCase();
-    this.defaultState = this.mode2State(this.defaultMode);
-  }
-  else {
-    this.defaultState = Characteristic.SecuritySystemCurrentState.DISARMED;
-  }
-
-  if (isValueSet(this.disabledModes) === false) {
-    this.disabledModes = [];
-  }
-
-  if (isValueSet(this.armSeconds) === false) {
-    this.armSeconds = 0;
-  }
-
-  if (isValueSet(this.triggerSeconds) === false) {
-    this.triggerSeconds = 0;
-  }
-
-  if (isValueSet(this.resetMinutes) === false) {
-    this.resetMinutes = 10;
-  }
-
-  if (isValueSet(this.modeSwitches) === false) {
-    this.modeSwitches = false;
-  }
-
-  if (isValueSet(this.hideModeOffSwitch) === false) {
-    this.hideModeOffSwitch = false;
-  }
-
-  if (isValueSet(this.showModePauseSwitch) === false) {
-    this.showModePauseSwitch = false;
-  }
-
-  if (isValueSet(this.pauseMinutes) === false) {
-    this.pauseMinutes = 0;
-  }
-
-  if (isValueSet(this.sirenSwitch) === false) {
-    this.sirenSwitch = true;
-  }
-
-  if (isValueSet(this.sirenSensor) === false) {
-    this.sirenSensor = false;
-  }
-
-  if (isValueSet(this.sirenSensorSeconds) === false) {
-    this.sirenSensorSeconds = 5;
-  }
-
-  if (isValueSet(this.sirenModeSwitches) === false) {
-    this.sirenModeSwitches = false;
-  }
-
-  if (isValueSet(this.overrideOff) === false) {
-    this.overrideOff = false;
-  }
-
-  if (isValueSet(this.audio) === false) {
-    this.audio = false;
-  }
-
-  if (isValueSet(this.audioCustom) === false) {
-    this.audioCustom = false;
-  }
-
-  if (isValueSet(this.audioLanguage) === false) {
-    this.audioLanguage = 'en-US';
-  }
-
-  if (isValueSet(this.audioAlertLooped) === false) {
-    this.audioAlertLooped = false;
-  }
-
-  if (isValueSet(this.saveState) === false) {
-    this.saveState = false;
-  }
-
-  if (isValueSet(this.serverPort)) {
-    this.serverCode = config.server_code;
-
-    if (this.serverPort < 0 || this.serverPort > 65535) {
-      this.log.error('Server port is invalid.');
-    }
-  }
-
-  this.webhook = isValueSet(this.webhookUrl);
-
   // Log
   this.logMode('Default', this.defaultState);
-  this.log(`Arm delay (${this.armSeconds} second/s)`);
-  this.log(`Trigger delay (${this.triggerSeconds} second/s)`);
+  this.log(`Arm delay (${options.armSeconds} second/s)`);
+  this.log(`Trigger delay (${options.triggerSeconds} second/s)`);
 
-  if (this.audio) {
+  if (options.audio) {
     this.log('Audio (Enabled)');
   }
   else {
     this.log('Audio (Disabled)');
   }
 
-  if (this.webhook) {
-    this.log(`Webhook (${this.webhookUrl})`);
+  if (options.isValueSet(options.webhookUrl)) {
+    this.log(`Webhook (${options.webhookUrl})`);
   }
 
   // Security system
-  this.service = new CustomService.SecuritySystem(this.name);
+  this.service = new CustomService.SecuritySystem(options.name);
   this.targetStates = this.getEnabledStates();
 
   this.currentState = this.defaultState;
@@ -356,63 +201,61 @@ function SecuritySystem(log, config) {
     this.accessoryInformationService
   ];
 
-  if (this.sirenSwitch) {
+  if (options.sirenSwitch) {
     this.services.push(this.sirenSwitchService);
   }
 
-  if (this.sirenSensor) {
+  if (options.sirenSensor) {
     this.services.push(this.sirenMotionSensorService);
   }
 
   if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.STAY_ARM)) {
-    if (this.modeSwitches) {
+    if (options.modeSwitches) {
       this.services.push(this.modeHomeSwitchService);
     }
 
-    if (this.sirenModeSwitches) {
+    if (options.sirenModeSwitches) {
       this.services.push(this.sirenHomeSwitchService);
     }
   }
 
   if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.AWAY_ARM)) {
-    if (this.modeSwitches) {
+    if (options.modeSwitches) {
       this.services.push(this.modeAwaySwitchService);
     }
 
-    if (this.sirenModeSwitches) {
+    if (options.sirenModeSwitches) {
       this.services.push(this.sirenAwaySwitchService);
     }
   }
 
   if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.NIGHT_ARM)) {
-    if (this.modeSwitches) {
+    if (options.modeSwitches) {
       this.services.push(this.modeNightSwitchService);
     }
 
-    if (this.sirenModeSwitches) {
+    if (options.sirenModeSwitches) {
       this.services.push(this.sirenNightSwitchService);
     }
   }
 
-  if (this.modeSwitches) {
-    if (this.hideModeOffSwitch === false) {
+  if (options.modeSwitches) {
+    if (options.hideModeOffSwitch === false) {
       this.services.push(this.modeOffSwitchService);
     }
   }
 
-  if (this.showModePauseSwitch) {
+  if (options.showModePauseSwitch) {
     this.services.push(this.modePauseSwitchService);
   }
 
   // Storage
-  if (this.saveState) {
+  if (options.saveState) {
     this.load();
   }
 
   // Server
-  if (this.serverPort !== null) {
-    this.startServer();
-  }
+  this.startServer();
 }
 
 SecuritySystem.prototype.load = async function() {
@@ -477,6 +320,11 @@ SecuritySystem.prototype.load = async function() {
 };
 
 SecuritySystem.prototype.save = async function() {
+  // Check option
+  if (options.saveState === false) {
+    return;
+  }
+
   if (storage.defaultInstance === undefined) {
     return;
   }
@@ -561,7 +409,7 @@ SecuritySystem.prototype.getEnabledStates = function() {
 
   const disabledStates = [];
 
-  for (let disabledMode of this.disabledModes) {
+  for (let disabledMode of options.disabledModes) {
     const state = this.mode2State(disabledMode.toLowerCase());
     disabledStates.push(state);
   }
@@ -583,18 +431,14 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   this.service.setCharacteristic(Characteristic.SecuritySystemCurrentState, state);
   this.logMode('Current', state);
 
+  // Audio
+  this.playSound('current', state);
+
   // Commands
   this.executeCommand('current', state);
 
   // Webhooks
-  if (this.webhook) {
-    this.sendWebhookEvent('current', state);
-  }
-
-  // Audio
-  if (this.audio) {
-    this.playSound('current', state);
-  }
+  this.sendWebhookEvent('current', state);
 
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Change motion sensor state to detected every x seconds
@@ -605,7 +449,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
       setTimeout(() => {
         this.sirenMotionSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
       }, 750);
-    }, this.sirenSensorSeconds * 1000);
+    }, options.sirenSensorSeconds * 1000);
 
     // Automatically reset when being triggered after x minutes
     this.resetTimeout = setTimeout(() => {
@@ -616,13 +460,10 @@ SecuritySystem.prototype.setCurrentState = function(state) {
       this.handleStateChange(true);
 
       this.setCurrentState(this.targetState);
-    }, this.resetMinutes * 60 * 1000);
+    }, options.resetMinutes * 60 * 1000);
   }
 
-  // Save state to file
-  if (this.saveState) {
-    this.save();
-  }
+  this.save();
 };
 
 SecuritySystem.prototype.resetTimers = function() {
@@ -709,29 +550,26 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   // Update characteristics & switches
   this.handleStateChange(external);
 
+  // Canceled mode change
+  // Play current sound
+  if (this.currentState === state) {
+    this.playSound('current', this.currentState);
+  }
+
   // Commands
   this.executeCommand('target', state);
 
   // Webhooks
-  if (this.webhook) {
-    this.sendWebhookEvent('target', state);
-  }
+  this.sendWebhookEvent('target', state);
 
-  // Check if state is currently
-  // selected
+  // Check if state is already set
   if (this.currentState === state) {
-    if (this.audio) {
-      this.playSound('current', this.currentState);
-    }
-
     return;
   }
 
   // Audio
-  if (this.audio) {
-    if (this.stateChanged === false && this.armSeconds > 0) {
-      this.playSound('target', state);
-    }
+  if (this.stateChanged === false && options.armSeconds > 0) {
+    this.playSound('target', state);
   }
 
   if (delay === undefined) {
@@ -746,7 +584,7 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
     if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
       // Only if delay is enabled
       if (delay) {
-        armSeconds = this.armSeconds;
+        armSeconds = options.armSeconds;
 
         // Update arming status
         this.arming = true;
@@ -797,11 +635,7 @@ SecuritySystem.prototype.setArmingDelay = function(value, callback) {
   this.log(`Arming delay (${(this.armingDelay) ? 'On' : 'Off'})`);
 
   callback(null);
-
-  // Save state to file
-  if (this.saveState) {
-    this.save();
-  }
+  this.save();
 };
 
 SecuritySystem.prototype.getSiren = function(callback) {
@@ -813,7 +647,7 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
   // Ignore if the security system
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    if (this.overrideOff === false) {
+    if (options.overrideOff === false) {
       if (callback !== null) {
         callback('Security system not armed.');
       }
@@ -856,20 +690,18 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
 
         // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED);
-      }, this.triggerSeconds * 1000);
+      }, options.triggerSeconds * 1000);
 
       // Audio
-      if (this.audio && this.triggerSeconds !== 0) {
+      if (options.triggerSeconds !== 0) {
         this.playSound('current', 'alert');
       }
 
-      // Execute command
+      // Commands
       this.executeCommand('current', 'alert');
 
-      // Send webhook request
-      if (this.webhook) {
-        this.sendWebhookEvent('current', 'alert');
-      }
+      // Webhooks
+      this.sendWebhookEvent('current', 'alert');
     }
   }
   else {
@@ -884,10 +716,7 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
     }
     else {
       this.resetTimers();
-
-      if (this.audio) {
-        this.playSound('current', this.currentState);
-      }
+      this.playSound('current', this.currentState);
     }
   }
 
@@ -906,7 +735,7 @@ SecuritySystem.prototype.isCodeSent = function(req) {
 
   if (code === undefined) {
     // Check if auth is disabled
-    if (isValueSet(this.serverCode) === false) {
+    if (options.serverCode === null) {
       return true;
     }
 
@@ -918,12 +747,12 @@ SecuritySystem.prototype.isCodeSent = function(req) {
 
 SecuritySystem.prototype.isCodeValid = function(req) {
   // Check if auth is disabled
-  if (isValueSet(this.serverCode) === false) {
+  if (options.serverCode === null) {
     return true;
   }
 
   // Check brute force
-  if (this.invalidCodeAttempts > serverConstants.MAX_CODE_ATTEMPTS) {
+  if (this.invalidCodeAttempts > server.MAX_CODE_ATTEMPTS) {
     req.blocked = true;
     return false;
   }
@@ -931,7 +760,7 @@ SecuritySystem.prototype.isCodeValid = function(req) {
   let userCode = req.query.code;
   userCode = parseInt(userCode);
 
-  if (userCode !== this.serverCode) {
+  if (userCode !== options.serverCode) {
     this.invalidCodeAttempts++;
     return false;
   }
@@ -960,7 +789,7 @@ SecuritySystem.prototype.sendCodeRequiredError = function(res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_CODE_REQUIRED
+    'message': server.MESSAGE_CODE_REQUIRED
   };
 
   res.status(401).json(response);
@@ -973,11 +802,11 @@ SecuritySystem.prototype.sendCodeInvalidError = function(req, res) {
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
-    response.message = serverConstants.MESSAGE_CODE_BLOCKED;
+    response.message = server.MESSAGE_CODE_BLOCKED;
   }
   else {
     this.log('Code invalid (Server)');
-    response.message = serverConstants.MESSAGE_CODE_INVALID;
+    response.message = server.MESSAGE_CODE_INVALID;
   }
 
   res.status(403).json(response);
@@ -988,7 +817,7 @@ SecuritySystem.prototype.sendModeDisabledError = function(res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_MODE_DISABLED
+    'message': server.MESSAGE_MODE_DISABLED
   };
   
   res.status(400).json(response);
@@ -999,7 +828,7 @@ SecuritySystem.prototype.sendModePausedError = function(res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_MODE_PAUSED
+    'message': server.MESSAGE_MODE_PAUSED
   };
   
   res.status(400).json(response);
@@ -1010,7 +839,7 @@ SecuritySystem.prototype.sendModeOffError = function(res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_MODE_OFF
+    'message': server.MESSAGE_MODE_OFF
   };
   
   res.status(400).json(response);
@@ -1025,6 +854,11 @@ SecuritySystem.prototype.sendOkResponse = function(res) {
 };
 
 SecuritySystem.prototype.startServer = async function() {
+  // Check option
+  if (options.isValueSet(options.serverPort) === false) {
+    return;
+  }
+
   app.get('/status', (req, res) => {
     if (this.isCodeSent(req) === false) {
       this.sendCodeRequiredError(res);
@@ -1058,7 +892,7 @@ SecuritySystem.prototype.startServer = async function() {
 
     // Check if security system is disarmed
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-      if (this.overrideOff === false) {
+      if (options.overrideOff === false) {
         this.sendModeOffError(res);
         return;
       }
@@ -1177,14 +1011,14 @@ SecuritySystem.prototype.startServer = async function() {
   });
 
   // Listener
-  const server = app.listen(this.serverPort, error => {
+  const server = app.listen(options.serverPort, error => {
     if (error) {
       this.log.error('Error while starting server.');
       this.log.error(error);
       return;
     }
     
-    this.log(`Server (${this.serverPort})`);
+    this.log(`Server (${options.serverPort})`);
   });
 
   server.on('error', (error) => {
@@ -1195,6 +1029,11 @@ SecuritySystem.prototype.startServer = async function() {
 
 // Audio
 SecuritySystem.prototype.playSound = async function(type, state) {
+  // Check option
+  if (options.audio === false) {
+    return;
+  }
+
   const mode = this.state2Mode(state);
 
   // Ignore 'Current Off' event
@@ -1210,39 +1049,39 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   // Filename
   let filename = `${type}-${mode}`;
 
-  if (this.audioCustom) {
+  if (options.audioCustom) {
     filename += '-custom';
   }
 
   filename += '.mp3';
 
   // Check if file exists
-  const filePath = `${__dirname}/sounds/${this.audioLanguage}/${filename}`;
+  const filePath = `${__dirname}/sounds/${options.audioLanguage}/${filename}`;
 
   try {
     await fs.promises.access(filePath);
   }
   catch (error) {
-    this.log.debug(`Sound file not found (${this.audioLanguage}/${filename})`);
+    this.log.debug(`Sound file not found (${options.audioLanguage}/${filename})`);
     return;
   }
 
   // Spawn process
-  const options = ['-loglevel', 'error', '-nodisp', `${filePath}`];
+  const commandArguments = ['-loglevel', 'error', '-nodisp', `${filePath}`];
 
   if (mode === 'triggered') {
-    options.push('-loop');
-    options.push('-1');
+    commandArguments.push('-loop');
+    commandArguments.push('-1');
   }
-  else if (mode === 'alert' && this.audioAlertLooped) {
-    options.push('-loop');
-    options.push('-1');
+  else if (mode === 'alert' && options.audioAlertLooped) {
+    commandArguments.push('-loop');
+    commandArguments.push('-1');
   }
   else {
-    options.push('-autoexit');
+    commandArguments.push('-autoexit');
   }
  
-  this.audioProcess = spawn('ffplay', options);
+  this.audioProcess = spawn('ffplay', commandArguments);
   
   this.audioProcess.stderr.on('data', (data) => {
     this.log.error(`Audio failed\n${data}`);
@@ -1259,54 +1098,54 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
 
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      command = this.commandTriggered;
+      command = options.commandTriggered;
       break;
 
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
       if (type === 'current') {
-        command = this.commandCurrentHome;
+        command = options.commandCurrentHome;
         break;
       }
 
-      command = this.commandTargetHome;
+      command = options.commandTargetHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
       if (type === 'current') {
-        command = this.commandCurrentAway;
+        command = options.commandCurrentAway;
         break;
       }
 
-      command = this.commandTargetAway;
+      command = options.commandTargetAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
       if (type === 'current') {
-        command = this.commandCurrentNight;
+        command = options.commandCurrentNight;
         break;
       }
 
-      command = this.commandTargetNight;
+      command = options.commandTargetNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
-        command = this.commandCurrentOff;
+        command = options.commandCurrentOff;
         break;
       }
 
-      command = this.commandTargetOff;
+      command = options.commandTargetOff;
       break;
 
     case 'alert':
-      command = this.commandAlert;
+      command = options.commandAlert;
       break;
 
     default:
       this.log.error(`Unknown ${type} state (${state})`);
   }
 
-  if (isValueSet(command) === false) {
+  if (command === undefined || command === null) {
     this.log.debug(`Command option for ${type} mode is not set.`);
     return;
   }
@@ -1319,6 +1158,7 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
   process.stderr.on('data', (data) => {
     this.log.error(`Command failed (${command})\n${data}`);
   });
+
   process.stdout.on('data', (data) => {
     this.log(`Command output: ${data}`);
   });
@@ -1326,51 +1166,57 @@ SecuritySystem.prototype.executeCommand = function(type, state) {
 
 // Webhooks
 SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
+  // Check option
+  if (options.isValueSet(options.webhookUrl) === false) {
+    this.log.debug('Webhook URL option is not set.');
+    return;
+  }
+
   let path = null;
 
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      path = this.webhookTriggered;
+      path = options.webhookTriggered;
       break;
 
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
       if (type === 'current') {
-        path = this.webhookCurrentHome;
+        path = options.webhookCurrentHome;
         break;
       }
 
-      path = this.webhookTargetHome;
+      path = options.webhookTargetHome;
       break;
 
     case Characteristic.SecuritySystemCurrentState.AWAY_ARM:
       if (type === 'current') {
-        path = this.webhookCurrentAway;
+        path = options.webhookCurrentAway;
         break;
       }
 
-      path = this.webhookTargetAway;
+      path = options.webhookTargetAway;
       break;
 
     case Characteristic.SecuritySystemCurrentState.NIGHT_ARM:
       if (type === 'current') {
-        path = this.webhookCurrentNight;
+        path = options.webhookCurrentNight;
         break;
       }
 
-      path = this.webhookTargetNight;
+      path = options.webhookTargetNight;
       break;
 
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
-        path = this.webhookCurrentOff;
+        path = options.webhookCurrentOff;
         break;
       }
 
-      path = this.webhookTargetOff;
+      path = options.webhookTargetOff;
       break;
 
     case 'alert':
-      path = this.webhookAlert;
+      path = options.webhookAlert;
       break;
 
     default:
@@ -1378,7 +1224,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       return;
   }
 
-  if (isValueSet(path) === false) {
+  if (path === undefined || path === null) {
     this.log.debug(`Webhook option for ${type} mode is not set.`);
     return;
   }
@@ -1387,7 +1233,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
   path = path.replace('${currentMode}', this.state2Mode(this.currentState));
 
   // Send GET request to server
-  fetch(this.webhookUrl + path)
+  fetch(options.webhookUrl + path)
     .then(response => {
       if (!response.ok) {
         throw new Error(`Status code (${response.status})`);
@@ -1666,7 +1512,7 @@ SecuritySystem.prototype.setModePauseSwitchOn = function(value, callback) {
 
       this.resetModePauseSwitch();
       this.updateTargetState(this.originalState, true, true);
-    }, this.pauseMinutes * 60 * 1000);
+    }, options.pauseMinutes * 60 * 1000);
   }
   else {
     this.log('Pause (Cancelled)');
