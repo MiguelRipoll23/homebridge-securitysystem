@@ -1363,7 +1363,7 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
     case Characteristic.SecuritySystemCurrentState.DISARMED:
       if (type === 'current') {
         path = this.webhookCurrentOff;
-        return;
+        break;
       }
 
       path = this.webhookTargetOff;
