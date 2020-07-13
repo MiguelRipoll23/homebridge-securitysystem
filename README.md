@@ -2,9 +2,10 @@
 [![npm version](https://badgen.net/npm/v/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem) 
 [![npm downloads](https://badgen.net/npm/dt/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem)
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
-[![donate](https://badgen.net/badge/donate/paypal.me/pink)](https://www.paypal.me/miguelripoll23)
 
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit accessories.
+
+[❤️ One-time donation](https://paypal.me/miguelripoll23)
 
 ## Installation
 If you already have Homebridge installed, skip to step two!
@@ -84,30 +85,32 @@ After setting the option, you can call these endpoints:
 ## Webhook options (optional)
 Use the options below to send requests to a server when the security system mode changes.
 
-| Option                | Description                                           | Example          |
-|-----------------------|-------------------------------------------------------|------------------|
-| webhook_url           | Base URL of the webhook server.                       | http://localhost |
-| webhook_target_home   | Path of the 'home' mode to call when set as target.   | /target/home     |
-| webhook_target_away   | Path of the 'away' mode to call when set as target.   | /target/away     |
-| webhook_target_night  | Path of the 'night' mode to call when set as target.  | /target/night    |
-| webhook_current_home  | Path of the 'home' mode to call when set as current.  | /current/home    |
-| webhook_current_away  | Path of the 'away' mode to call when set as current.  | /current/away    |
-| webhook_current_night | Path of the 'night' mode to call when set as current. | /current/night   |
-| webhook_triggered     | Path of the 'triggered' mode to call.                 | /triggered       |
-| webhook_alert         | Path of the 'alert' state to call.                    | /alert           |
-| webhook_off           | Path of the 'off' mode to call.                       | /off             |
+| Option                | Description                                               | Example          |
+|-----------------------|-----------------------------------------------------------|------------------|
+| webhook_url           | Base URL of the webhook server.                           | http://localhost |
+| webhook_target_home   | Path of the 'home' mode to call when set as target.       | /target/home     |
+| webhook_target_away   | Path of the 'away' mode to call when set as target.       | /target/away     |
+| webhook_target_night  | Path of the 'night' mode to call when set as target.      | /target/night    |
+| webhook_target_off    | Path of the 'off' mode to call when set as target.        | /target/off      |
+| webhook_current_home  | Path of the 'home' mode to call when set as current.      | /current/home    |
+| webhook_current_away  | Path of the 'away' mode to call when set as current.      | /current/away    |
+| webhook_current_night | Path of the 'night' mode to call when set as current.     | /current/night   |
+| webhook_current_off   | Path of the 'off' mode to call when set as current.       | /current/off     |
+| webhook_alert         | Path of the 'alert' event to call when fired.             | /alert           |
+| webhook_triggered     | Path of the 'triggered' mode to call when set as current. | /triggered       |
 
 ## Command options (optional)
 Use the options below to execute commands on the device when the security system mode changes.
 
-| Option                | Description                                                 | Example            |
-|-----------------------|-------------------------------------------------------------|--------------------|
-| command_target_home   | Command of the 'home' mode to execute when set as target.   | echo target home   |
-| command_target_away   | Command of the 'away' mode to execute when set as target.   | echo target away   |
-| command_target_night  | Command of the 'night' mode to execute when set as target.  | echo target night  |
-| command_current_home  | Command of the 'home' mode to execute when set as current.  | echo current home  |
-| command_current_away  | Command of the 'away' mode to execute when set as current.  | echo current away  |
-| command_current_night | Command of the 'night' mode to execute when set as current. | echo current night |
-| command_triggered     | Command of the 'triggered' mode to execute.                 | echo triggered     |
-| command_alert         | Command of the 'alert' state to execute.                    | echo alert         |
-| commad_off            | Command of the 'off' mode to execute.                       | echo off           |
+| Option                | Description                                                     | Example            |
+|-----------------------|-----------------------------------------------------------------|--------------------|
+| command_target_home   | Command of the 'home' mode to execute when set as target.       | echo target home   |
+| command_target_away   | Command of the 'away' mode to execute when set as target.       | echo target away   |
+| command_target_night  | Command of the 'night' mode to execute when set as target.      | echo target night  |
+| command_target_off  | Command of the 'off' mode to execute when set as target.          | echo target off    |
+| command_current_home  | Command of the 'home' mode to execute when set as current.      | echo current home  |
+| command_current_away  | Command of the 'away' mode to execute when set as current.      | echo current away  |
+| command_current_night | Command of the 'night' mode to execute when set as current.     | echo current night |
+| command_current_off   | Command of the 'off' mode to execute when set as current.       | echo current off   |
+| command_alert         | Command of the 'alert' event to execute when fired.             | echo event alert   |
+| command_triggered     | Command of the 'triggered' mode to execute when set as current. | echo triggered     |
