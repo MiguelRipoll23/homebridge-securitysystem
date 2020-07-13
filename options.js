@@ -93,6 +93,7 @@ const options = {
     options.audio = config.audio;
     options.audioPath = config.audio_path;
     options.audioLanguage = config.audio_language;
+    options.audioArguments = config.audio_arguments;
     options.audioAlertLooped = config.audio_alert_looped;
 
     // Commands
@@ -214,7 +215,7 @@ const options = {
     if (options.isValueSet(options.audio) === false) {
       options.audio = false;
     }
-  
+
     if (options.isValueSet(options.audioLanguage) === false) {
       options.audioLanguage = 'en-US';
     }
@@ -222,7 +223,6 @@ const options = {
     if (options.isValueSet(options.audioAlertLooped) === false) {
       options.audioAlertLooped = false;
     }
-
   },
 
   validateValues: (log) => {

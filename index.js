@@ -1067,8 +1067,15 @@ SecuritySystem.prototype.playSound = async function(type, state) {
     return;
   }
 
-  // Spawn process
-  const commandArguments = ['-loglevel', 'error', '-nodisp', `${filePath}`];
+  // Extra arguments
+  let extraArguments = [];
+
+  if (options.isValueSet(options.audioArguments)) {
+    extraArguments = options.audioArguments.split(' ');
+  }
+
+  // Required Arguments
+  let commandArguments = ['-loglevel', 'error', '-nodisp', '-i', `${filePath}`];
 
   if (mode === 'triggered') {
     commandArguments.push('-loop');
@@ -1081,8 +1088,12 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   else {
     commandArguments.push('-autoexit');
   }
+
+  commandArguments = commandArguments.concat(extraArguments);
  
+  // Process
   this.audioProcess = spawn('ffplay', commandArguments);
+  this.log.debug(`ffplay ${commandArguments.join(' ')}`);
   
   this.audioProcess.stderr.on('data', (data) => {
     this.log.error(`Audio failed\n${data}`);

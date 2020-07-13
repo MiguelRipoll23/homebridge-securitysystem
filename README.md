@@ -51,6 +51,7 @@ Use Eve or a similar app to create automations like these:
 | show_mode_pause_switch | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |
 | override_off           | Allows to trigger the security system while disarmed.                               | false   | true      |
 | audio                  | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
+| audio_arguments        | User arguments for the ffplay process.                                              | none    | -volume 5 |
 | audio_path             | Use custom sounds from an external directory.                                       | false   | /sounds   |
 | audio_language         | Set language used for the audio warnings.                                           | en-US   | de-DE     |
 | audio_alert_looped     | Loop alert sound that plays when the security system's countdown has started.       | false   | true      |

@@ -131,6 +131,12 @@
         "required": false,
         "placeholder": "/home/user/sounds"
       },
+      "audio_arguments": {
+        "title": "Audio Arguments",
+        "type": "string",
+        "required": false,
+        "placeholder": "-volume 5"
+      },
       "audio_language": {
         "title": "Audio Language",
         "type": "string",
@@ -332,6 +338,7 @@
       "expanded": false,
       "items": [
         "audio_path",
+        "audio_arguments",
         "audio_alert_looped",
         "unsafe_mode_switches",
         "hide_mode_off_switch",
