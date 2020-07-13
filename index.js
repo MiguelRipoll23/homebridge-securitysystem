@@ -1046,17 +1046,18 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   // Close previous player
   this.stopSound();
 
-  // Filename
-  let filename = `${type}-${mode}`;
+  // Directory
+  let directory = `${__dirname}/sounds`;
 
-  if (options.audioCustom) {
-    filename += '-custom';
+  if (options.isValueSet(options.audioPath)) {
+    directory = options.audioPath;
   }
 
-  filename += '.mp3';
+  // Filename
+  const filename = `${type}-${mode}.mp3`;
 
   // Check if file exists
-  const filePath = `${__dirname}/sounds/${options.audioLanguage}/${filename}`;
+  const filePath = `${directory}/${options.audioLanguage}/${filename}`;
 
   try {
     await fs.promises.access(filePath);

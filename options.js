@@ -23,7 +23,7 @@ const options = {
 
   // Audio
   audio: null,
-  audioCustom: null,
+  audioPath: null,
   audioLanguage: null,
   audioAlertLooped: null,
   saveState: null,
@@ -91,7 +91,7 @@ const options = {
 
     // Audio
     options.audio = config.audio;
-    options.audioCustom = config.audio_custom;
+    options.audioPath = config.audio_path;
     options.audioLanguage = config.audio_language;
     options.audioAlertLooped = config.audio_alert_looped;
 
@@ -213,10 +213,6 @@ const options = {
     // Audio
     if (options.isValueSet(options.audio) === false) {
       options.audio = false;
-    }
-  
-    if (options.isValueSet(options.audioCustom) === false) {
-      options.audioCustom = false;
     }
   
     if (options.isValueSet(options.audioLanguage) === false) {
