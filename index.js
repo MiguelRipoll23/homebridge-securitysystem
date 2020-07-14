@@ -3,7 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const packageJson = require('./package.json');
-const options = require('./options.js');
+const options = require('./utils/options.js');
 const customServices = require('./hap/customServices');
 const customCharacteristics = require('./hap/customCharacteristics');
 const server = require('./utils/server.js');
