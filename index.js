@@ -1067,14 +1067,7 @@ SecuritySystem.prototype.playSound = async function(type, state) {
     return;
   }
 
-  // Extra arguments
-  let extraArguments = [];
-
-  if (options.isValueSet(options.audioArguments)) {
-    extraArguments = options.audioArguments.split(' ');
-  }
-
-  // Required Arguments
+  // Arguments
   let commandArguments = ['-loglevel', 'error', '-nodisp', '-i', `${filePath}`];
 
   if (mode === 'triggered') {
@@ -1087,9 +1080,12 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   }
   else {
     commandArguments.push('-autoexit');
-  }
 
-  commandArguments = commandArguments.concat(extraArguments);
+    if (options.isValueSet(options.audioVolume)) {
+      commandArguments.push('-volume');
+      commandArguments.push(options.audioVolume);
+    }
+  }
  
   // Process
   this.audioProcess = spawn('ffplay', commandArguments);

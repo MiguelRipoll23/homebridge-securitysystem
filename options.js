@@ -93,7 +93,7 @@ const options = {
     options.audio = config.audio;
     options.audioPath = config.audio_path;
     options.audioLanguage = config.audio_language;
-    options.audioArguments = config.audio_arguments;
+    options.audioVolume = config.audio_volume;
     options.audioAlertLooped = config.audio_alert_looped;
 
     // Commands
