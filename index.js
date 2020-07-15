@@ -3,7 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const packageJson = require('./package.json');
-const options = require('./options.js');
+const options = require('./utils/options.js');
 const customServices = require('./hap/customServices');
 const customCharacteristics = require('./hap/customCharacteristics');
 const server = require('./utils/server.js');
@@ -1046,17 +1046,18 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   // Close previous player
   this.stopSound();
 
-  // Filename
-  let filename = `${type}-${mode}`;
+  // Directory
+  let directory = `${__dirname}/sounds`;
 
-  if (options.audioCustom) {
-    filename += '-custom';
+  if (options.isValueSet(options.audioPath)) {
+    directory = options.audioPath;
   }
 
-  filename += '.mp3';
+  // Filename
+  const filename = `${type}-${mode}.mp3`;
 
   // Check if file exists
-  const filePath = `${__dirname}/sounds/${options.audioLanguage}/${filename}`;
+  const filePath = `${directory}/${options.audioLanguage}/${filename}`;
 
   try {
     await fs.promises.access(filePath);
@@ -1066,8 +1067,8 @@ SecuritySystem.prototype.playSound = async function(type, state) {
     return;
   }
 
-  // Spawn process
-  const commandArguments = ['-loglevel', 'error', '-nodisp', `${filePath}`];
+  // Arguments
+  let commandArguments = ['-loglevel', 'error', '-nodisp', '-i', `${filePath}`];
 
   if (mode === 'triggered') {
     commandArguments.push('-loop');
@@ -1079,9 +1080,16 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   }
   else {
     commandArguments.push('-autoexit');
+
+    if (options.isValueSet(options.audioVolume)) {
+      commandArguments.push('-volume');
+      commandArguments.push(options.audioVolume);
+    }
   }
  
+  // Process
   this.audioProcess = spawn('ffplay', commandArguments);
+  this.log.debug(`ffplay ${commandArguments.join(' ')}`);
   
   this.audioProcess.stderr.on('data', (data) => {
     this.log.error(`Audio failed\n${data}`);

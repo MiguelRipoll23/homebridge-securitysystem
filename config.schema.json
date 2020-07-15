@@ -125,11 +125,18 @@
         "default": false,
         "required": false
       },
-      "audio_custom": {
-        "title": "Use Custom Sounds",
-        "type": "boolean",
-        "default": false,
-        "required": false
+      "audio_path": {
+        "title": "Audio Path",
+        "type": "string",
+        "required": false,
+        "placeholder": "/home/user/sounds"
+      },
+      "audio_volume": {
+        "title": "Audio Volume",
+        "type": "string",
+        "required": false,
+        "default": 100,
+        "placeholder": "100"
       },
       "audio_language": {
         "title": "Audio Language",
@@ -331,7 +338,14 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "audio_custom",
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "audio_path",
+            "audio_volume"
+          ]
+        },
         "audio_alert_looped",
         "unsafe_mode_switches",
         "hide_mode_off_switch",

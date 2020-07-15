@@ -23,7 +23,7 @@ const options = {
 
   // Audio
   audio: null,
-  audioCustom: null,
+  audioPath: null,
   audioLanguage: null,
   audioAlertLooped: null,
   saveState: null,
@@ -91,8 +91,9 @@ const options = {
 
     // Audio
     options.audio = config.audio;
-    options.audioCustom = config.audio_custom;
+    options.audioPath = config.audio_path;
     options.audioLanguage = config.audio_language;
+    options.audioVolume = config.audio_volume;
     options.audioAlertLooped = config.audio_alert_looped;
 
     // Commands
@@ -214,11 +215,7 @@ const options = {
     if (options.isValueSet(options.audio) === false) {
       options.audio = false;
     }
-  
-    if (options.isValueSet(options.audioCustom) === false) {
-      options.audioCustom = false;
-    }
-  
+
     if (options.isValueSet(options.audioLanguage) === false) {
       options.audioLanguage = 'en-US';
     }
@@ -226,7 +223,6 @@ const options = {
     if (options.isValueSet(options.audioAlertLooped) === false) {
       options.audioAlertLooped = false;
     }
-
   },
 
   validateValues: (log) => {
