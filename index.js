@@ -873,6 +873,11 @@ SecuritySystem.prototype.startServer = async function() {
     const response = {
       'current_mode': this.state2Mode(this.currentState),
       'target_mode': this.state2Mode(this.targetState),
+      'sensor_triggered': (
+        this.triggerTimeout !== null
+        ||
+        this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
+      ),
       'arming': this.arming
     };
 
