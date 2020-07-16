@@ -12,7 +12,7 @@ If you already have Homebridge installed, skip to step two!
 
 1. [Install Homebridge.](https://github.com/nfarina/homebridge)
 2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
-3. Use the Homebridge / HOOBS UI to configure or use the `config.example.json' file as an example.
+3. Use the Homebridge / HOOBS UI to configure or use the `config.example.json` file as an example.
 
 ## Automations
 Use Eve or a similar app to create automations like these:
