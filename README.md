@@ -11,8 +11,8 @@ Homebridge plugin that creates a security system accessory that can be triggered
 If you already have Homebridge installed, skip to step two!
 
 1. [Install Homebridge.](https://github.com/nfarina/homebridge)
-2. Install the plugin using `npm install -g homebridge-securitysystem`.
-3. Update your configuration file from Homebridge (see `config.example.json`) that you can find on your personal folder.
+2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
+3. Use the Homebridge / HOOBS UI to configure or use the `config.example.json` file as an example.
 
 ## Automations
 Use Eve or a similar app to create automations like these:
@@ -51,13 +51,15 @@ Use Eve or a similar app to create automations like these:
 | show_mode_pause_switch | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |
 | override_off           | Allows to trigger the security system while disarmed.                               | false   | true      |
 | audio                  | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
-| audio_path             | Use custom sounds from an external directory.                                       | false   | /sounds   |
+| audio_path (2)         | Use custom sounds from an external directory.                                       | false   | /sounds   |
 | audio_volume           | Audio volume for mode audio sounds (except triggered)                               | 100     | 50        |
 | audio_language         | Set language used for the audio warnings.                                           | en-US   | de-DE     |
 | audio_alert_looped     | Loop alert sound that plays when the security system's countdown has started.       | false   | true      |
 | save_state             | State persistence for shutdowns and reboots.                                        | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
+
+(2) Intructions will be generated on this path once the configuration has been applied.
 
 ## Server options (optional)
 Use the options below to start a HTTP server on the device and interact with the security system.

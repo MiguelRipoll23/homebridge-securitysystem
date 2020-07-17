@@ -4,8 +4,8 @@ const { spawn } = require('child_process');
 
 const packageJson = require('./package.json');
 const options = require('./utils/options.js');
-const customServices = require('./hap/customServices');
-const customCharacteristics = require('./hap/customCharacteristics');
+const customServices = require('./hap/customServices.js');
+const customCharacteristics = require('./hap/customCharacteristics.js');
 const server = require('./utils/server.js');
 
 const fetch = require('node-fetch');
@@ -249,6 +249,9 @@ function SecuritySystem(log, config) {
     this.services.push(this.modePauseSwitchService);
   }
 
+  // Audio
+  this.setupAudio();
+
   // Storage
   if (options.saveState) {
     this.load();
@@ -432,7 +435,7 @@ SecuritySystem.prototype.setCurrentState = function(state) {
   this.logMode('Current', state);
 
   // Audio
-  this.playSound('current', state);
+  this.playAudio('current', state);
 
   // Commands
   this.executeCommand('current', state);
@@ -553,7 +556,7 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
   // Canceled mode change
   // Play current sound
   if (this.currentState === state) {
-    this.playSound('current', this.currentState);
+    this.playAudio('current', this.currentState);
   }
 
   // Commands
@@ -569,7 +572,7 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay) {
 
   // Audio
   if (this.stateChanged === false && options.armSeconds > 0) {
-    this.playSound('target', state);
+    this.playAudio('target', state);
   }
 
   if (delay === undefined) {
@@ -694,7 +697,7 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
 
       // Audio
       if (options.triggerSeconds !== 0) {
-        this.playSound('current', 'alert');
+        this.playAudio('current', 'alert');
       }
 
       // Commands
@@ -707,7 +710,7 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
   else {
     // Off
     this.log('Sensor (Cancelled)');
-    this.stopSound();
+    this.stopAudio();
 
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       if (this.stateChanged === false) {
@@ -716,7 +719,7 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
     }
     else {
       this.resetTimers();
-      this.playSound('current', this.currentState);
+      this.playAudio('current', this.currentState);
     }
   }
 
@@ -873,6 +876,11 @@ SecuritySystem.prototype.startServer = async function() {
     const response = {
       'current_mode': this.state2Mode(this.currentState),
       'target_mode': this.state2Mode(this.targetState),
+      'sensor_triggered': (
+        this.triggerTimeout !== null
+        ||
+        this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
+      ),
       'arming': this.arming
     };
 
@@ -1028,7 +1036,7 @@ SecuritySystem.prototype.startServer = async function() {
 };
 
 // Audio
-SecuritySystem.prototype.playSound = async function(type, state) {
+SecuritySystem.prototype.playAudio = async function(type, state) {
   // Check option
   if (options.audio === false) {
     return;
@@ -1044,19 +1052,21 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   }
 
   // Close previous player
-  this.stopSound();
+  this.stopAudio();
 
   // Directory
   let directory = `${__dirname}/sounds`;
 
   if (options.isValueSet(options.audioPath)) {
     directory = options.audioPath;
+
+    if (directory[directory.length] === '/') {
+      directory = directory.substring(0, directory.length - 1);
+    }
   }
 
-  // Filename
-  const filename = `${type}-${mode}.mp3`;
-
   // Check if file exists
+  const filename = `${type}-${mode}.mp3`;
   const filePath = `${directory}/${options.audioLanguage}/${filename}`;
 
   try {
@@ -1098,6 +1108,30 @@ SecuritySystem.prototype.playSound = async function(type, state) {
   this.audioProcess.on('close', function() {
     this.audioProcess = null;
 	});
+};
+
+SecuritySystem.prototype.stopAudio = function() {
+  if (this.audioProcess !== null) {
+    this.audioProcess.kill();
+  }
+};
+
+SecuritySystem.prototype.setupAudio = async function() {
+  if (options.isValueSet(options.audioPath) === false) {
+    return;
+  }
+
+  try {
+    await fs.promises.access(`${options.audioPath}/${options.audioLanguage}`);
+  }
+  catch (error) {
+    await fs.promises.mkdir(`${options.audioPath}/${options.audioLanguage}`);
+
+    await fs.promises.copyFile(`${__dirname}/sounds/README`, `${options.audioPath}/README`);
+    await fs.promises.copyFile(`${__dirname}/sounds/README`, `${options.audioPath}/README.txt`);
+
+    this.log.info('Custom Audio Instructions (Created)');
+  }
 };
 
 // Command
@@ -1253,12 +1287,6 @@ SecuritySystem.prototype.sendWebhookEvent = function(type, state) {
       this.log.error(`Request to webhook failed. (${path})`);
       this.log.error(error);
     });
-};
-
-SecuritySystem.prototype.stopSound = function() {
-  if (this.audioProcess !== null) {
-    this.audioProcess.kill();
-  }
 };
 
 // Siren Switch
