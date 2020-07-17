@@ -1,0 +1,22 @@
+# Custom sounds
+A directory for your current selected language has been created, inside it add the sounds that would like to be played.
+
+Example:
+
+  current-path/
+    - xx-XX/
+      - target-home.mp3
+      - target-away.mp3
+      - target-night.mp3
+      - current-home.mp3
+      - current-away.mp3
+      - current-night.mp3
+      - current-off.mp3
+      - current-alert.mp3
+      - current-triggered.mp3
+
+You can omit the sound files that you don't want to use. Also, if a sound isn't playing you can always start Homebridge using debug mode to see additional information using the command below:
+
+  homebridge -D
+
+This will print information when sounds aren't found but they're are simply warnings and can be ignored, only pay atention to them when the sound that you want is not playing.
