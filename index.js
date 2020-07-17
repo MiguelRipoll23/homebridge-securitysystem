@@ -4,8 +4,8 @@ const { spawn } = require('child_process');
 
 const packageJson = require('./package.json');
 const options = require('./utils/options.js');
-const customServices = require('./hap/customServices');
-const customCharacteristics = require('./hap/customCharacteristics');
+const customServices = require('./hap/customServices.js');
+const customCharacteristics = require('./hap/customCharacteristics.js');
 const server = require('./utils/server.js');
 
 const fetch = require('node-fetch');
