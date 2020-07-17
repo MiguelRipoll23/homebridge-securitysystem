@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"No test found.\" && exit 0"
+    "test": "echo \"No test found.\" && exit 0",
+    "publish-beta": "npm publish --tag beta",
+    "publish-release": "npm publish"
   },
   "keywords": [
     "homebridge-plugin",
