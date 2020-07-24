@@ -1362,7 +1362,7 @@ SecuritySystem.prototype.setSirenAwaySwitchOn = function(value, callback) {
 };
 
 SecuritySystem.prototype.getSirenNightSwitchOn = function(callback) {
-  const value = this.sirenAwaySwitchService.getCharacteristic(Characteristic.On).value;
+  const value = this.getSirenNightSwitchOn.getCharacteristic(Characteristic.On).value;
   callback(null, value);
 };
 
