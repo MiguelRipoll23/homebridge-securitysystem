@@ -269,11 +269,12 @@ SecuritySystem.prototype.load = async function() {
   await storage.init(options)
     .then()
     .catch((error) => {
-      this.log.error('Unable to initialize storage.');
+      this.log.error('Unable to load state.');
       this.log.error(error);
     });
 
   if (storage.defaultInstance === undefined) {
+    this.log.error('Unable to load state.');
     return;
   }
   
@@ -283,6 +284,9 @@ SecuritySystem.prototype.load = async function() {
         return;
       }
 
+      this.log.debug('State (Loaded)', state);
+      
+      // Data
       this.log('Saved state (Found)');
 
       const currentState = isValueSet(state.currentState) ? state.currentState : this.defaultState;
@@ -329,6 +333,7 @@ SecuritySystem.prototype.save = async function() {
   }
 
   if (storage.defaultInstance === undefined) {
+    this.log.error('Unable to save state.');
     return;
   }
 
@@ -339,7 +344,9 @@ SecuritySystem.prototype.save = async function() {
   };
 
   await storage.setItem('state', state)
-    .then()
+    .then(() => {
+      this.log.debug('State (Saved)', state);
+    })
     .catch(error => {
       this.log.error('Unable to save state.');
       this.log.error(error);

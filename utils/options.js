@@ -71,6 +71,7 @@ const options = {
     options.pauseMinutes = config.pause_minutes,
     options.resetMinutes = config.reset_minutes,
     options.overrideOff = config.override_off;
+    options.saveState = config.save_state;
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
