@@ -29,14 +29,6 @@ module.exports = function(homebridge) {
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
 
-function isValueSet(value) {
-  if (value === undefined || value === null) {
-    return false;
-  }
-
-  return true;
-}
-
 function SecuritySystem(log, config) {
   this.log = log;
   options.init(log, config); 
@@ -262,11 +254,11 @@ function SecuritySystem(log, config) {
 }
 
 SecuritySystem.prototype.load = async function() {
-  const options = {
+  const storageOptions = {
     'dir': path.join(homebridgeStoragePath, 'homebridge-securitysystem')
   };
 
-  await storage.init(options)
+  await storage.init(storageOptions)
     .then()
     .catch((error) => {
       this.log.error('Unable to load state.');
@@ -289,9 +281,9 @@ SecuritySystem.prototype.load = async function() {
       // Data
       this.log('Saved state (Found)');
 
-      const currentState = isValueSet(state.currentState) ? state.currentState : this.defaultState;
-      const targetState = isValueSet(state.targetState) ? state.targetState : this.defaultState;
-      const armingDelay = isValueSet(state.armingDelay) ? state.armingDelay : true;
+      const currentState = options.isValueSet(state.currentState) ? state.currentState : this.defaultState;
+      const targetState = options.isValueSet(state.targetState) ? state.targetState : this.defaultState;
+      const armingDelay = options.isValueSet(state.armingDelay) ? state.armingDelay : true;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
