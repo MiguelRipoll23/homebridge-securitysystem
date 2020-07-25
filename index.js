@@ -575,13 +575,14 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
     return 4;
   }
 
-  // Audio
-  if (this.stateChanged === false && options.armSeconds > 0) {
-    this.playAudio('target', state);
-  }
-
+  // Check arming delay
   if (delay === null) {
     delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
+  }
+
+  // Audio
+  if (this.stateChanged === false && delay && options.armSeconds > 0) {
+    this.playAudio('target', state);
   }
 
   let armSeconds = 0;
