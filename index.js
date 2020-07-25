@@ -534,13 +534,13 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
   // Check if state is already arming
   if (this.targetState === state && 
       this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.log.debug('Target mode (Already set)');
+      this.log.warn('Target mode (Already set)');
     return 1;
   }
 
   // Check if state is enabled
   if (this.targetStates.includes(state) === false) {
-    this.log.debug('Target mode (Disabled)');
+    this.log.warn('Target mode (Disabled)');
     return 2;
   }
 
@@ -568,7 +568,7 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
 
   // Check if state is already set
   if (this.currentState === state) {
-    this.log.debug('Current mode (Already set)');
+    this.log.warn('Current mode (Already set)');
     return 4;
   }
 
@@ -658,6 +658,8 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
   // mode is off
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
     if (options.overrideOff === false) {
+      this.log.warn('Sensor (Not armed)');
+
       if (callback !== null) {
         callback('Security system not armed.');
       }
@@ -669,6 +671,8 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
   // Ignore if the security system
   // is arming
   if (this.arming) {
+    this.log.warn('Sensor (Still arming)');
+
     if (callback !== null) {
       callback('Security system not armed yet.');
     }
@@ -738,11 +742,6 @@ SecuritySystem.prototype.updateSiren = function(value, callback) {
 SecuritySystem.prototype.setSiren = function(value, callback) {
   this.updateSiren(value, callback);
 };
-
-SecuritySystem.prototype.getStatusTampered = function(callback) {
-  const value = this.service.getCharacteristic(Characteristic.StatusTampered).value;
-  callback(null, value);
-}
 
 // Server
 SecuritySystem.prototype.isCodeSent = function(req) {
@@ -825,17 +824,6 @@ SecuritySystem.prototype.sendCodeInvalidError = function(req, res) {
   }
 
   res.status(403).json(response);
-};
-
-SecuritySystem.prototype.sendModePausedError = function(res) {
-  this.log('Mode paused (Server)')
-
-  const response = {
-    'error': true,
-    'message': server.MESSAGE_MODE_PAUSED
-  };
-  
-  res.status(400).json(response);
 };
 
 SecuritySystem.prototype.sendResponse = function(res, result) {
@@ -1099,7 +1087,7 @@ SecuritySystem.prototype.setupAudio = async function() {
     await fs.promises.copyFile(`${__dirname}/sounds/README`, `${options.audioPath}/README`);
     await fs.promises.copyFile(`${__dirname}/sounds/README`, `${options.audioPath}/README.txt`);
 
-    this.log.info('Custom Audio Instructions (Created)');
+    this.log.warn('Check audio path directory for instructions.');
   }
 };
 
@@ -1301,9 +1289,12 @@ SecuritySystem.prototype.triggerIfModeSet = function(switchRequiredState, value,
     }
     else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       this.updateSiren(value, null);
+
+      this.log.warn('Sensor (Already triggered)');
       callback('Security system is triggered.');
     }
     else {
+      this.log.warn('Sensor (Invalid mode)');
       callback('Security system not armed with required state.');
     }
   }
@@ -1470,7 +1461,9 @@ SecuritySystem.prototype.setModeOffSwitchOn = function(value, callback) {
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, null, null);
   }
   else {
+    this.log.warn('Target mode (Already set)');
     callback('Security system mode is already disarmed.');
+
     return;
   }
 
@@ -1497,13 +1490,17 @@ SecuritySystem.prototype.getModePauseSwitchOn = function(callback) {
 
 SecuritySystem.prototype.setModePauseSwitchOn = function(value, callback) {
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+    this.log.warn('Mode switch (Triggered)');
     callback('Security system is triggered.');
+
     return;
   }
 
   if (value) {
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
+      this.log.warn('Mode switch (Not armed)');
       callback('Security system is not armed.');
+
       return;
     }
 
