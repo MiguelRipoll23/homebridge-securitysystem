@@ -369,9 +369,6 @@ SecuritySystem.prototype.state2Mode = function(state) {
       return 'off';
 
     // Custom
-    case 'open':
-      return state;
-
     case 'alert':
       return state;
 
@@ -874,8 +871,7 @@ SecuritySystem.prototype.startServer = async function() {
         ||
         this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
       ),
-      'arming': this.arming,
-      'open_counter': this.openCounter
+      'arming': this.arming
     };
 
     res.json(response);
@@ -989,38 +985,6 @@ SecuritySystem.prototype.startServer = async function() {
 
     this.resetModePauseSwitch();
     this.sendResponse(res, result);
-  });
-
-  app.get('/open', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
-      return;
-    }
-
-    this.openCounter++;
-    this.log('Door/Window (Opened)');
-    this.sendResponse(res, 0);
-  });
-
-  app.get('/close', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
-      return;
-    }
-
-    this.openCounter--;
-    this.log('Door/Window (Closed)');
-    this.sendResponse(res, 0);
   });
 
   // Listener
