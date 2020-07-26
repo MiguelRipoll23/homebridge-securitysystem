@@ -35,6 +35,8 @@ function SecuritySystem(log, config) {
 
   this.defaultState = this.mode2State(options.defaultMode);
   this.targetStates = null;
+
+  this.openCounter = 0;
   this.originalState = null;
   this.stateChanged = false;
 
@@ -284,6 +286,7 @@ SecuritySystem.prototype.load = async function() {
       const currentState = options.isValueSet(state.currentState) ? state.currentState : this.defaultState;
       const targetState = options.isValueSet(state.targetState) ? state.targetState : this.defaultState;
       const armingDelay = options.isValueSet(state.armingDelay) ? state.armingDelay : true;
+      const openCounter = options.isValueSet(state.openCounter) ? state.openCounter : 0;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
@@ -295,6 +298,7 @@ SecuritySystem.prototype.load = async function() {
 
       this.currentState = currentState;
       this.armingDelay = armingDelay;
+      this.openCounter = openCounter;
 
       // Update characteristics values
       const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
@@ -332,7 +336,8 @@ SecuritySystem.prototype.save = async function() {
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'armingDelay': this.armingDelay
+    'armingDelay': this.armingDelay,
+    'openCounter': this.openCounter
   };
 
   await storage.setItem('state', state)
@@ -369,6 +374,9 @@ SecuritySystem.prototype.state2Mode = function(state) {
       return 'off';
 
     // Custom
+    case 'open':
+      return state;
+
     case 'alert':
       return state;
 
@@ -534,7 +542,14 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
   // Check if state is already arming
   if (this.targetState === state && 
       this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.log.warn('Target mode (Already set)');
+
+    // Prevent duplicated log message from HomeKit when
+    // set to 'Off' and an error is returned
+    if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
+      if (this.openCounter === 0) {
+        this.log.warn('Target mode (Already set)');
+      }
+    }
 
     if (callback !== null) {
       callback(null);
@@ -542,6 +557,9 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
 
     return 1;
   }
+
+  // Reset timers
+  this.resetTimers();
 
   // Check if state is enabled
   if (this.targetStates.includes(state) === false) {
@@ -555,8 +573,21 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
     return 2;
   }
 
-  // Reset timers
-  this.resetTimers();
+  // Check if doors/windows
+  // are opened
+  if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
+    if (this.openCounter > 0) {
+      this.log.warn('Target mode (Window/Door)');
+      this.playAudio('target', 'open');
+  
+      if (callback !== null) {
+        // Tip: This will revert the original state
+        callback(Characteristic.SecuritySystemTargetState.DISARM);
+      }
+  
+      return 3;
+    }
+  }
 
   // Update target state
   this.targetState = state;
@@ -873,8 +904,9 @@ SecuritySystem.prototype.startServer = async function() {
     }
 
     const response = {
-      'current_mode': this.state2Mode(this.currentState),
       'target_mode': this.state2Mode(this.targetState),
+      'current_mode': this.state2Mode(this.currentState),
+      'open_counter': this.openCounter,
       'sensor_triggered': (
         this.triggerTimeout !== null
         ||
@@ -994,6 +1026,46 @@ SecuritySystem.prototype.startServer = async function() {
 
     this.resetModePauseSwitch();
     this.sendResponse(res, result);
+  });
+
+  app.get('/open', (req, res) => {
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
+    }
+  
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
+    }
+  
+    this.openCounter++;
+
+    this.log('Door/Window (Opened)');
+    this.save();
+
+    this.sendResponse(res, 0);
+  });
+  
+  app.get('/close', (req, res) => {
+    if (this.isCodeSent(req) === false) {
+      this.sendCodeRequiredError(res);
+      return;
+    }
+  
+    if (this.isCodeValid(req) === false) {
+      this.sendCodeInvalidError(req, res);
+      return;
+    }
+  
+    if (this.openCounter > 0) {
+      this.openCounter--;
+    }
+
+    this.log('Door/Window (Closed)');
+    this.save();
+
+    this.sendResponse(res, 0);
   });
 
   // Listener
