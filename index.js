@@ -535,12 +535,23 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
   if (this.targetState === state && 
       this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
       this.log.warn('Target mode (Already set)');
+
+    if (callback !== null) {
+      callback(null);
+    }
+
     return 1;
   }
 
   // Check if state is enabled
   if (this.targetStates.includes(state) === false) {
     this.log.warn('Target mode (Disabled)');
+
+    if (callback !== null) {
+      // Tip: this will revert the original state
+      callback(Characteristic.SecuritySystemTargetState.DISARM);
+    }
+
     return 2;
   }
 
@@ -569,6 +580,15 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
   // Check if state is already set
   if (this.currentState === state) {
     this.log.warn('Current mode (Already set)');
+
+    if (this.arming) {
+      this.updateArming(false);
+    }
+
+    if (callback !== null) {
+      callback(null);
+    }
+
     return 4;
   }
 
@@ -592,16 +612,9 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
       if (delay) {
         armSeconds = options.armSeconds;
 
-        // Update arming status
-        this.arming = true;
-        this.service
-          .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-          .updateValue(this.arming);
+        // Update arming value
+        this.updateArming(true);
       }
-    }
-
-    if (callback !== null) {
-      callback(null);
     }
   }
 
@@ -612,12 +625,13 @@ SecuritySystem.prototype.updateTargetState = function(state, external, delay, ca
 
     // Only if set to a mode excluding off
     if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
-      this.arming = false;
-      this.service
-        .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-        .updateValue(this.arming);
+      this.updateArming(false);
     }
   }, armSeconds * 1000);
+
+  if (callback !== null) {
+    callback(null);
+  }
 
   return 0;
 };
@@ -633,6 +647,13 @@ SecuritySystem.prototype.setTargetState = function(value, callback) {
 
 SecuritySystem.prototype.getArming = function(callback) {
   callback(null, this.arming);
+};
+
+SecuritySystem.prototype.updateArming = function(value) {
+  this.arming = value;
+  this.service
+    .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
+    .updateValue(this.arming);
 };
 
 SecuritySystem.prototype.getArmingDelay = function(callback) {
