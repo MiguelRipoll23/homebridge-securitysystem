@@ -48,6 +48,10 @@ function SecuritySystem(log, config) {
   this.resetTimeout = null;
 
   // Log
+  if (options.testMode) {
+    this.log.warn('Test Mode');
+  }
+
   this.logMode('Default', this.defaultState);
   this.log(`Arm delay (${options.armSeconds} second/s)`);
   this.log(`Trigger delay (${options.triggerSeconds} second/s)`);
@@ -265,8 +269,10 @@ SecuritySystem.prototype.load = async function() {
       this.log.error(error);
     });
 
-  if (storage.defaultInstance === undefined) {
-    this.log.error('Unable to load state.');
+  if (options.testMode) {
+    await storage.clear();
+    this.log.debug('Saved data from the plugin cleared.');
+
     return;
   }
   
