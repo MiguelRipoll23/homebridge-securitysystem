@@ -163,6 +163,12 @@
         "default": false,
         "required": false
       },
+      "test_mode": {
+        "title": "Use Test Mode",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "server_port": {
         "title": "Port",
         "type": "integer",
@@ -334,6 +340,7 @@
       ]
     },
     "save_state",
+    "test_mode",
     {
       "type": "fieldset",
       "title": "Advanced Options",

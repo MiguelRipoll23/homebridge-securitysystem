@@ -7,6 +7,7 @@ const options = {
   pauseMinutes: null,
   resetMinutes: null,
   overrideOff: null,
+  testMode: null,
 
   // Siren switches
   sirenSwitch: null,
@@ -72,6 +73,7 @@ const options = {
     options.resetMinutes = config.reset_minutes,
     options.overrideOff = config.override_off;
     options.saveState = config.save_state;
+    options.testMode = config.test_mode;
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
@@ -176,6 +178,10 @@ const options = {
     if (options.isValueSet(options.saveState) === false) {
       options.saveState = false;
     }
+
+    if (options.isValueSet(options.testMode) === false) {
+      options.testMode = false;
+    }
   
     // Mode switches
     if (options.isValueSet(options.modeSwitches) === false) {
@@ -227,13 +233,20 @@ const options = {
   },
 
   validateValues: (log) => {
-    if (options.serverPort !== null && options.serverPort < 0 || options.serverPort > 65535) {
-      log.error('Server port is invalid.');
+    if (options.serverPort !== null) {
+      if (options.serverPort < 0 || options.serverPort > 65535) {
+        log.error('Server port is invalid.');
+      }
     }
   },
 
   normalizeValues: () => {
     options.defaultMode = options.defaultMode.toLowerCase();
+
+    if (options.testMode) {
+      options.webhookTriggered = null;
+      options.commandTriggered = null;
+    }
   }
 };
 
