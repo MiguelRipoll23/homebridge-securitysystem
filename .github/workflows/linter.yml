@@ -4,7 +4,7 @@
 ## Linter GitHub Actions ##
 ###########################
 ###########################
-name: Lint Code Base
+name: Super Linter
 
 #
 # Documentation:
@@ -47,6 +47,7 @@ jobs:
       - name: Lint Code Base
         uses: docker://github/super-linter:v3
         env:
+          DISABLE_ERRORS: true,
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
