@@ -1,12 +1,12 @@
-const fs = require("fs");
+const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const packageJson = require('./package.json');
+const packageJson = require('../package.json');
 const options = require('./utils/options.js');
 const customServices = require('./hap/customServices.js');
 const customCharacteristics = require('./hap/customCharacteristics.js');
-const server = require('./utils/server.js');
+const serverConstants = require('./constants/server.js');
 
 const fetch = require('node-fetch');
 const storage = require('node-persist');
@@ -793,7 +793,7 @@ SecuritySystem.prototype.isCodeValid = function(req) {
   }
 
   // Check brute force
-  if (this.invalidCodeAttempts > server.MAX_CODE_ATTEMPTS) {
+  if (this.invalidCodeAttempts > serverConstants.MAX_CODE_ATTEMPTS) {
     req.blocked = true;
     return false;
   }
@@ -830,7 +830,7 @@ SecuritySystem.prototype.sendCodeRequiredError = function(res) {
 
   const response = {
     'error': true,
-    'message': server.MESSAGE_CODE_REQUIRED
+    'message': serverConstants.MESSAGE_CODE_REQUIRED
   };
 
   res.status(401).json(response);
@@ -843,11 +843,11 @@ SecuritySystem.prototype.sendCodeInvalidError = function(req, res) {
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
-    response.message = server.MESSAGE_CODE_BLOCKED;
+    response.message = serverConstants.MESSAGE_CODE_BLOCKED;
   }
   else {
     this.log('Code invalid (Server)');
-    response.message = server.MESSAGE_CODE_INVALID;
+    response.message = serverConstants.MESSAGE_CODE_INVALID;
   }
 
   res.status(403).json(response);
@@ -1039,7 +1039,7 @@ SecuritySystem.prototype.playAudio = async function(type, state) {
   this.stopAudio();
 
   // Directory
-  let directory = `${__dirname}/sounds`;
+  let directory = `${__dirname}/../sounds`;
 
   if (options.isValueSet(options.audioPath)) {
     directory = options.audioPath;
@@ -1058,6 +1058,7 @@ SecuritySystem.prototype.playAudio = async function(type, state) {
   }
   catch (error) {
     this.log.debug(`Sound file not found (${options.audioLanguage}/${filename})`);
+    this.log.error(filePath);
     return;
   }
 
