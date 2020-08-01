@@ -1,20 +1,20 @@
 const inherits = require('util').inherits;
 
 function CustomService(Service, Characteristic, CustomCharacteristic) {
-  this.SecuritySystem = function(displayName, subtype) {
+  this.SecuritySystem = function (displayName, subtype) {
     this.UUID = '0000007E-0000-1000-8000-0026BB765291';
 
     Service.call(this, displayName, this.UUID, subtype);
 
-    // Required Characteristics
+    // Required characteristics
     this.addCharacteristic(CustomCharacteristic.SecuritySystemArming);
 
     this.addCharacteristic(Characteristic.SecuritySystemCurrentState);
     this.addCharacteristic(Characteristic.SecuritySystemTargetState);
     this.addCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
     this.addCharacteristic(CustomCharacteristic.SecuritySystemSiren);
-    
-    // Optional Characteristics
+
+    // Optional characteristics
     this.addOptionalCharacteristic(Characteristic.StatusFault);
     this.addOptionalCharacteristic(Characteristic.StatusTampered);
     this.addOptionalCharacteristic(Characteristic.SecuritySystemAlarmType);

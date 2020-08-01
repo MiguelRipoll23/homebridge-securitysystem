@@ -1,4 +1,4 @@
-module.exports = { 
+module.exports = {
   MAX_CODE_ATTEMPTS: 25,
 
   // Messages

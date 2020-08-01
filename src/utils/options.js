@@ -1,4 +1,4 @@
-const options = { 
+const options = {
   name: null,
   defaultMode: null,
   disabledModes: null,
@@ -69,8 +69,8 @@ const options = {
     options.disabledModes = config.disabled_modes;
     options.armSeconds = config.arm_seconds;
     options.triggerSeconds = config.trigger_seconds;
-    options.pauseMinutes = config.pause_minutes,
-    options.resetMinutes = config.reset_minutes,
+    options.pauseMinutes = config.pause_minutes;
+    options.resetMinutes = config.reset_minutes;
     options.overrideOff = config.override_off;
     options.saveState = config.save_state;
     options.testMode = config.test_mode;
@@ -104,7 +104,7 @@ const options = {
     options.commandTargetAway = config.command_target_away;
     options.commandTargetNight = config.command_target_night;
     options.commandTargetOff = config.command_target_off;
-  
+
     options.commandCurrentHome = config.command_current_home;
     options.commandCurrentAway = config.command_current_away;
     options.commandCurrentNight = config.command_current_night;
@@ -136,7 +136,7 @@ const options = {
     if (value === undefined || value === null) {
       return false;
     }
-  
+
     return true;
   },
 
@@ -144,7 +144,7 @@ const options = {
     if (options.isValueSet(config.command_off)) {
       log.error('Option comand_off has been deprecated, use command_current_off instead.');
     }
-  
+
     if (options.isValueSet(config.webhook_off)) {
       log.error('Option webhook_off has been deprecated, use webhook_current_off instead.');
     }
@@ -158,15 +158,15 @@ const options = {
     if (options.isValueSet(options.disabledModes) === false) {
       options.disabledModes = [];
     }
-  
+
     if (options.isValueSet(options.armSeconds) === false) {
       options.armSeconds = 0;
     }
-  
+
     if (options.isValueSet(options.triggerSeconds) === false) {
       options.triggerSeconds = 0;
     }
-  
+
     if (options.isValueSet(options.resetMinutes) === false) {
       options.resetMinutes = 10;
     }
@@ -182,24 +182,24 @@ const options = {
     if (options.isValueSet(options.testMode) === false) {
       options.testMode = false;
     }
-  
+
     // Mode switches
     if (options.isValueSet(options.modeSwitches) === false) {
       options.modeSwitches = false;
     }
-  
+
     if (options.isValueSet(options.hideModeOffSwitch) === false) {
       options.hideModeOffSwitch = false;
     }
-  
+
     if (options.isValueSet(options.showModePauseSwitch) === false) {
       options.showModePauseSwitch = false;
     }
-  
+
     if (options.isValueSet(options.pauseMinutes) === false) {
       options.pauseMinutes = 0;
     }
-  
+
     // Siren switches
     if (options.isValueSet(options.sirenSwitch) === false) {
       options.sirenSwitch = true;
@@ -213,7 +213,7 @@ const options = {
     if (options.isValueSet(options.sirenSensor) === false) {
       options.sirenSensor = false;
     }
-  
+
     if (options.isValueSet(options.sirenSensorSeconds) === false) {
       options.sirenSensorSeconds = 5;
     }
@@ -226,7 +226,7 @@ const options = {
     if (options.isValueSet(options.audioLanguage) === false) {
       options.audioLanguage = 'en-US';
     }
-  
+
     if (options.isValueSet(options.audioAlertLooped) === false) {
       options.audioAlertLooped = false;
     }
