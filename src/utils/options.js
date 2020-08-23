@@ -108,7 +108,7 @@ const options = {
     options.commandCurrentHome = config.command_current_home;
     options.commandCurrentAway = config.command_current_away;
     options.commandCurrentNight = config.command_current_night;
-    options.commandCurrentOff = config.command_current_off || config.command_off;
+    options.commandCurrentOff = config.command_current_off;
     options.commandAlert = config.command_alert;
     options.commandTriggered = config.command_triggered;
 
@@ -123,7 +123,7 @@ const options = {
     options.webhookCurrentHome = config.webhook_current_home;
     options.webhookCurrentAway = config.webhook_current_away;
     options.webhookCurrentNight = config.webhook_current_night;
-    options.webhookCurrentOff = config.webhook_current_off || config.webhook_off;
+    options.webhookCurrentOff = config.webhook_current_off;
     options.webhookAlert = config.webhook_alert;
     options.webhookTriggered = config.webhook_triggered;
 
@@ -140,14 +140,8 @@ const options = {
     return true;
   },
 
-  checkDeprecated: (log, config) => {
-    if (options.isValueSet(config.command_off)) {
-      log.error('Option comand_off has been deprecated, use command_current_off instead.');
-    }
+  checkDeprecated: () => {
 
-    if (options.isValueSet(config.webhook_off)) {
-      log.error('Option webhook_off has been deprecated, use webhook_current_off instead.');
-    }
   },
 
   setDefaultValues: () => {
