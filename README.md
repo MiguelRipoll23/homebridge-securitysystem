@@ -42,6 +42,7 @@ Use Eve or a similar app to create automations like these:
 | trigger_seconds        | Time in seconds to be able to disarm the security system before triggering it.      | 0       | 30        |
 | pause_minutes          | Time in minutes that the armed state will be paused using the `Mode Pause` switch.  | 0       | 5         |
 | reset_minutes          | Time in minutes to wait to return to mode set after being triggered.                | 10      | 15        |
+| reset_off              | Reset security system when triggered by passing through the `Off` mode.             | false   | true      |
 | siren_switch (1)       | Shows a switch on the Home app to trigger the security system.                      | true    | false     |
 | siren_mode_switches    | Shows switches on the Home app to trigger the security system for each mode.        | false   | true      |
 | siren_sensor           | Shows a sensor on the Home app to get multiple notifications during `Triggered`.    | false   | true      |

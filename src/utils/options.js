@@ -71,6 +71,7 @@ const options = {
     options.triggerSeconds = config.trigger_seconds;
     options.pauseMinutes = config.pause_minutes;
     options.resetMinutes = config.reset_minutes;
+    options.resetOff = config.reset_off;
     options.overrideOff = config.override_off;
     options.saveState = config.save_state;
     options.testMode = config.test_mode;
@@ -167,6 +168,10 @@ const options = {
 
     if (options.isValueSet(options.overrideOff) === false) {
       options.overrideOff = false;
+    }
+
+    if (options.isValueSet(options.resetOff) === false) {
+      options.resetOff = false;
     }
 
     if (options.isValueSet(options.saveState) === false) {

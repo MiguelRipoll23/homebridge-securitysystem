@@ -467,6 +467,17 @@ SecuritySystem.prototype.setCurrentState = function (state) {
       this.resetTimers();
       this.handleStateChange(true);
 
+      if (options.resetOff) {
+        const originalTargetState = this.targetState;
+        this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false, null);
+
+        setTimeout(() => {
+          this.updateTargetState(originalTargetState, true, true, null);
+        }, 100);
+
+        return;
+      }
+
       this.setCurrentState(this.targetState);
     }, options.resetMinutes * 60 * 1000);
   }

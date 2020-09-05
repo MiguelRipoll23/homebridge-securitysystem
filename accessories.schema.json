@@ -91,6 +91,12 @@
         "required": false,
         "minimum": 0
       },
+      "reset_off": {
+        "title": "Reset Using Off",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "siren_switch": {
         "title": "Show Siren Switch",
         "type": "boolean",
@@ -362,6 +368,7 @@
         "siren_switch",
         "siren_mode_switches",
         "override_off",
+        "reset_off",
         {
           "type": "div",
           "display": "flex",
