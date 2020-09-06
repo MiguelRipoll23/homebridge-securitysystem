@@ -459,7 +459,8 @@ SecuritySystem.prototype.setCurrentState = function (state) {
       }, 750);
     }, options.sirenSensorSeconds * 1000);
 
-    // Automatically reset when being triggered after x minutes
+    // Automatically arm the security system
+    // when time runs out
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
       this.log.debug('Reset timeout (Fired)');
@@ -1548,12 +1549,15 @@ SecuritySystem.prototype.setModePauseSwitchOn = function (value, callback) {
     this.originalState = this.currentState;
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true, null);
 
-    this.pauseTimeout = setTimeout(() => {
-      this.log('Pause (Finished)');
-
-      this.resetModePauseSwitch();
-      this.updateTargetState(this.originalState, true, true, null);
-    }, options.pauseMinutes * 60 * 1000);
+    // Check if time is set to unlimited
+    if (options.pauseMinutes !== 0) {
+      this.pauseTimeout = setTimeout(() => {
+        this.log('Pause (Finished)');
+  
+        this.resetModePauseSwitch();
+        this.updateTargetState(this.originalState, true, true, null);
+      }, options.pauseMinutes * 60 * 1000);
+    }
   }
   else {
     this.log('Pause (Cancelled)');
