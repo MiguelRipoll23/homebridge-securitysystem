@@ -28,12 +28,12 @@
   },
   "funding": [
     {
-      "type" : "github",
-      "url" : "https://github.com/sponsors/MiguelRipoll23"
+      "type": "github",
+      "url": "https://github.com/sponsors/MiguelRipoll23"
     },
     {
-      "type" : "paypal",
-      "url" : "https://paypal.me/miguelripoll23"
+      "type": "paypal",
+      "url": "https://paypal.me/miguelripoll23"
     }
   ],
   "engines": {
