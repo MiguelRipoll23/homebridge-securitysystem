@@ -84,6 +84,9 @@ const options = {
     options.sirenSensor = config.siren_sensor;
     options.sirenSensorSeconds = config.siren_sensor_seconds;
 
+    // Reset sensor
+    options.resetSensor = config.reset_sensor;
+
     // Mode switches
     options.modeSwitches = config.unsafe_mode_switches;
     options.hideModeOffSwitch = config.hide_mode_off_switch;
@@ -182,6 +185,29 @@ const options = {
       options.testMode = false;
     }
 
+    // Siren sensor
+    if (options.isValueSet(options.sirenSensor) === false) {
+      options.sirenSensor = false;
+    }
+
+    if (options.isValueSet(options.sirenSensorSeconds) === false) {
+      options.sirenSensorSeconds = 5;
+    }
+
+    // Siren switches
+    if (options.isValueSet(options.sirenSwitch) === false) {
+      options.sirenSwitch = true;
+    }
+
+    if (options.isValueSet(options.sirenModeSwitches) === false) {
+      options.sirenModeSwitches = false;
+    }
+
+    // Reset sensor
+    if (options.isValueSet(options.resetSensor) === false) {
+      options.resetSensor = false;
+    }
+
     // Mode switches
     if (options.isValueSet(options.modeSwitches) === false) {
       options.modeSwitches = false;
@@ -197,24 +223,6 @@ const options = {
 
     if (options.isValueSet(options.pauseMinutes) === false) {
       options.pauseMinutes = 0;
-    }
-
-    // Siren switches
-    if (options.isValueSet(options.sirenSwitch) === false) {
-      options.sirenSwitch = true;
-    }
-
-    if (options.isValueSet(options.sirenModeSwitches) === false) {
-      options.sirenModeSwitches = false;
-    }
-
-    // Siren sensor
-    if (options.isValueSet(options.sirenSensor) === false) {
-      options.sirenSensor = false;
-    }
-
-    if (options.isValueSet(options.sirenSensorSeconds) === false) {
-      options.sirenSensorSeconds = 5;
     }
 
     // Audio

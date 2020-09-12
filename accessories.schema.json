@@ -103,6 +103,12 @@
         "default": true,
         "required": false
       },
+      "reset_sensor": {
+        "title": "Show Reset Sensor",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
         "type": "boolean",
@@ -399,6 +405,7 @@
             }
           ]
         },
+        "reset_sensor",
         "disabled_modes"
       ]
     },

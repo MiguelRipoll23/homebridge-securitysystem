@@ -108,6 +108,11 @@ function SecuritySystem(log, config) {
     .on('get', this.getSiren.bind(this))
     .on('set', this.setSiren.bind(this));
 
+  this.service
+    .getCharacteristic(CustomCharacteristic.SecuritySystemReset)
+    .on('get', this.getReset.bind(this))
+    .on('set', this.setReset.bind(this));
+
   // Siren switch (Optional)
   this.sirenSwitchService = new Service.Switch('Siren', 'siren-switch');
 
@@ -122,6 +127,13 @@ function SecuritySystem(log, config) {
   this.sirenMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', this.getSirenMotionDetected.bind(this));
+
+  // Reset sensor (Optional)
+  this.resetMotionSensorService = new Service.MotionSensor('Reset Event', 'reset-event');
+
+  this.resetMotionSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getResetMotionDetected.bind(this));
 
   // Mode switches (Optional)
   this.modeHomeSwitchService = new Service.Switch('Mode Home', 'mode-home');
@@ -197,12 +209,16 @@ function SecuritySystem(log, config) {
     this.accessoryInformationService
   ];
 
+  if (options.sirenSensor) {
+    this.services.push(this.sirenMotionSensorService);
+  }
+
   if (options.sirenSwitch) {
     this.services.push(this.sirenSwitchService);
   }
 
-  if (options.sirenSensor) {
-    this.services.push(this.sirenMotionSensorService);
+  if (options.resetSensor) {
+    this.services.push(this.resetMotionSensorService);
   }
 
   if (this.targetStates.includes(Characteristic.SecuritySystemTargetState.STAY_ARM)) {
@@ -468,6 +484,26 @@ SecuritySystem.prototype.setCurrentState = function (state) {
       this.resetTimers();
       this.handleStateChange(true);
 
+      // Reset characteristic & sensor
+      this.service
+        .getCharacteristic(CustomCharacteristic.SecuritySystemReset)
+        .updateValue(true);
+
+      this.resetMotionSensorService
+        .getCharacteristic(Characteristic.MotionDetected)
+        .updateValue(true);
+
+      setTimeout(() => {
+        this.service
+          .getCharacteristic(CustomCharacteristic.SecuritySystemReset)
+          .updateValue(false);
+
+        this.resetMotionSensorService
+          .getCharacteristic(Characteristic.MotionDetected)
+          .updateValue(false);
+      }, 750);
+
+      // Alternative flow (Triggered -> Off -> Armed mode)
       if (options.resetOff) {
         const originalTargetState = this.targetState;
         this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false, null);
@@ -780,6 +816,16 @@ SecuritySystem.prototype.updateSiren = function (value, callback) {
 
 SecuritySystem.prototype.setSiren = function (value, callback) {
   this.updateSiren(value, callback);
+};
+
+SecuritySystem.prototype.getReset = function (callback) {
+  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemReset).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setReset = function (callback) {
+  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemReset).value;
+  callback(null, value);
 };
 
 // Server
@@ -1286,6 +1332,12 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state) {
     });
 };
 
+// Siren Motion Sensor
+SecuritySystem.prototype.getSirenMotionDetected = function (callback) {
+  const value = this.sirenMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
+};
+
 // Siren Switch
 SecuritySystem.prototype.getSirenSwitchOn = function (callback) {
   const value = this.sirenSwitchService.getCharacteristic(Characteristic.On).value;
@@ -1294,12 +1346,6 @@ SecuritySystem.prototype.getSirenSwitchOn = function (callback) {
 
 SecuritySystem.prototype.setSirenSwitchOn = function (value, callback) {
   this.updateSiren(value, callback);
-};
-
-// Siren Motion Sensor
-SecuritySystem.prototype.getSirenMotionDetected = function (callback) {
-  const value = this.sirenMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
-  callback(null, value);
 };
 
 // Siren Mode Switches
@@ -1369,6 +1415,12 @@ SecuritySystem.prototype.getSirenNightSwitchOn = function (callback) {
 
 SecuritySystem.prototype.setSirenNightSwitchOn = function (value, callback) {
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, value, callback);
+};
+
+// Reset Motion Sensor
+SecuritySystem.prototype.getResetMotionDetected = function (callback) {
+  const value = this.resetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
 };
 
 // Mode Switches

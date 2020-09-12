@@ -13,6 +13,7 @@ function CustomService(Service, Characteristic, CustomCharacteristic) {
     this.addCharacteristic(Characteristic.SecuritySystemTargetState);
     this.addCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
     this.addCharacteristic(CustomCharacteristic.SecuritySystemSiren);
+    this.addCharacteristic(CustomCharacteristic.SecuritySystemReset);
 
     // Optional characteristics
     this.addOptionalCharacteristic(Characteristic.StatusFault);
