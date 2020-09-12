@@ -66,15 +66,16 @@ const options = {
 
     options.name = config.name;
     options.defaultMode = config.default_mode;
-    options.disabledModes = config.disabled_modes;
     options.armSeconds = config.arm_seconds;
     options.triggerSeconds = config.trigger_seconds;
     options.pauseMinutes = config.pause_minutes;
     options.resetMinutes = config.reset_minutes;
-    options.resetOff = config.reset_off;
-    options.overrideOff = config.override_off;
     options.saveState = config.save_state;
     options.testMode = config.test_mode;
+
+    options.overrideOff = config.override_off;
+    options.resetOffFlow = config.reset_off_flow;
+    options.disabledModes = config.disabled_modes;
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
@@ -88,9 +89,9 @@ const options = {
     options.resetSensor = config.reset_sensor;
 
     // Mode switches
-    options.modeSwitches = config.unsafe_mode_switches;
-    options.hideModeOffSwitch = config.hide_mode_off_switch;
-    options.showModePauseSwitch = config.show_mode_pause_switch;
+    options.modeSwitches = config.mode_switches || config.unsafe_mode_switches;
+    options.modeOffSwitch = config.mode_off_switch || !(config.hide_mode_off_switch !== undefined && config.hide_mode_off_switch === true);
+    options.modePauseSwitch = config.mode_pause_switch || config.show_mode_pause_switch;
 
     // Server
     options.serverPort = config.server_port;
@@ -144,8 +145,18 @@ const options = {
     return true;
   },
 
-  checkDeprecated: () => {
+  checkDeprecated: (log, config) => {
+    if (options.isValueSet(config.hide_mode_off_switch)) {
+      log.warn('Option \'mode_off_switch\' has been deprecated, update your configuration.');
+    }
 
+    if (options.isValueSet(config.unsafe_mode_switches)) {
+      log.warn('Option \'unsafe_mode_switches\' has been deprecated, update your configuration.');
+    }
+
+    if (options.isValueSet(config.show_pause_pause_switch)) {
+      log.warn('Option \'show_pause_pause_switch\' has been deprecated, update your configuration.');
+    }
   },
 
   setDefaultValues: () => {

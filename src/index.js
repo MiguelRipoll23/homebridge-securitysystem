@@ -252,12 +252,12 @@ function SecuritySystem(log, config) {
   }
 
   if (options.modeSwitches) {
-    if (options.hideModeOffSwitch === false) {
+    if (options.modeOffSwitch) {
       this.services.push(this.modeOffSwitchService);
     }
   }
 
-  if (options.showModePauseSwitch) {
+  if (options.modePauseSwitch) {
     this.services.push(this.modePauseSwitchService);
   }
 
@@ -504,7 +504,7 @@ SecuritySystem.prototype.setCurrentState = function (state) {
       }, 750);
 
       // Alternative flow (Triggered -> Off -> Armed mode)
-      if (options.resetOff) {
+      if (options.resetOffFlow) {
         const originalTargetState = this.targetState;
         this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false, null);
 

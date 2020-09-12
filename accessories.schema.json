@@ -28,52 +28,10 @@
           "Away"
         ]
       },
-      "disabled_modes": {
-        "title": "Modes Disabled",
-        "type": "array",
-        "required": false,
-        "items": {
-          "title": "Mode",
-          "type": "string",
-          "enum": [
-            "Off",
-            "Home",
-            "Night",
-            "Away"
-          ],
-          "uniqueItems": true
-        }
-      },
       "arm_seconds": {
         "title": "Arming Delay Seconds",
         "type": "integer",
         "default": 0,
-        "required": false,
-        "minimum": 0
-      },
-      "show_mode_pause_switch": {
-        "title": "Show Mode Pause Switch",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "pause_minutes": {
-        "title": "Minutes",
-        "type": "integer",
-        "default": 0,
-        "required": false,
-        "minimum": 0
-      },
-      "siren_sensor": {
-        "title": "Show Siren Sensor",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "siren_sensor_seconds": {
-        "title": "Seconds",
-        "type": "integer",
-        "default": 5,
         "required": false,
         "minimum": 0
       },
@@ -91,26 +49,31 @@
         "required": false,
         "minimum": 0
       },
-      "reset_off": {
-        "title": "Reset Using Off",
+      "audio": {
+        "title": "Play Audio",
+        "description": "sudo apt install ffmpeg",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "siren_switch": {
-        "title": "Show Siren Switch",
-        "type": "boolean",
-        "default": true,
-        "required": false
+      "audio_language": {
+        "title": "Audio Language",
+        "type": "string",
+        "default": "en-US",
+        "required": true,
+        "enum": [
+          "en-US",
+          "de-DE"
+        ]
       },
-      "reset_sensor": {
-        "title": "Show Reset Sensor",
+      "save_state": {
+        "title": "Save Using System Storage",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "siren_mode_switches": {
-        "title": "Show Siren Mode Switches",
+      "test_mode": {
+        "title": "Enable Test Mode",
         "type": "boolean",
         "default": false,
         "required": false
@@ -121,21 +84,80 @@
         "default": false,
         "required": false
       },
-      "unsafe_mode_switches": {
-        "title": "Show Mode Switches (not recommended)",
+      "reset_off_flow": {
+        "title": "Reset Using Off Mode",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "hide_mode_off_switch": {
-        "title": "Hide Mode Off Switch",
+      "disabled_modes": {
+        "title": "Disabled Modes",
+        "type": "array",
+        "required": false,
+        "items": {
+          "title": "Mode",
+          "type": "string",
+          "enum": [
+            "Off",
+            "Home",
+            "Night",
+            "Away"
+          ],
+          "uniqueItems": true
+        }
+      },
+      "siren_sensor": {
+        "title": "Show Siren Sensor",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "audio": {
-        "title": "Play Audio",
-        "description": "sudo apt install ffmpeg",
+      "siren_sensor_seconds": {
+        "title": "Seconds",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0
+      },
+      "reset_sensor": {
+        "title": "Show Reset Sensor",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "mode_switches": {
+        "title": "Show Mode Switches",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "mode_off_switch": {
+        "title": "Show Mode Off Switch",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "mode_pause_switch": {
+        "title": "Show Mode Pause Switch",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "pause_minutes": {
+        "title": "Minutes",
+        "type": "integer",
+        "default": 0,
+        "required": false,
+        "minimum": 0
+      },
+      "siren_switch": {
+        "title": "Show Siren Switch",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "siren_mode_switches": {
+        "title": "Show Siren Mode Switches",
         "type": "boolean",
         "default": false,
         "required": false
@@ -153,30 +175,8 @@
         "default": 100,
         "placeholder": "100"
       },
-      "audio_language": {
-        "title": "Audio Language",
-        "type": "string",
-        "default": "en-US",
-        "required": true,
-        "enum": [
-          "en-US",
-          "de-DE"
-        ]
-      },
       "audio_alert_looped": {
         "title": "Loop Alert Sound",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "save_state": {
-        "title": "Save Using System Storage",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "test_mode": {
-        "title": "Use Test Mode",
         "type": "boolean",
         "default": false,
         "required": false
@@ -361,52 +361,84 @@
       "expanded": false,
       "items": [
         {
-          "type": "flex",
-          "flex-flow": "row wrap",
+          "type": "fieldset",
+          "title": "Security system",
+          "expandable": true,
+          "expanded": false,
           "items": [
-            "audio_path",
-            "audio_volume"
-          ]
-        },
-        "audio_alert_looped",
-        "unsafe_mode_switches",
-        "hide_mode_off_switch",
-        "siren_switch",
-        "siren_mode_switches",
-        "override_off",
-        "reset_off",
-        {
-          "type": "div",
-          "display": "flex",
-          "flex-direction": "row",
-          "items": [
-            {
-              "key": "show_mode_pause_switch",
-              "flex": "1"
-            },
-            {
-              "key": "pause_minutes",
-              "flex": "200px"
-            }
+            "override_off",
+            "reset_off_flow",
+            "disabled_modes"
           ]
         },
         {
-          "type": "div",
-          "display": "flex",
-          "flex-direction": "row",
+          "type": "fieldset",
+          "title": "Sensors",
+          "expandable": true,
+          "expanded": false,
           "items": [
             {
-              "key": "siren_sensor",
-              "flex": "1"
+              "type": "div",
+              "display": "flex",
+              "flex-direction": "row",
+              "items": [
+                {
+                  "key": "siren_sensor",
+                  "flex": "1"
+                },
+                {
+                  "key": "siren_sensor_seconds",
+                  "flex": "200px"
+                }
+              ]
             },
-            {
-              "key": "siren_sensor_seconds",
-              "flex": "200px"
-            }
+            "reset_sensor"
           ]
         },
-        "reset_sensor",
-        "disabled_modes"
+        {
+          "type": "fieldset",
+          "title": "Switches",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "mode_switches",
+            "mode_off_switch",
+            {
+              "type": "div",
+              "display": "flex",
+              "flex-direction": "row",
+              "items": [
+                {
+                  "key": "mode_pause_switch",
+                  "flex": "1"
+                },
+                {
+                  "key": "pause_minutes",
+                  "flex": "200px"
+                }
+              ]
+            },
+            "siren_switch",
+            "siren_mode_switches"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Audio",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            {
+              "type": "flex",
+              "flex-flow": "row wrap",
+              "items": [
+                "audio_path",
+                "audio_volume"
+              ]
+            },
+            "audio_alert_looped"
+          ]
+        }
       ]
     },
     {
