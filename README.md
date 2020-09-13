@@ -47,9 +47,9 @@ Use Eve or a similar app to create automations like these:
 | siren_mode_switches    | Shows switches on the Home app to trigger the security system for each mode.        | false   | true      |
 | siren_sensor           | Shows a sensor on the Home app to get multiple notifications during `Triggered`.    | false   | true      |
 | siren_sensor_seconds   | Time in seconds to wait until another notification comes in.                        | 5       | 10        |
-| unsafe_mode_switches   | Shows switches on the Home app for each mode to bypass confirmation.                | false   | true      |
-| hide_mode_off_switch   | Hides the `Mode Off` switch on the Home app if you enabled mode switches.           | false   | true      |
-| show_mode_pause_switch | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |
+| mode_switches          | Shows switches on the Home app for each mode to bypass confirmation.                | false   | true      |
+| mode_off_switch        | Shows the `Mode Off` switch on the Home app if you enabled mode switches.           | true    | false      |
+| mode_pause_switch      | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |
 | override_off           | Allows to trigger the security system while disarmed.                               | false   | true      |
 | audio                  | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
 | audio_path (2)         | Use custom sounds from an external directory.                                       | false   | /sounds   |
