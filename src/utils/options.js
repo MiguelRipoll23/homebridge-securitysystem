@@ -147,7 +147,7 @@ const options = {
 
   checkDeprecated: (log, config) => {
     if (options.isValueSet(config.hide_mode_off_switch)) {
-      log.warn('Option \'mode_off_switch\' has been deprecated, update your configuration.');
+      log.warn('Option \'hide_mode_off_switch\' has been deprecated, update your configuration.');
     }
 
     if (options.isValueSet(config.unsafe_mode_switches)) {
