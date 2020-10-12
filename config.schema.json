@@ -69,6 +69,12 @@
         "default": false,
         "required": false
       },
+      "proxy_mode": {
+        "title": "Enable Proxy Mode",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "test_mode": {
         "title": "Enable Test Mode",
         "type": "boolean",
@@ -365,6 +371,7 @@
           "items": [
             "override_off",
             "reset_off_flow",
+            "proxy_mode",
             "disabled_modes"
           ]
         },

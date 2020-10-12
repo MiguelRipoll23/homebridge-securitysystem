@@ -71,6 +71,7 @@ const options = {
     options.pauseMinutes = config.pause_minutes;
     options.resetMinutes = config.reset_minutes;
     options.saveState = config.save_state;
+    options.proxyMode = config.proxy_mode;
     options.testMode = config.test_mode;
 
     options.overrideOff = config.override_off;
@@ -190,6 +191,10 @@ const options = {
 
     if (options.isValueSet(options.saveState) === false) {
       options.saveState = false;
+    }
+
+    if (options.isValueSet(options.proxyMode) === false) {
+      options.proxyMode = false;
     }
 
     if (options.isValueSet(options.testMode) === false) {

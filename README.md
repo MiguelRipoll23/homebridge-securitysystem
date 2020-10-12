@@ -55,8 +55,9 @@ Use Eve or a similar app to create automations like these:
 | audio_path (2)         | Use custom sounds from an external directory.                                       | false   | /sounds   |
 | audio_volume           | Audio volume for mode audio sounds (except triggered)                               | 100     | 50        |
 | audio_language         | Set language used for the audio warnings.                                           | en-US   | de-DE     |
-| audio_alert_looped     | Loop alert sound that plays when the security system's countdown has started.       | false   | true      |
+| audio_alert_looped     | Loop warning sound that plays when the security system's countdown has started.     | false   | true      |
 | save_state             | State persistence for shutdowns and reboots.                                        | false   | true      |
+| proxy_mode             | Enables proxy mode which bypasses webhooks/commands for server requests.            | false   | true      |
 | test_mode              | Enables test mode where the webhook and command for triggered are disabled.         | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
