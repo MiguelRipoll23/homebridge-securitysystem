@@ -253,6 +253,11 @@ const options = {
     if (options.isValueSet(options.audioAlertLooped) === false) {
       options.audioAlertLooped = false;
     }
+
+    // Server
+    if (options.isValueSet(options.serverCode) === false) {
+      options.serverCode = null;
+    }
   },
 
   validateValues: (log) => {
