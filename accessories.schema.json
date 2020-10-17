@@ -256,13 +256,13 @@
         "required": false,
         "placeholder": "/current/off"
       },
-      "webhook_alert": {
-        "title": "Current Event: Alert",
+      "webhook_current_warning": {
+        "title": "Current Event: Warning",
         "type": "string",
         "required": false,
-        "placeholder": "/event/alert"
+        "placeholder": "/current/warning"
       },
-      "webhook_triggered": {
+      "webhook_current_triggered": {
         "title": "Current Mode: Triggered",
         "type": "string",
         "required": false,
@@ -316,13 +316,13 @@
         "required": false,
         "placeholder": "echo current off"
       },
-      "command_alert": {
-        "title": "Current Event: Alert",
+      "command_current_warning": {
+        "title": "Current Event: Warning",
         "type": "string",
         "required": false,
-        "placeholder": "echo event alert"
+        "placeholder": "echo current warning"
       },
-      "command_triggered": {
+      "command_current_triggered": {
         "title": "Current Mode: Triggered",
         "type": "string",
         "required": false,
@@ -475,8 +475,8 @@
         "webhook_current_away",
         "webhook_current_night",
         "webhook_current_off",
-        "webhook_alert",
-        "webhook_triggered"
+        "webhook_current_warning",
+        "webhook_current_triggered"
       ]
     },
     {
@@ -494,8 +494,8 @@
         "command_current_away",
         "command_current_night",
         "command_current_off",
-        "command_alert",
-        "command_triggered"
+        "command_current_warning",
+        "command_current_triggered"
       ]
     }
   ]

@@ -115,8 +115,8 @@ const options = {
     options.commandCurrentAway = config.command_current_away;
     options.commandCurrentNight = config.command_current_night;
     options.commandCurrentOff = config.command_current_off;
-    options.commandAlert = config.command_alert;
-    options.commandTriggered = config.command_triggered;
+    options.commandCurrentWarning = config.command_current_warning || config.command_alert;
+    options.commandCurrentTriggered = config.command_current_triggered || config.command_triggered;
 
     // Webhooks
     options.webhookUrl = config.webhook_url;
@@ -130,8 +130,8 @@ const options = {
     options.webhookCurrentAway = config.webhook_current_away;
     options.webhookCurrentNight = config.webhook_current_night;
     options.webhookCurrentOff = config.webhook_current_off;
-    options.webhookAlert = config.webhook_alert;
-    options.webhookTriggered = config.webhook_triggered;
+    options.webhookCurrentWarning = config.webhook_current_warning || config.webhook_alert;
+    options.webhookCurrentTriggered = config.webhook_current_triggered || config.webhook_triggered;
 
     options.setDefaultValues();
     options.validateValues(log);
@@ -148,15 +148,31 @@ const options = {
 
   checkDeprecated: (log, config) => {
     if (options.isValueSet(config.hide_mode_off_switch)) {
-      log.warn('Option \'hide_mode_off_switch\' has been deprecated, update your configuration.');
+      log.warn('Option \'hide_mode_off_switch\' has been renamed, update your configuration.');
     }
 
     if (options.isValueSet(config.unsafe_mode_switches)) {
-      log.warn('Option \'unsafe_mode_switches\' has been deprecated, update your configuration.');
+      log.warn('Option \'unsafe_mode_switches\' has been renamed, update your configuration.');
     }
 
     if (options.isValueSet(config.show_pause_pause_switch)) {
-      log.warn('Option \'show_pause_pause_switch\' has been deprecated, update your configuration.');
+      log.warn('Option \'show_pause_pause_switch\' has been renamed, update your configuration.');
+    }
+
+    if (options.isValueSet(config.command_triggered)) {
+      log.warn('Option \'command_triggered\' has been renamed, update your configuration.');
+    }
+
+    if (options.isValueSet(config.webhook_triggered)) {
+      log.warn('Option \'webhook_triggered\' has been renamed, update your configuration.');
+    }
+
+    if (options.isValueSet(config.command_alert)) {
+      log.warn('Option \'command_alert\' has been renamed, update your configuration.');
+    }
+
+    if (options.isValueSet(config.webhook_alert)) {
+      log.warn('Option \'webhook_alert\' has been renamed, update your configuration.');
     }
   },
 

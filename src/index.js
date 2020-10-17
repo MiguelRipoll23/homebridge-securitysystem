@@ -395,7 +395,7 @@ SecuritySystem.prototype.state2Mode = function (state) {
       return 'off';
 
     // Custom
-    case 'alert':
+    case 'warning':
       return state;
 
     default:
@@ -787,14 +787,14 @@ SecuritySystem.prototype.updateSiren = function (value, external, callback) {
 
       // Audio
       if (options.triggerSeconds !== 0) {
-        this.playAudio('current', 'alert');
+        this.playAudio('current', 'warning');
       }
 
       // Commands
-      this.executeCommand('current', 'alert', external);
+      this.executeCommand('current', 'warning', external);
 
       // Webhooks
-      this.sendWebhookEvent('current', 'alert', external);
+      this.sendWebhookEvent('current', 'warning', external);
     }
   }
   else {
@@ -1126,12 +1126,12 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
 
   // Arguments
   let commandArguments = ['-loglevel', 'error', '-nodisp', '-i', `${filePath}`];
-
+ 
   if (mode === 'triggered') {
     commandArguments.push('-loop');
     commandArguments.push('-1');
   }
-  else if (mode === 'alert' && options.audioAlertLooped) {
+  else if (mode === 'warning' && options.audioAlertLooped) {
     commandArguments.push('-loop');
     commandArguments.push('-1');
   }
@@ -1193,7 +1193,7 @@ SecuritySystem.prototype.executeCommand = function (type, state, external) {
 
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      command = options.commandTriggered;
+      command = options.commandCurrentTriggered;
       break;
 
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
@@ -1232,8 +1232,8 @@ SecuritySystem.prototype.executeCommand = function (type, state, external) {
       command = options.commandTargetOff;
       break;
 
-    case 'alert':
-      command = options.commandAlert;
+    case 'warning':
+      command = options.commandCurrentWarning;
       break;
 
     default:
@@ -1277,7 +1277,7 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
 
   switch (state) {
     case Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED:
-      path = options.webhookTriggered;
+      path = options.webhookCurrentTriggered;
       break;
 
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
@@ -1316,8 +1316,8 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
       path = options.webhookTargetOff;
       break;
 
-    case 'alert':
-      path = options.webhookAlert;
+    case 'warning':
+      path = options.webhookCurrentWarning;
       break;
 
     default:
