@@ -55,8 +55,9 @@ Use Eve or a similar app to create automations like these:
 | audio_path (2)         | Use custom sounds from an external directory.                                       | false   | /sounds   |
 | audio_volume           | Audio volume for mode audio sounds (except triggered)                               | 100     | 50        |
 | audio_language         | Set language used for the audio warnings.                                           | en-US   | de-DE     |
-| audio_alert_looped     | Loop alert sound that plays when the security system's countdown has started.       | false   | true      |
+| audio_alert_looped     | Loop warning sound that plays when the security system's countdown has started.     | false   | true      |
 | save_state             | State persistence for shutdowns and reboots.                                        | false   | true      |
+| proxy_mode             | Enables proxy mode which bypasses webhooks/commands for server requests.            | false   | true      |
 | test_mode              | Enables test mode where the webhook and command for triggered are disabled.         | false   | true      |
 
 (1) A powerful HomeKit app like Eve is required if the siren switch option is disabled to trigger the security system without using a switch accessory.
@@ -90,32 +91,32 @@ After setting the option, you can call these endpoints:
 ## Webhook options (optional)
 Use the options below to send requests to a server when the security system mode changes.
 
-| Option                | Description                                               | Example          |
-|-----------------------|-----------------------------------------------------------|------------------|
-| webhook_url           | Base URL of the webhook server.                           | http://localhost |
-| webhook_target_home   | Path of the 'home' mode to call when set as target.       | /target/home     |
-| webhook_target_away   | Path of the 'away' mode to call when set as target.       | /target/away     |
-| webhook_target_night  | Path of the 'night' mode to call when set as target.      | /target/night    |
-| webhook_target_off    | Path of the 'off' mode to call when set as target.        | /target/off      |
-| webhook_current_home  | Path of the 'home' mode to call when set as current.      | /current/home    |
-| webhook_current_away  | Path of the 'away' mode to call when set as current.      | /current/away    |
-| webhook_current_night | Path of the 'night' mode to call when set as current.     | /current/night   |
-| webhook_current_off   | Path of the 'off' mode to call when set as current.       | /current/off     |
-| webhook_alert         | Path of the 'alert' event to call when fired.             | /alert           |
-| webhook_triggered     | Path of the 'triggered' mode to call when set as current. | /triggered       |
+| Option                    | Description                                               | Example            |
+|---------------------------|-----------------------------------------------------------|--------------------|
+| webhook_url               | Base URL of the webhook server.                           | http://localhost   |
+| webhook_target_home       | Path of the 'home' mode to call when set as target.       | /target/home       |
+| webhook_target_away       | Path of the 'away' mode to call when set as target.       | /target/away       |
+| webhook_target_night      | Path of the 'night' mode to call when set as target.      | /target/night      |
+| webhook_target_off        | Path of the 'off' mode to call when set as target.        | /target/off        |
+| webhook_current_home      | Path of the 'home' mode to call when set as current.      | /current/home      |
+| webhook_current_away      | Path of the 'away' mode to call when set as current.      | /current/away      |
+| webhook_current_night     | Path of the 'night' mode to call when set as current.     | /current/night     |
+| webhook_current_off       | Path of the 'off' mode to call when set as current.       | /current/off       |
+| webhook_current_warning   | Path of the 'warning' event to call when fired.           | /current/warning   |
+| webhook_current_triggered | Path of the 'triggered' mode to call when set as current. | /current/triggered |
 
 ## Command options (optional)
 Use the options below to execute commands on the device when the security system mode changes.
 
-| Option                | Description                                                     | Example            |
-|-----------------------|-----------------------------------------------------------------|--------------------|
-| command_target_home   | Command of the 'home' mode to execute when set as target.       | echo target home   |
-| command_target_away   | Command of the 'away' mode to execute when set as target.       | echo target away   |
-| command_target_night  | Command of the 'night' mode to execute when set as target.      | echo target night  |
-| command_target_off  | Command of the 'off' mode to execute when set as target.          | echo target off    |
-| command_current_home  | Command of the 'home' mode to execute when set as current.      | echo current home  |
-| command_current_away  | Command of the 'away' mode to execute when set as current.      | echo current away  |
-| command_current_night | Command of the 'night' mode to execute when set as current.     | echo current night |
-| command_current_off   | Command of the 'off' mode to execute when set as current.       | echo current off   |
-| command_alert         | Command of the 'alert' event to execute when fired.             | echo event alert   |
-| command_triggered     | Command of the 'triggered' mode to execute when set as current. | echo triggered     |
+| Option                    | Description                                                     | Example                |
+|---------------------------|-----------------------------------------------------------------|------------------------|
+| command_target_home       | Command of the 'home' mode to execute when set as target.       | echo target home       |
+| command_target_away       | Command of the 'away' mode to execute when set as target.       | echo target away       |
+| command_target_night      | Command of the 'night' mode to execute when set as target.      | echo target night      |
+| command_target_off        | Command of the 'off' mode to execute when set as target.        | echo target off        |
+| command_current_home      | Command of the 'home' mode to execute when set as current.      | echo current home      |
+| command_current_away      | Command of the 'away' mode to execute when set as current.      | echo current away      |
+| command_current_night     | Command of the 'night' mode to execute when set as current.     | echo current night     |
+| command_current_off       | Command of the 'off' mode to execute when set as current.       | echo current off       |
+| command_current_warning   | Command of the 'warning' event to execute when fired.           | echo current warning   |
+| command_current_triggered | Command of the 'triggered' mode to execute when set as current. | echo current triggered |

@@ -12,7 +12,7 @@ Example:
       - current-away.mp3
       - current-night.mp3
       - current-off.mp3
-      - current-alert.mp3
+      - current-warning.mp3
       - current-triggered.mp3
 
 You can omit the sound files that you don't want to use. Also, if a sound isn't playing you can always start Homebridge using debug mode to see additional information using the command below:

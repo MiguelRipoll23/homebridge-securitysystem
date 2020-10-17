@@ -72,6 +72,12 @@
         "default": false,
         "required": false
       },
+      "proxy_mode": {
+        "title": "Enable Proxy Mode",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "test_mode": {
         "title": "Enable Test Mode",
         "type": "boolean",
@@ -250,13 +256,13 @@
         "required": false,
         "placeholder": "/current/off"
       },
-      "webhook_alert": {
-        "title": "Current Event: Alert",
+      "webhook_current_warning": {
+        "title": "Current Event: Warning",
         "type": "string",
         "required": false,
-        "placeholder": "/event/alert"
+        "placeholder": "/current/warning"
       },
-      "webhook_triggered": {
+      "webhook_current_triggered": {
         "title": "Current Mode: Triggered",
         "type": "string",
         "required": false,
@@ -310,13 +316,13 @@
         "required": false,
         "placeholder": "echo current off"
       },
-      "command_alert": {
-        "title": "Current Event: Alert",
+      "command_current_warning": {
+        "title": "Current Event: Warning",
         "type": "string",
         "required": false,
-        "placeholder": "echo event alert"
+        "placeholder": "echo current warning"
       },
-      "command_triggered": {
+      "command_current_triggered": {
         "title": "Current Mode: Triggered",
         "type": "string",
         "required": false,
@@ -368,6 +374,7 @@
           "items": [
             "override_off",
             "reset_off_flow",
+            "proxy_mode",
             "disabled_modes"
           ]
         },
@@ -468,8 +475,8 @@
         "webhook_current_away",
         "webhook_current_night",
         "webhook_current_off",
-        "webhook_alert",
-        "webhook_triggered"
+        "webhook_current_warning",
+        "webhook_current_triggered"
       ]
     },
     {
@@ -487,8 +494,8 @@
         "command_current_away",
         "command_current_night",
         "command_current_off",
-        "command_alert",
-        "command_triggered"
+        "command_current_warning",
+        "command_current_triggered"
       ]
     }
   ]
