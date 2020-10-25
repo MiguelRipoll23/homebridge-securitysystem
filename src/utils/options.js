@@ -43,8 +43,8 @@ const options = {
   commandCurrentAway: null,
   commandCurrentNight: null,
   commandCurrentOff: null,
-  commandAlert: null,
-  commandTriggered: null,
+  commandCurrentWarning: null,
+  commandCurrentTriggered: null,
 
   // Webhook
   webhookUrl: null,
@@ -58,8 +58,8 @@ const options = {
   webhookCurrentAway: null,
   webhookCurrentNight: null,
   webhookCurrentOff: null,
-  webhookAlert: null,
-  webhookTriggered: null,
+  webhookCurrentWarning: null,
+  webhookCurrentTriggered: null,
 
   init: (log, config) => {
     options.checkDeprecated(log, config);

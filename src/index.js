@@ -41,7 +41,7 @@ function SecuritySystem(log, config) {
   this.invalidCodeAttempts = 0;
   this.audioProcess = null;
 
-  this.armingTimeout = null;
+  this.armTimeout = null;
   this.pauseTimeout = null;
   this.triggerTimeout = null;
   this.sirenInterval = null;
@@ -536,10 +536,10 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 
   // Clear arming timeout
-  if (this.armingTimeout !== null) {
-    clearTimeout(this.armingTimeout);
+  if (this.armTimeout !== null) {
+    clearTimeout(this.armTimeout);
 
-    this.armingTimeout = null;
+    this.armTimeout = null;
     this.log.debug('Arming timeout (Cleared)');
   }
 
@@ -677,8 +677,8 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   }
 
   // Arm the security system
-  this.armingTimeout = setTimeout(() => {
-    this.armingTimeout = null;
+  this.armTimeout = setTimeout(() => {
+    this.armTimeout = null;
     this.setCurrentState(state, external);
 
     // Only if set to a mode excluding off
