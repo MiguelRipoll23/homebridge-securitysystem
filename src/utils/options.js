@@ -91,7 +91,7 @@ const options = {
 
     // Mode switches
     options.modeSwitches = config.mode_switches || config.unsafe_mode_switches;
-    options.modeOffSwitch = config.mode_off_switch || !(config.hide_mode_off_switch !== undefined && config.hide_mode_off_switch === true);
+    options.modeOffSwitch = config.mode_off_switch || (config.hide_mode_off_switch !== undefined && config.hide_mode_off_switch !== true);
     options.modePauseSwitch = config.mode_pause_switch || config.show_mode_pause_switch;
 
     // Server
