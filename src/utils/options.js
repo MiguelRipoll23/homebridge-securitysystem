@@ -43,8 +43,8 @@ const options = {
   commandCurrentAway: null,
   commandCurrentNight: null,
   commandCurrentOff: null,
-  commandAlert: null,
-  commandTriggered: null,
+  commandCurrentWarning: null,
+  commandCurrentTriggered: null,
 
   // Webhook
   webhookUrl: null,
@@ -58,8 +58,8 @@ const options = {
   webhookCurrentAway: null,
   webhookCurrentNight: null,
   webhookCurrentOff: null,
-  webhookAlert: null,
-  webhookTriggered: null,
+  webhookCurrentWarning: null,
+  webhookCurrentTriggered: null,
 
   init: (log, config) => {
     options.checkDeprecated(log, config);
@@ -91,7 +91,7 @@ const options = {
 
     // Mode switches
     options.modeSwitches = config.mode_switches || config.unsafe_mode_switches;
-    options.modeOffSwitch = config.mode_off_switch || !(config.hide_mode_off_switch !== undefined && config.hide_mode_off_switch === true);
+    options.modeOffSwitch = config.mode_off_switch || (config.hide_mode_off_switch !== undefined && config.hide_mode_off_switch !== true);
     options.modePauseSwitch = config.mode_pause_switch || config.show_mode_pause_switch;
 
     // Server
