@@ -178,8 +178,14 @@
         "default": 100,
         "placeholder": "100"
       },
+      "audio_arming_looped": {
+        "title": "Loop Arming Sound",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "audio_alert_looped": {
-        "title": "Loop Alert Sound",
+        "title": "Loop Warning Sound",
         "type": "boolean",
         "default": false,
         "required": false
@@ -440,6 +446,7 @@
                 "audio_volume"
               ]
             },
+            "audio_arming_looped",
             "audio_alert_looped"
           ]
         }
