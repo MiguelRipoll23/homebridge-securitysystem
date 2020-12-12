@@ -2,7 +2,7 @@ name: Deploy to stable
 
 on:
   release:
-    types: [prereleased]
+    types: [released]
 
 jobs:
   publish-beta:
