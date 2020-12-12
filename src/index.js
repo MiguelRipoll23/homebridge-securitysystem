@@ -1131,6 +1131,10 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
     commandArguments.push('-loop');
     commandArguments.push('-1');
   }
+  else if ((mode === 'home' || mode === 'night' || mode === 'away') && type === 'target' && options.audioArmingLooped) {
+    commandArguments.push('-loop');
+    commandArguments.push('-1');
+  }
   else if (mode === 'warning' && options.audioAlertLooped) {
     commandArguments.push('-loop');
     commandArguments.push('-1');

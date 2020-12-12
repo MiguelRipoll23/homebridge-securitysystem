@@ -1,0 +1,37 @@
+name: Deploy to stable
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  publish-beta:
+    name: Publish to stable
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: beta
+
+    - name: Setup node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Publish package
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - uses: actions/checkout@v2
+
+    - name: Merge beta branch
+      uses: devmasx/merge-branch@v1.3.1
+      with:
+        type: now
+        from_branch: beta
+        target_branch: master
+        github_token: ${{ github.token }}
