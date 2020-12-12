@@ -12,7 +12,7 @@ on:
       - 'hotfix/*'
       
 jobs:
-  build:
+  build-package:
     name: Build package
     runs-on: ubuntu-latest
 
@@ -31,13 +31,10 @@ jobs:
 
     - name: Install package
       run: npm ci
-      
-    - name: Build package
-      run: npm run build
 
   analyze-code:
     name: Analyze code
-    needs: build
+    needs: build-package
     runs-on: ubuntu-latest
 
     steps:
@@ -71,5 +68,5 @@ jobs:
     #   make bootstrap
     #   make release
 
-    - name: Perform CodeQL Analysis
+    - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v1
