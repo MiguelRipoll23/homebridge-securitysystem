@@ -47,8 +47,8 @@
         "minimum": 0
       },
       "audio": {
-        "title": "Play Audio",
-        "description": "sudo apt install ffmpeg",
+        "title": "Play Audio (local only)",
+        "description": "Not compatible with AirPlay, requires ffmpeg installed.",
         "type": "boolean",
         "default": false,
         "required": false

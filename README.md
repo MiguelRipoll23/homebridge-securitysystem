@@ -51,7 +51,7 @@ Use Eve or a similar app to create automations like these:
 | mode_off_switch        | Shows the `Mode Off` switch on the Home app if you enabled mode switches.           | true    | false      |
 | mode_pause_switch      | Shows the `Mode Pause` switch to temporarily disarm the security system.            | false   | true      |
 | override_off           | Allows to trigger the security system while disarmed.                               | false   | true      |
-| audio                  | Play audio sounds (requires ffmpeg installed).                                      | false   | true      |
+| audio                  | Play audio sounds (locally, requires ffmpeg installed).                             | false   | true      |
 | audio_path (2)         | Use custom sounds from an external directory.                                       | false   | /sounds   |
 | audio_volume           | Audio volume for mode audio sounds (except triggered)                               | 100     | 50        |
 | audio_language         | Set language used for the audio warnings.                                           | en-US   | de-DE     |
