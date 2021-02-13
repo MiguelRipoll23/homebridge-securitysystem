@@ -968,7 +968,7 @@ SecuritySystem.prototype.startServer = async function () {
     // Check if security system is disarmed
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
       if (options.overrideOff === false) {
-        this.sendModeOffError(res);
+        this.sendResponse(res, 5);
         return;
       }
     }
