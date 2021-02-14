@@ -36,7 +36,7 @@ function SecuritySystem(log, config) {
   this.defaultState = this.mode2State(options.defaultMode);
   this.targetStates = null;
   this.originalState = null;
-  this.stateChanged = false;
+  this.isTargetStateChanging = false;
 
   this.invalidCodeAttempts = 0;
   this.audioProcess = null;
@@ -486,7 +486,7 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
       this.log.debug('Reset timeout (Fired)');
 
       this.resetTimers();
-      this.handleStateChange(true);
+      this.handleTargetStateUpdate(true);
 
       // Reset characteristic & sensor
       this.service
@@ -560,10 +560,8 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 };
 
-SecuritySystem.prototype.handleStateChange = function (external) {
-  // Set security system to selected mode
-  // during triggered state
-  this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+SecuritySystem.prototype.handleTargetStateUpdate = function (external) {
+  this.isTargetStateChanging = true;
 
   // Update characteristics
   if (external) {
@@ -585,11 +583,13 @@ SecuritySystem.prototype.handleStateChange = function (external) {
   this.resetSirenSwitches();
   this.resetModeSwitches();
   this.updateModeSwitches();
+
+  this.isTargetStateChanging = false;
 };
 
 SecuritySystem.prototype.updateTargetState = function (state, external, delay, callback) {
-  const isCurrentStateTriggered = this.currentState === this.hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-  const isTargetStateDisarm = this.targetState === this.hap.Characteristic.SecuritySystemTargetState.DISARM;
+  const isCurrentStateTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
 
   // Check if target state is already set
   if (this.targetState === state && isCurrentStateTriggered === false) {
@@ -622,7 +622,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.logMode('Target', state);
 
   // Update characteristics & switches
-  this.handleStateChange(external);
+  this.handleTargetStateUpdate(external);
 
   // Canceled mode change
   // Play current sound
@@ -657,10 +657,9 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   }
 
   // Play sound
-  if (this.stateChanged === false && delay && options.armSeconds > 0) {
+  if (isCurrentStateTriggered === false && delay && options.armSeconds > 0) {
     this.playAudio('target', state);
   }
-
 
   // Set arming delay (if neccessary)
   let armSeconds = 0;
@@ -773,9 +772,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, callback) {
       }
 
       this.triggerTimeout = setTimeout(() => {
-        // Reset
         this.triggerTimeout = null;
-        this.stateChanged = false;
 
         // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
@@ -799,7 +796,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, callback) {
     this.stopAudio();
 
     if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      if (this.stateChanged === false) {
+      if (this.isTargetStateChanging === false) {
         this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false, null);
       }
     }
