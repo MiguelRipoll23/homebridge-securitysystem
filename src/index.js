@@ -561,8 +561,7 @@ SecuritySystem.prototype.resetTimers = function () {
 };
 
 SecuritySystem.prototype.handleStateChange = function (external) {
-  // Set security system to mode
-  // selected from the user
+  // Set security system to selected mode
   // during triggered state
   this.stateChanged = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
@@ -589,9 +588,11 @@ SecuritySystem.prototype.handleStateChange = function (external) {
 };
 
 SecuritySystem.prototype.updateTargetState = function (state, external, delay, callback) {
-  // Check if state is already arming
-  if (this.targetState === state &&
-    this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
+  const isCurrentStateTriggered = this.currentState === this.hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isTargetStateDisarm = this.targetState === this.hap.Characteristic.SecuritySystemTargetState.DISARM;
+
+  // Check if target state is already set
+  if (this.targetState === state && isCurrentStateTriggered === false) {
     this.log.warn('Target mode (Already set)');
 
     if (callback !== null) {
@@ -635,7 +636,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   // Webhooks
   this.sendWebhookEvent('target', state, external);
 
-  // Check if state is already set
+  // Check if current state is already set
   if (this.currentState === state) {
     this.log.warn('Current mode (Already set)');
 
@@ -655,25 +656,20 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
     delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
   }
 
-  // Audio
+  // Play sound
   if (this.stateChanged === false && delay && options.armSeconds > 0) {
     this.playAudio('target', state);
   }
 
+
+  // Set arming delay (if neccessary)
   let armSeconds = 0;
 
-  // Add arm delay if alarm is not triggered
-  if (this.currentState !== Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
-      // Only if delay is enabled
-      if (delay) {
-        armSeconds = options.armSeconds;
+  if (delay && isCurrentStateTriggered === false && isTargetStateDisarm === false) {
+    armSeconds = options.armSeconds;
 
-        // Update arming value
-        this.updateArming(true);
-      }
-    }
+    // Update arming characteristic
+    this.updateArming(true);
   }
 
   // Arm the security system
@@ -682,7 +678,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
     this.setCurrentState(state, external);
 
     // Only if set to a mode excluding off
-    if (state !== Characteristic.SecuritySystemTargetState.DISARM) {
+    if (isTargetStateDisarm === false) {
       this.updateArming(false);
     }
   }, armSeconds * 1000);
