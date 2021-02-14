@@ -111,6 +111,7 @@
       },
       "siren_sensor": {
         "title": "Show Siren Sensor",
+        "description": "Allows multiple notifications during triggered mode.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -124,24 +125,28 @@
       },
       "reset_sensor": {
         "title": "Show Reset Sensor",
+        "description": "Triggers when the security system has reset.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "mode_switches": {
         "title": "Show Mode Switches",
+        "description": "Adds switches for every mode in order to create automations based on a mode change or bypass confirmations.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "mode_off_switch": {
         "title": "Show Mode Off Switch",
+        "description": "Adds the Mode Off switch if the \"Show Mode Switches\" option is enabled.",
         "type": "boolean",
         "default": true,
         "required": false
       },
       "mode_pause_switch": {
         "title": "Show Mode Pause Switch",
+        "description": "Adds a switch that will temporarily or indefinitely (if minutes is to zero) disarm the security system.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -155,12 +160,14 @@
       },
       "siren_switch": {
         "title": "Show Siren Switch",
+        "description": "Adds a global switch that will trigger the security system.",
         "type": "boolean",
         "default": true,
         "required": false
       },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
+        "description": "Adds switches for every mode that will trigger the security system.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -364,6 +371,34 @@
     "test_mode",
     {
       "type": "fieldset",
+      "title": "Additional Switches",
+      "description": "Helpful switches for simpler automations or bypass HomeKit confirmations.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "mode_switches",
+        "mode_off_switch",
+        {
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "mode_pause_switch",
+              "flex": "1"
+            },
+            {
+              "key": "pause_minutes",
+              "flex": "200px"
+            }
+          ]
+        },
+        "siren_switch",
+        "siren_mode_switches"
+      ]
+    },
+    {
+      "type": "fieldset",
       "title": "Advanced Options",
       "description": "Need more options? You know what do do.",
       "expandable": true,
@@ -407,33 +442,6 @@
         },
         {
           "type": "fieldset",
-          "title": "Switches",
-          "expandable": true,
-          "expanded": false,
-          "items": [
-            "mode_switches",
-            "mode_off_switch",
-            {
-              "type": "div",
-              "display": "flex",
-              "flex-direction": "row",
-              "items": [
-                {
-                  "key": "mode_pause_switch",
-                  "flex": "1"
-                },
-                {
-                  "key": "pause_minutes",
-                  "flex": "200px"
-                }
-              ]
-            },
-            "siren_switch",
-            "siren_mode_switches"
-          ]
-        },
-        {
-          "type": "fieldset",
           "title": "Audio",
           "expandable": true,
           "expanded": false,
@@ -454,8 +462,8 @@
     },
     {
       "type": "fieldset",
-      "title": "Server (Optional)",
-      "description": "Create a web server to interact with the security system.",
+      "title": "Server",
+      "description": "Start a web server to interact with the security system remotely.",
       "expandable": true,
       "expanded": false,
       "items": [
@@ -465,8 +473,8 @@
     },
     {
       "type": "fieldset",
-      "title": "Webhooks (Optional)",
-      "description": "Send security system events to a web server.",
+      "title": "Webhooks",
+      "description": "Send events to other web server under your control.",
       "expandable": true,
       "expanded": false,
       "items": [
@@ -485,8 +493,8 @@
     },
     {
       "type": "fieldset",
-      "title": "Commands (Optional)",
-      "description": "Execute commands on the device based on events.",
+      "title": "Commands",
+      "description": "Execute commands on this device based on events.",
       "expandable": true,
       "expanded": false,
       "items": [
