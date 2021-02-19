@@ -36,9 +36,10 @@ function SecuritySystem(log, config) {
   this.defaultState = this.mode2State(options.defaultMode);
   this.currentState = this.defaultState;
   this.targetState = this.defaultState;
-  this.armingDelay = true;
-  this.arming = false;
   this.availableTargetStates = null;
+
+  this.hasArmingDelay = true;
+  this.isArming = false;
   this.isKnocked = false;
   
   this.pausedCurrentState = null;
@@ -320,18 +321,18 @@ SecuritySystem.prototype.load = async function () {
       }
 
       this.currentState = currentState;
-      this.armingDelay = armingDelay;
+      this.hasArmingDelay = armingDelay;
 
       // Update characteristics values
       this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
       this.service.updateCharacteristic(Characteristic.SecuritySystemCurrentState, this.currentState);
-      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay, this.armingDelay);
+      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay, this.hasArmingDelay);
 
       this.updateModeSwitches();
 
       // Log
       this.logMode('Current', this.currentState);
-      this.log(`Arming delay (${this.armingDelay === true ? 'On' : 'Off'})`);
+      this.log(`Arming delay (${this.hasArmingDelay === true ? 'On' : 'Off'})`);
     })
     .catch(error => {
       this.log.error('Saved state (Error)');
@@ -353,7 +354,7 @@ SecuritySystem.prototype.save = async function () {
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'armingDelay': this.armingDelay
+    'armingDelay': this.hasArmingDelay
   };
 
   await storage.setItem('state', state)
@@ -633,7 +634,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   if (this.currentState === state) {
     this.log.warn('Current mode (Already set)');
 
-    if (this.arming) {
+    if (this.isArming) {
       this.updateArming(false);
     }
 
@@ -692,12 +693,12 @@ SecuritySystem.prototype.setTargetState = function (value, callback) {
 };
 
 SecuritySystem.prototype.getArming = function (callback) {
-  callback(null, this.arming);
+  callback(null, this.isArming);
 };
 
 SecuritySystem.prototype.updateArming = function (value) {
-  this.arming = value;
-  this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArming, this.arming);
+  this.isArming = value;
+  this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArming, this.isArming);
 };
 
 SecuritySystem.prototype.getArmingDelay = function (callback) {
@@ -706,8 +707,8 @@ SecuritySystem.prototype.getArmingDelay = function (callback) {
 };
 
 SecuritySystem.prototype.setArmingDelay = function (value, callback) {
-  this.armingDelay = value;
-  this.log(`Arming delay (${(this.armingDelay) ? 'On' : 'Off'})`);
+  this.hasArmingDelay = value;
+  this.log(`Arming delay (${(this.hasArmingDelay) ? 'On' : 'Off'})`);
 
   callback(null);
   this.save();
@@ -735,7 +736,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   // Check if arming
-  if (this.arming) {
+  if (this.isArming) {
     this.log.warn('Sensor (Still arming)');
 
     if (callback !== null) {
@@ -962,7 +963,7 @@ SecuritySystem.prototype.startServer = async function () {
         ||
         this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
       ),
-      'arming': this.arming
+      'arming': this.isArming
     };
 
     res.json(response);
