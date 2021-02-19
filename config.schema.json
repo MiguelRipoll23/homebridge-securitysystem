@@ -64,31 +64,36 @@
         ]
       },
       "save_state": {
-        "title": "Save Using System Storage",
+        "title": "Save Data Using Storage",
+        "description": "Persists the previous state after shutdowns and reboots.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "proxy_mode": {
         "title": "Enable Proxy Mode",
+        "description": "Ignores webhooks/commands for server requests.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "test_mode": {
         "title": "Enable Test Mode",
+        "description": "Ignores the webhook and command for the triggered event.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "override_off": {
         "title": "Trigger During Off Mode",
+        "description": "Allows the security system to be triggered while disarmed.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "reset_off_flow": {
         "title": "Reset Using Off Mode",
+        "description": "Resets the security system when triggered by passing through the Off mode.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -111,7 +116,7 @@
       },
       "siren_sensor": {
         "title": "Show Siren Sensor",
-        "description": "Allows multiple notifications during triggered mode.",
+        "description": "Adds a sensor that can be used to push multiple notifications during triggered mode.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -125,7 +130,7 @@
       },
       "reset_sensor": {
         "title": "Show Reset Sensor",
-        "description": "Triggers when the security system has reset.",
+        "description": "Adds a sensor that triggers when the security system has reset.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -174,7 +179,7 @@
       },
       "double_knock": {
         "title": "Use Double-Knock",
-        "description": "Require the same sensor or other ones to be triggered twice within a time window.",
+        "description": "Requires the same sensor or other ones to be triggered twice within a time window.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -212,14 +217,14 @@
         "required": false
       },
       "server_port": {
-        "title": "Port",
+        "title": "Listening Port",
         "type": "integer",
         "required": false,
         "minimum": 0,
         "placeholder": 80
       },
       "server_code": {
-        "title": "Code",
+        "title": "Security Code",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -424,6 +429,18 @@
           "expandable": true,
           "expanded": false,
           "items": [
+            "override_off",
+            "reset_off_flow",
+            "proxy_mode",
+            "disabled_modes"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Sensors",
+          "expandable": true,
+          "expanded": false,
+          "items": [
             {
               "type": "div",
               "display": "flex",
@@ -439,18 +456,6 @@
                 }
               ]
             },
-            "override_off",
-            "reset_off_flow",
-            "proxy_mode",
-            "disabled_modes"
-          ]
-        },
-        {
-          "type": "fieldset",
-          "title": "Sensors",
-          "expandable": true,
-          "expanded": false,
-          "items": [
             {
               "type": "div",
               "display": "flex",
