@@ -34,15 +34,21 @@ function SecuritySystem(log, config) {
   options.init(log, config);
 
   this.defaultState = this.mode2State(options.defaultMode);
+  this.currentState = this.defaultState;
+  this.targetState = this.defaultState;
+  this.armingDelay = true;
+  this.arming = false;
   this.availableTargetStates = null;
+  this.isKnocked = false;
+  
   this.pausedCurrentState = null;
-
   this.invalidCodeAttempts = 0;
   this.audioProcess = null;
 
   this.armTimeout = null;
   this.pauseTimeout = null;
   this.triggerTimeout = null;
+  this.doubleKnockTimeout = null;
   this.sirenInterval = null;
   this.resetTimeout = null;
 
@@ -73,11 +79,6 @@ function SecuritySystem(log, config) {
   // Security system
   this.service = new CustomService.SecuritySystem(options.name);
   this.availableTargetStates = this.getAvailableTargetStates();
-
-  this.currentState = this.defaultState;
-  this.targetState = this.defaultState;
-  this.armingDelay = true;
-  this.arming = false;
 
   this.service
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
@@ -527,12 +528,19 @@ SecuritySystem.prototype.resetTimers = function () {
     this.log.debug('Arming timeout (Cleared)');
   }
 
-  // Stop siren triggered sensor
+  // Clear siren triggered sensor
   if (this.sirenInterval !== null) {
     clearInterval(this.sirenInterval);
 
     this.sirenInterval = null;
     this.log.debug('Siren interval (Cleared)');
+  }
+
+  if (this.doubleKnockTimeout !== null) {
+    clearTimeout(this.doubleKnockTimeout);
+    this.doubleKnockTimeout = null;
+
+    this.log.debug('Double-knock timeout (Cleared)');
   }
 
   // Clear security system reset timeout
@@ -545,6 +553,9 @@ SecuritySystem.prototype.resetTimers = function () {
 };
 
 SecuritySystem.prototype.handleTargetStateUpdate = function (external) {
+  // Reset double-knock
+  this.isKnocked = false;
+
   // Update characteristics
   if (external) {
     this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
@@ -732,6 +743,33 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     }
 
     return;
+  }
+
+  // Check double knock
+  if (options.doubleKnock && this.isKnocked === false) {
+    this.log.warn('Sensor (Knock)');
+    this.isKnocked = true;
+
+    this.doubleKnockTimeout = setTimeout(() => {
+      this.doubleKnockTimeout = null;
+      this.isKnocked = false;
+
+      this.log('Sensor (Reset)');
+    }, options.doubleKnockSeconds * 1000);
+
+    if (callback !== null) {
+      callback('Security systems ignored the event.');
+    }
+
+    return;
+  }
+
+  // Clear double-knock timeout
+  if (this.doubleKnockTimeout !== null) {
+    clearTimeout(this.doubleKnockTimeout);
+    this.doubleKnockTimeout = null;
+
+    this.log.debug('Double-knock timeout (Cleared)');
   }
 
   if (external) {

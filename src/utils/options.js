@@ -95,6 +95,10 @@ const options = {
     options.modeOffSwitch = config.mode_off_switch;
     options.modePauseSwitch = config.mode_pause_switch;
 
+    // Double knock
+    options.doubleKnock = config.double_knock;
+    options.doubleKnockSeconds = config.double_knock_seconds;
+
     // Server
     options.serverPort = config.server_port;
     options.serverCode = config.server_code;
@@ -231,6 +235,15 @@ const options = {
 
     if (options.isValueSet(options.pauseMinutes) === false) {
       options.pauseMinutes = 0;
+    }
+
+    // Double knock
+    if (options.isValueSet(options.doubleKnock) === false) {
+      options.doubleKnock = false;
+    }
+
+    if (options.isValueSet(options.doubleKnockSeconds) === false) {
+      options.doubleKnockSeconds = 90;
     }
 
     // Audio

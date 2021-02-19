@@ -175,6 +175,20 @@
         "default": false,
         "required": false
       },
+      "double_knock": {
+        "title": "Use Double-Knock",
+        "description": "Require the same sensor or other ones to be triggered twice within a time window.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "double_knock_seconds": {
+        "title": "Seconds",
+        "type": "integer",
+        "default": 90,
+        "required": false,
+        "minimum": 0
+      },
       "audio_path": {
         "title": "Audio Path",
         "type": "string",
@@ -413,6 +427,21 @@
           "expandable": true,
           "expanded": false,
           "items": [
+            {
+              "type": "div",
+              "display": "flex",
+              "flex-direction": "row",
+              "items": [
+                {
+                  "key": "double_knock",
+                  "flex": "1"
+                },
+                {
+                  "key": "double_knock_seconds",
+                  "flex": "200px"
+                }
+              ]
+            },
             "override_off",
             "reset_off_flow",
             "proxy_mode",
