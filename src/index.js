@@ -747,7 +747,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   // Check double knock
-  if (options.doubleKnock && this.isKnocked === false) {
+  if (value && options.doubleKnock && this.isKnocked === false) {
     this.log.warn('Sensor (Knock)');
     this.isKnocked = true;
 
