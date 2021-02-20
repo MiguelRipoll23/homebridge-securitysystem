@@ -167,14 +167,14 @@
         "title": "Show Siren Switch",
         "description": "Adds a global switch that will trigger the security system.",
         "type": "boolean",
-        "default": true,
+        "default": false,
         "required": false
       },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
         "description": "Adds switches for every mode that will trigger the security system.",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "required": false
       },
       "double_knock": {
