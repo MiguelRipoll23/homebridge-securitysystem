@@ -479,7 +479,7 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
     // when time runs out
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
-      this.log.debug('Reset timeout (Fired)');
+      this.log('Reset (Expired)');
 
       this.resetTimers();
       this.handleTargetStateUpdate(true);
