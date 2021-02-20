@@ -50,8 +50,8 @@
         "minimum": 0
       },
       "audio": {
-        "title": "Play Audio (local only)",
-        "description": "Not compatible with AirPlay, requires ffmpeg installed.",
+        "title": "Play Audio (local only, ffmpeg required)",
+        "description": "Warns of mode or sensor updates using sounds.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -195,7 +195,8 @@
         "minimum": 0
       },
       "audio_path": {
-        "title": "Audio Path",
+        "title": "Custom Audio Path",
+        "description": "Instructions will be created in this path.",
         "type": "string",
         "required": false,
         "placeholder": "/home/user/sounds"
@@ -228,10 +229,11 @@
       },
       "server_code": {
         "title": "Security Code",
+        "description": "Requests will require the \"code\" URL parameter.",
         "type": "integer",
         "required": false,
         "minimum": 0,
-        "placeholder": 1234
+        "placeholder": "XXXX"
       },
       "webhook_url": {
         "title": "Base URL",
