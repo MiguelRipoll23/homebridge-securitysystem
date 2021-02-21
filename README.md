@@ -24,7 +24,7 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 </div>
 
 ## Automations
-Using the `Home` app is recommended for regular users, for more advanced users the `Eve` or a similar app  will let yoy make use of the custom options that the security system itself exposes.
+Using the `Home` app is recommended for regular users, for more advanced users the `Eve` or a similar app  will let you make use of the custom options that the security system itself exposes.
 
 Here are some examples of automations that can be created:
 
