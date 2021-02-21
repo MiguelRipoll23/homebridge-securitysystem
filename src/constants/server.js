@@ -7,5 +7,8 @@ module.exports = {
   MESSAGE_CODE_BLOCKED: 'Code blocked',
   MESSAGE_MODE_DISABLED: 'Mode disabled',
   MESSAGE_MODE_PAUSED: 'Mode paused',
-  MESSAGE_MODE_OFF: 'Mode off'
+  MESSAGE_MODE_OFF: 'Mode off',
+
+  // Hints
+  HINT_CODE_REQUIRED: 'Add the \'code\' URL parameter with your security code'
 };

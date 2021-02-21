@@ -907,7 +907,8 @@ SecuritySystem.prototype.sendCodeRequiredError = function (res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_CODE_REQUIRED
+    'message': serverConstants.MESSAGE_CODE_REQUIRED,
+    'hint': serverConstants.HINT_CODE_REQUIRED
   };
 
   res.status(401).json(response);
