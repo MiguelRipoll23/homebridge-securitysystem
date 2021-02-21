@@ -39,7 +39,7 @@ Here are some examples of automations that can be created:
 
 (2) AirPlay 2 speaker and Apple Music subscription are required.
 
-**IMPORTANT:** Use an NFC tag to arm/disarm the security system easily and securely without using the Home app.
+**IMPORTANT:** Use an NFC tag to arm/disarm the security system easily and securely without using the `Home` app.
 
 ## Contributions
 Pull requests are welcome.
