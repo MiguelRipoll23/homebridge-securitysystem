@@ -48,7 +48,7 @@
       },
       "audio": {
         "title": "Play Audio (local only, ffmpeg required)",
-        "description": "Warns of mode or sensor updates using sounds.",
+        "description": "Warns of mode or sensor updates by playing sounds.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -226,7 +226,7 @@
       },
       "server_code": {
         "title": "Security Code",
-        "description": "Requests will require the \"code\" URL parameter.",
+        "description": "All requests will require this code to be sent.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -392,8 +392,21 @@
     "test_mode",
     {
       "type": "fieldset",
-      "title": "Additional Switches",
-      "description": "Helpful switches for simpler automations or bypass HomeKit confirmations.",
+      "title": "Advanced Options",
+      "description": "Need more options? You know what do do.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "override_off",
+        "reset_off_flow",
+        "proxy_mode",
+        "disabled_modes"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Switches",
+      "description": "Create simpler automations or bypass HomeKit confirmations.",
       "expandable": true,
       "expanded": false,
       "items": [
@@ -420,80 +433,61 @@
     },
     {
       "type": "fieldset",
-      "title": "Advanced Options",
-      "description": "Need more options? You know what do do.",
+      "title": "Sensors",
+      "description": "Run an automation when an event not captured by HomeKit ocurrs.",
       "expandable": true,
       "expanded": false,
       "items": [
         {
-          "type": "fieldset",
-          "title": "Security system",
-          "expandable": true,
-          "expanded": false,
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
           "items": [
-            "override_off",
-            "reset_off_flow",
-            "proxy_mode",
-            "disabled_modes"
+            {
+              "key": "double_knock",
+              "flex": "1"
+            },
+            {
+              "key": "double_knock_seconds",
+              "flex": "200px"
+            }
           ]
         },
         {
-          "type": "fieldset",
-          "title": "Sensors",
-          "expandable": true,
-          "expanded": false,
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
           "items": [
             {
-              "type": "div",
-              "display": "flex",
-              "flex-direction": "row",
-              "items": [
-                {
-                  "key": "double_knock",
-                  "flex": "1"
-                },
-                {
-                  "key": "double_knock_seconds",
-                  "flex": "200px"
-                }
-              ]
+              "key": "siren_sensor",
+              "flex": "1"
             },
             {
-              "type": "div",
-              "display": "flex",
-              "flex-direction": "row",
-              "items": [
-                {
-                  "key": "siren_sensor",
-                  "flex": "1"
-                },
-                {
-                  "key": "siren_sensor_seconds",
-                  "flex": "200px"
-                }
-              ]
-            },
-            "reset_sensor"
+              "key": "siren_sensor_seconds",
+              "flex": "200px"
+            }
           ]
         },
+        "reset_sensor"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Audio",
+      "description": "Change sounds directory and playback behavior.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
         {
-          "type": "fieldset",
-          "title": "Audio",
-          "expandable": true,
-          "expanded": false,
+          "type": "flex",
+          "flex-flow": "row wrap",
           "items": [
-            {
-              "type": "flex",
-              "flex-flow": "row wrap",
-              "items": [
-                "audio_path",
-                "audio_volume"
-              ]
-            },
-            "audio_arming_looped",
-            "audio_alert_looped"
+            "audio_path",
+            "audio_volume"
           ]
-        }
+        },
+        "audio_arming_looped",
+        "audio_alert_looped"
       ]
     },
     {
