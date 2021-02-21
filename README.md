@@ -8,11 +8,9 @@ Homebridge plugin that creates a security system accessory that can be triggered
 [❤️ One-time donation](https://paypal.me/miguelripoll23)
 
 ## Installation
-If you already have Homebridge installed, skip to step two!
+If you already have [Homebridge](https://github.com/homebridge/homebridge) installed, execute the following command:
 
-1. [Install Homebridge.](https://github.com/nfarina/homebridge)
-2. Install the plugin using `npm install -g --unsafe-perm homebridge-securitysystem`.
-3. Use the Homebridge / HOOBS UI to configure or use the `config.example.json` file as an example.
+`npm i -g --unsafe-perm homebridge-securitysystem`.
 
 ## Demo
 <div align="left">
