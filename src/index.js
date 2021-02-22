@@ -6,7 +6,6 @@ const packageJson = require('../package.json');
 const options = require('./utils/options.js');
 const customServices = require('./hap/customServices.js');
 const customCharacteristics = require('./hap/customCharacteristics.js');
-const serverConstants = require('./constants/server.js');
 
 const fetch = require('node-fetch');
 const storage = require('node-persist');
@@ -870,7 +869,7 @@ SecuritySystem.prototype.isCodeValid = function (req) {
   }
 
   // Check brute force
-  if (this.invalidCodeAttempts > serverConstants.MAX_CODE_ATTEMPTS) {
+  if (this.invalidCodeAttempts >= 5) {
     req.blocked = true;
     return false;
   }
@@ -907,8 +906,8 @@ SecuritySystem.prototype.sendCodeRequiredError = function (res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_CODE_REQUIRED,
-    'hint': serverConstants.HINT_CODE_REQUIRED
+    'message': 'Code required',
+    'hint': 'Add the \'code\' URL parameter with your security code'
   };
 
   res.status(401).json(response);
@@ -921,11 +920,11 @@ SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
-    response.message = serverConstants.MESSAGE_CODE_BLOCKED;
+    response.message = 'Code blocked';
   }
   else {
     this.log('Code invalid (Server)');
-    response.message = serverConstants.MESSAGE_CODE_INVALID;
+    response.message = 'Code invalid';
   }
 
   res.status(403).json(response);
