@@ -747,22 +747,24 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   // Check double knock
-  if (value && options.doubleKnock && this.isKnocked === false) {
-    this.log.warn('Sensor (Knock)');
-    this.isKnocked = true;
-
-    this.doubleKnockTimeout = setTimeout(() => {
-      this.doubleKnockTimeout = null;
-      this.isKnocked = false;
-
-      this.log('Sensor (Reset)');
-    }, options.doubleKnockSeconds * 1000);
-
-    if (callback !== null) {
-      callback('Security systems ignored the event.');
+  if (value && isCurrentStateAwayArm && options.doubleKnock) {
+    if (this.isKnocked === false) {
+      this.log.warn('Sensor (Knock)');
+      this.isKnocked = true;
+  
+      this.doubleKnockTimeout = setTimeout(() => {
+        this.doubleKnockTimeout = null;
+        this.isKnocked = false;
+  
+        this.log('Sensor (Reset)');
+      }, options.doubleKnockSeconds * 1000);
+  
+      if (callback !== null) {
+        callback('Security systems ignored the event.');
+      }
+  
+      return;
     }
-
-    return;
   }
 
   // Clear double-knock timeout

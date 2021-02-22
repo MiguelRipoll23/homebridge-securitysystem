@@ -182,7 +182,7 @@
           "required": false
         },
         "double_knock": {
-          "title": "Use Double-Knock",
+          "title": "Use Double-Knock (away only)",
           "description": "Requires the same sensor or other ones to be triggered twice within a time window.",
           "type": "boolean",
           "default": false,

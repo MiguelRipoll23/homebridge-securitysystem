@@ -178,8 +178,8 @@
         "required": false
       },
       "double_knock": {
-        "title": "Use Double-Knock",
-        "description": "Requires the same sensor or other ones to be triggered twice within a time window.",
+        "title": "Use Double-Knock (away only)",
+        "description": "Requires the same sensor or other ones to be triggered twice within a time window if Away mode is set.",
         "type": "boolean",
         "default": false,
         "required": false
