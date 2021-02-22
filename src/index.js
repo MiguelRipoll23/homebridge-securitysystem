@@ -720,6 +720,7 @@ SecuritySystem.prototype.getSiren = function (callback) {
 
 SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isCurrentStateAwayArm = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
 
   // Check if the security system is disarmed
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
@@ -1403,16 +1404,16 @@ SecuritySystem.prototype.resetSirenSwitches = function () {
 };
 
 SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value, callback) {
-  if (value) {
-    if (switchRequiredState === this.currentState) {
-      this.updateSiren(value, false, false, null);
-      callback(null);
-    }
-    else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.updateSiren(value, false, false, null);
+  const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
+
+  if (value) {
+    if (this.currentState === switchRequiredState) {
+      this.updateSiren(value, false, false, callback);
+    }
+    else if (isCurrentStateAlarmTriggered && this.targetState === switchRequiredState) {
+      this.updateSiren(value, false, false, callback);
       this.log.warn('Sensor (Already triggered)');
-      callback('Security system is triggered.');
     }
     else {
       this.log.warn('Sensor (Invalid mode)');
@@ -1420,8 +1421,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
     }
   }
   else {
-    this.updateSiren(value, false, false, null);
-    callback(null);
+    this.updateSiren(value, false, false, callback);
   }
 };
 
