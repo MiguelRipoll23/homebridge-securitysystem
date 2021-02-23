@@ -47,8 +47,8 @@
         "minimum": 0
       },
       "audio": {
-        "title": "Play Audio (local only)",
-        "description": "Not compatible with AirPlay, requires ffmpeg installed.",
+        "title": "Play Audio (local only, ffmpeg required)",
+        "description": "Warns of mode or sensor updates by playing sounds.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -64,31 +64,36 @@
         ]
       },
       "save_state": {
-        "title": "Save Using System Storage",
+        "title": "Save Data Using Storage",
+        "description": "Persists the previous state after shutdowns and reboots.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "proxy_mode": {
         "title": "Enable Proxy Mode",
+        "description": "Ignores webhooks/commands for server requests.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "test_mode": {
         "title": "Enable Test Mode",
+        "description": "Ignores the webhook and command for the triggered event.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "override_off": {
         "title": "Trigger During Off Mode",
+        "description": "Allows the security system to be triggered while disarmed.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "reset_off_flow": {
         "title": "Reset Using Off Mode",
+        "description": "Resets the security system when triggered by passing through the Off mode.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -111,7 +116,7 @@
       },
       "siren_sensor": {
         "title": "Show Siren Sensor",
-        "description": "Allows multiple notifications during triggered mode.",
+        "description": "Adds a sensor that can be used to push multiple notifications during triggered mode.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -125,7 +130,7 @@
       },
       "reset_sensor": {
         "title": "Show Reset Sensor",
-        "description": "Triggers when the security system has reset.",
+        "description": "Adds a sensor that triggers when the security system has reset.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -162,18 +167,33 @@
         "title": "Show Siren Switch",
         "description": "Adds a global switch that will trigger the security system.",
         "type": "boolean",
-        "default": true,
+        "default": false,
         "required": false
       },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
         "description": "Adds switches for every mode that will trigger the security system.",
         "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "double_knock": {
+        "title": "Use Double-Knock (away only)",
+        "description": "Requires the same sensor or other ones to be triggered twice within a time window if Away mode is set.",
+        "type": "boolean",
         "default": false,
         "required": false
       },
+      "double_knock_seconds": {
+        "title": "Seconds",
+        "type": "integer",
+        "default": 90,
+        "required": false,
+        "minimum": 0
+      },
       "audio_path": {
-        "title": "Audio Path",
+        "title": "Custom Audio Path",
+        "description": "Instructions will be created in this path.",
         "type": "string",
         "required": false,
         "placeholder": "/home/user/sounds"
@@ -198,18 +218,19 @@
         "required": false
       },
       "server_port": {
-        "title": "Port",
+        "title": "Listening Port",
         "type": "integer",
         "required": false,
         "minimum": 0,
         "placeholder": 80
       },
       "server_code": {
-        "title": "Code",
+        "title": "Security Code",
+        "description": "All requests will require this code to be sent.",
         "type": "integer",
         "required": false,
         "minimum": 0,
-        "placeholder": 1234
+        "placeholder": "XXXX"
       },
       "webhook_url": {
         "title": "Base URL",
@@ -371,8 +392,21 @@
     "test_mode",
     {
       "type": "fieldset",
-      "title": "Additional Switches",
-      "description": "Helpful switches for simpler automations or bypass HomeKit confirmations.",
+      "title": "Advanced Options",
+      "description": "Need more options? You know what do do.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "override_off",
+        "reset_off_flow",
+        "proxy_mode",
+        "disabled_modes"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Switches",
+      "description": "Create simpler automations or bypass HomeKit confirmations.",
       "expandable": true,
       "expanded": false,
       "items": [
@@ -399,65 +433,61 @@
     },
     {
       "type": "fieldset",
-      "title": "Advanced Options",
-      "description": "Need more options? You know what do do.",
+      "title": "Sensors",
+      "description": "Run an automation when an event not captured by HomeKit ocurrs.",
       "expandable": true,
       "expanded": false,
       "items": [
         {
-          "type": "fieldset",
-          "title": "Security system",
-          "expandable": true,
-          "expanded": false,
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
           "items": [
-            "override_off",
-            "reset_off_flow",
-            "proxy_mode",
-            "disabled_modes"
+            {
+              "key": "double_knock",
+              "flex": "1"
+            },
+            {
+              "key": "double_knock_seconds",
+              "flex": "200px"
+            }
           ]
         },
         {
-          "type": "fieldset",
-          "title": "Sensors",
-          "expandable": true,
-          "expanded": false,
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
           "items": [
             {
-              "type": "div",
-              "display": "flex",
-              "flex-direction": "row",
-              "items": [
-                {
-                  "key": "siren_sensor",
-                  "flex": "1"
-                },
-                {
-                  "key": "siren_sensor_seconds",
-                  "flex": "200px"
-                }
-              ]
+              "key": "siren_sensor",
+              "flex": "1"
             },
-            "reset_sensor"
+            {
+              "key": "siren_sensor_seconds",
+              "flex": "200px"
+            }
           ]
         },
+        "reset_sensor"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Audio",
+      "description": "Change sounds directory and playback behavior.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
         {
-          "type": "fieldset",
-          "title": "Audio",
-          "expandable": true,
-          "expanded": false,
+          "type": "flex",
+          "flex-flow": "row wrap",
           "items": [
-            {
-              "type": "flex",
-              "flex-flow": "row wrap",
-              "items": [
-                "audio_path",
-                "audio_volume"
-              ]
-            },
-            "audio_arming_looped",
-            "audio_alert_looped"
+            "audio_path",
+            "audio_volume"
           ]
-        }
+        },
+        "audio_arming_looped",
+        "audio_alert_looped"
       ]
     },
     {

@@ -6,7 +6,6 @@ const packageJson = require('../package.json');
 const options = require('./utils/options.js');
 const customServices = require('./hap/customServices.js');
 const customCharacteristics = require('./hap/customCharacteristics.js');
-const serverConstants = require('./constants/server.js');
 
 const fetch = require('node-fetch');
 const storage = require('node-persist');
@@ -34,15 +33,22 @@ function SecuritySystem(log, config) {
   options.init(log, config);
 
   this.defaultState = this.mode2State(options.defaultMode);
+  this.currentState = this.defaultState;
+  this.targetState = this.defaultState;
   this.availableTargetStates = null;
-  this.pausedCurrentState = null;
 
+  this.hasArmingDelay = true;
+  this.isArming = false;
+  this.isKnocked = false;
+  
+  this.pausedCurrentState = null;
   this.invalidCodeAttempts = 0;
   this.audioProcess = null;
 
   this.armTimeout = null;
   this.pauseTimeout = null;
   this.triggerTimeout = null;
+  this.doubleKnockTimeout = null;
   this.sirenInterval = null;
   this.resetTimeout = null;
 
@@ -73,11 +79,6 @@ function SecuritySystem(log, config) {
   // Security system
   this.service = new CustomService.SecuritySystem(options.name);
   this.availableTargetStates = this.getAvailableTargetStates();
-
-  this.currentState = this.defaultState;
-  this.targetState = this.defaultState;
-  this.armingDelay = true;
-  this.arming = false;
 
   this.service
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
@@ -319,18 +320,18 @@ SecuritySystem.prototype.load = async function () {
       }
 
       this.currentState = currentState;
-      this.armingDelay = armingDelay;
+      this.hasArmingDelay = armingDelay;
 
       // Update characteristics values
       this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
       this.service.updateCharacteristic(Characteristic.SecuritySystemCurrentState, this.currentState);
-      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay, this.armingDelay);
+      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay, this.hasArmingDelay);
 
       this.updateModeSwitches();
 
       // Log
       this.logMode('Current', this.currentState);
-      this.log(`Arming delay (${this.armingDelay === true ? 'On' : 'Off'})`);
+      this.log(`Arming delay (${this.hasArmingDelay === true ? 'On' : 'Off'})`);
     })
     .catch(error => {
       this.log.error('Saved state (Error)');
@@ -352,7 +353,7 @@ SecuritySystem.prototype.save = async function () {
   const state = {
     'currentState': this.currentState,
     'targetState': this.targetState,
-    'armingDelay': this.armingDelay
+    'armingDelay': this.hasArmingDelay
   };
 
   await storage.setItem('state', state)
@@ -477,7 +478,7 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
     // when time runs out
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
-      this.log.debug('Reset timeout (Fired)');
+      this.log('Reset (Expired)');
 
       this.resetTimers();
       this.handleTargetStateUpdate(true);
@@ -527,12 +528,19 @@ SecuritySystem.prototype.resetTimers = function () {
     this.log.debug('Arming timeout (Cleared)');
   }
 
-  // Stop siren triggered sensor
+  // Clear siren triggered sensor
   if (this.sirenInterval !== null) {
     clearInterval(this.sirenInterval);
 
     this.sirenInterval = null;
     this.log.debug('Siren interval (Cleared)');
+  }
+
+  if (this.doubleKnockTimeout !== null) {
+    clearTimeout(this.doubleKnockTimeout);
+    this.doubleKnockTimeout = null;
+
+    this.log.debug('Double-knock timeout (Cleared)');
   }
 
   // Clear security system reset timeout
@@ -545,6 +553,9 @@ SecuritySystem.prototype.resetTimers = function () {
 };
 
 SecuritySystem.prototype.handleTargetStateUpdate = function (external) {
+  // Reset double-knock
+  this.isKnocked = false;
+
   // Update characteristics
   if (external) {
     this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
@@ -622,7 +633,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   if (this.currentState === state) {
     this.log.warn('Current mode (Already set)');
 
-    if (this.arming) {
+    if (this.isArming) {
       this.updateArming(false);
     }
 
@@ -681,12 +692,12 @@ SecuritySystem.prototype.setTargetState = function (value, callback) {
 };
 
 SecuritySystem.prototype.getArming = function (callback) {
-  callback(null, this.arming);
+  callback(null, this.isArming);
 };
 
 SecuritySystem.prototype.updateArming = function (value) {
-  this.arming = value;
-  this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArming, this.arming);
+  this.isArming = value;
+  this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArming, this.isArming);
 };
 
 SecuritySystem.prototype.getArmingDelay = function (callback) {
@@ -695,8 +706,8 @@ SecuritySystem.prototype.getArmingDelay = function (callback) {
 };
 
 SecuritySystem.prototype.setArmingDelay = function (value, callback) {
-  this.armingDelay = value;
-  this.log(`Arming delay (${(this.armingDelay) ? 'On' : 'Off'})`);
+  this.hasArmingDelay = value;
+  this.log(`Arming delay (${(this.hasArmingDelay) ? 'On' : 'Off'})`);
 
   callback(null);
   this.save();
@@ -709,6 +720,7 @@ SecuritySystem.prototype.getSiren = function (callback) {
 
 SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isCurrentStateAwayArm = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
 
   // Check if the security system is disarmed
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
@@ -724,7 +736,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   // Check if arming
-  if (this.arming) {
+  if (this.isArming) {
     this.log.warn('Sensor (Still arming)');
 
     if (callback !== null) {
@@ -732,6 +744,35 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     }
 
     return;
+  }
+
+  // Check double knock
+  if (value && isCurrentStateAwayArm && options.doubleKnock) {
+    if (this.isKnocked === false) {
+      this.log.warn('Sensor (Knock)');
+      this.isKnocked = true;
+  
+      this.doubleKnockTimeout = setTimeout(() => {
+        this.doubleKnockTimeout = null;
+        this.isKnocked = false;
+  
+        this.log('Sensor (Reset)');
+      }, options.doubleKnockSeconds * 1000);
+  
+      if (callback !== null) {
+        callback('Security systems ignored the event.');
+      }
+  
+      return;
+    }
+  }
+
+  // Clear double-knock timeout
+  if (this.doubleKnockTimeout !== null) {
+    clearTimeout(this.doubleKnockTimeout);
+    this.doubleKnockTimeout = null;
+
+    this.log.debug('Double-knock timeout (Cleared)');
   }
 
   if (external) {
@@ -831,7 +872,7 @@ SecuritySystem.prototype.isCodeValid = function (req) {
   }
 
   // Check brute force
-  if (this.invalidCodeAttempts > serverConstants.MAX_CODE_ATTEMPTS) {
+  if (this.invalidCodeAttempts >= 5) {
     req.blocked = true;
     return false;
   }
@@ -868,7 +909,8 @@ SecuritySystem.prototype.sendCodeRequiredError = function (res) {
 
   const response = {
     'error': true,
-    'message': serverConstants.MESSAGE_CODE_REQUIRED
+    'message': 'Code required',
+    'hint': 'Add the \'code\' URL parameter with your security code'
   };
 
   res.status(401).json(response);
@@ -881,11 +923,11 @@ SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
-    response.message = serverConstants.MESSAGE_CODE_BLOCKED;
+    response.message = 'Code blocked';
   }
   else {
     this.log('Code invalid (Server)');
-    response.message = serverConstants.MESSAGE_CODE_INVALID;
+    response.message = 'Code invalid';
   }
 
   res.status(403).json(response);
@@ -924,7 +966,7 @@ SecuritySystem.prototype.startServer = async function () {
         ||
         this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
       ),
-      'arming': this.arming
+      'arming': this.isArming
     };
 
     res.json(response);
@@ -1364,16 +1406,16 @@ SecuritySystem.prototype.resetSirenSwitches = function () {
 };
 
 SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value, callback) {
-  if (value) {
-    if (switchRequiredState === this.currentState) {
-      this.updateSiren(value, false, false, null);
-      callback(null);
-    }
-    else if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-      this.updateSiren(value, false, false, null);
+  const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
+
+  if (value) {
+    if (this.currentState === switchRequiredState) {
+      this.updateSiren(value, false, false, callback);
+    }
+    else if (isCurrentStateAlarmTriggered && this.targetState === switchRequiredState) {
+      this.updateSiren(value, false, false, callback);
       this.log.warn('Sensor (Already triggered)');
-      callback('Security system is triggered.');
     }
     else {
       this.log.warn('Sensor (Invalid mode)');
@@ -1381,8 +1423,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
     }
   }
   else {
-    this.updateSiren(value, false, false, null);
-    callback(null);
+    this.updateSiren(value, false, false, callback);
   }
 };
 
