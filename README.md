@@ -14,7 +14,7 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 
 ## Demo
 <div align="left">
-  <img align="right" width="180" height="389" src="https://github.com/MiguelRipoll23/homebridge-securitysystem/blob/beta/.github/images/demo-home.gif?raw=true">
+  <img align="right" width="180" height="389" src="https://github.com/MiguelRipoll23/homebridge-securitysystem/blob/release/.github/images/demo-home.gif?raw=true">
   <p>Want to know how it looks like? It's pretty customizable, you can have one single switch, one for every mode available or even no switches at all.</p>
   <p>What you are seeing at your right it's <b>the friendliest</b> configuration that you can start with. Each <code>Siren</code> switch that you see can only be activated if its mode is selected on the security system, this allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
   <p>There are also the so called <code>Mode</code> switches which let you trigger automations when a mode is changed or bypass HomeKit confirmation dialogs. Need to temporarily disarm the security system? There's a <code>Pause</code> switch for that.</p>
