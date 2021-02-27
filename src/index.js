@@ -591,7 +591,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   // Check if target state is already set
-  if (this.targetState === state && isCurrentStateAlarmTriggered === false) {
+  if (state === this.targetState && isCurrentStateAlarmTriggered === false) {
     this.log.warn('Target mode (Already set)');
 
     if (callback !== null) {
@@ -625,12 +625,6 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   // Reset everything
   this.handleStateUpdate(false);
 
-  // Canceled mode change
-  // Play current sound
-  if (this.currentState === state) {
-    this.playAudio('current', this.currentState);
-  }
-
   // Commands
   this.executeCommand('target', state, external);
 
@@ -638,12 +632,14 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.sendWebhookEvent('target', state, external);
 
   // Check if current state is already set
-  if (this.currentState === state) {
+  if (state === this.currentState) {
     this.log.warn('Current mode (Already set)');
 
     if (this.isArming) {
       this.updateArming(false);
     }
+
+    this.playAudio('current', this.currentState);
 
     if (callback !== null) {
       callback(null);
