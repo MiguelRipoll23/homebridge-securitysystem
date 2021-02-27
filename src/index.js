@@ -917,7 +917,7 @@ SecuritySystem.prototype.getDelayParameter = function (req) {
 };
 
 SecuritySystem.prototype.sendCodeRequiredError = function (res) {
-  this.log('Code required (Server)')
+  this.log('Code required (Server)');
 
   const response = {
     'error': true,
@@ -1477,7 +1477,7 @@ SecuritySystem.prototype.resetModeSwitches = function () {
   if (modePauseCharacteristicOn.value) {
     modePauseCharacteristicOn.updateValue(false);
   }
-}
+};
 
 SecuritySystem.prototype.updateModeSwitches = function () {
   switch (this.targetState) {
