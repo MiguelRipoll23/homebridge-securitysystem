@@ -163,6 +163,13 @@ function SecuritySystem(log, config) {
     .on('get', this.getModeOffSwitchOn.bind(this))
     .on('set', this.setModeOffSwitchOn.bind(this));
 
+  this.modeSuperAwaySwitchService = new Service.Switch('Mode Super Away', 'mode-super-away');
+
+  this.modeSuperAwaySwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getModeSuperAwaySwitchOn.bind(this))
+    .on('set', this.setModeSuperAwaySwitchOn.bind(this));
+
   this.modePauseSwitchService = new Service.Switch('Mode Pause', 'mode-pause');
 
   this.modePauseSwitchService
@@ -250,10 +257,12 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (options.modeSwitches) {
-    if (options.modeOffSwitch) {
-      this.services.push(this.modeOffSwitchService);
-    }
+  if (options.modeSwitches && options.modeOffSwitch) {
+    this.services.push(this.modeOffSwitchService);
+  }
+
+  if (options.modeSuperAwaySwitch) {
+    this.services.push(this.modeSuperAwaySwitchService);
   }
 
   if (options.modePauseSwitch) {
@@ -1452,6 +1461,7 @@ SecuritySystem.prototype.resetModeSwitches = function () {
   const modeAwayCharacteristicOn = this.modeAwaySwitchService.getCharacteristic(Characteristic.On);
   const modeNightCharacteristicOn = this.modeNightSwitchService.getCharacteristic(Characteristic.On);
   const modeOffCharacteristicOn = this.modeOffSwitchService.getCharacteristic(Characteristic.On);
+  const modeSuperAwayCharacteristicOn = this.modeSuperAwaySwitchService.getCharacteristic(Characteristic.On);
   const modePauseCharacteristicOn = this.modePauseSwitchService.getCharacteristic(Characteristic.On);
 
   if (modeHomeCharacteristicOn.value) {
@@ -1468,6 +1478,10 @@ SecuritySystem.prototype.resetModeSwitches = function () {
 
   if (modeOffCharacteristicOn.value) {
     modeOffCharacteristicOn.updateValue(false);
+  }
+
+  if (modeSuperAwayCharacteristicOn.value) {
+    modeSuperAwayCharacteristicOn.updateValue(false);
   }
   
   if (modePauseCharacteristicOn.value) {
@@ -1552,6 +1566,21 @@ SecuritySystem.prototype.setModeOffSwitchOn = function (value, callback) {
   }
 
   this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, null, null);
+  callback(null);
+};
+
+SecuritySystem.prototype.getModeSuperAwaySwitchOn = function (callback) {
+  const value = this.modeSuperAwaySwitchService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setModeSuperAwaySwitchOn = function (value, callback) {
+  if (value === false) {
+    callback('Ignore');
+    return;
+  }
+
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, null, null);  
   callback(null);
 };
 

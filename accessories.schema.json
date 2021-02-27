@@ -148,9 +148,16 @@
         },
         "mode_off_switch": {
           "title": "Show Mode Off Switch",
-          "description": "Adds the Mode Off switch if the \"Show Mode Switches\" option is enabled.",
+          "description": "Adds a switch to disarm the security system if the \"Show Mode Switches\" option is enabled.",
           "type": "boolean",
           "default": true,
+          "required": false
+        },
+        "mode_super_away_switch": {
+          "title": "Show Mode Super Away Switch",
+          "description": "Adds a switch that can be used as a condition in automations to enhance the security.",
+          "type": "boolean",
+          "default": false,
           "required": false
         },
         "mode_pause_switch": {
@@ -417,6 +424,7 @@
       "items": [
         "mode_switches",
         "mode_off_switch",
+        "mode_super_away_switch",
         {
           "type": "div",
           "display": "flex",
