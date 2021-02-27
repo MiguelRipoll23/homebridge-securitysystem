@@ -49,9 +49,10 @@ function SecuritySystem(log, config) {
   this.pauseTimeout = null;
   this.triggerTimeout = null;
   this.doubleKnockTimeout = null;
-  this.sirenInterval = null;
   this.resetTimeout = null;
-
+  
+  this.sirenInterval = null;
+  
   // Log
   if (options.testMode) {
     this.log.warn('Test Mode');
@@ -259,18 +260,20 @@ function SecuritySystem(log, config) {
     this.services.push(this.modePauseSwitchService);
   }
 
-  // Audio
-  if (options.isValueSet(options.audioPath)) {
-    this.setupAudio();
-  }
-
   // Storage
   if (options.saveState) {
     this.load();
   }
 
+  // Audio
+  if (options.isValueSet(options.audioPath)) {
+    this.setupAudio();
+  }
+
   // Server
-  this.startServer();
+  if (options.isValueSet(options.serverPort)) {
+    this.startServer();
+  }
 }
 
 SecuritySystem.prototype.load = async function () {
@@ -323,7 +326,7 @@ SecuritySystem.prototype.load = async function () {
       this.service.updateCharacteristic(Characteristic.SecuritySystemCurrentState, this.currentState);
       this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay, this.hasArmingDelay);
 
-      this.updateModeSwitches();
+      this.handleStateUpdate(false);
 
       // Log
       this.logMode('Current', this.currentState);
@@ -474,7 +477,7 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
     // when time runs out
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
-      this.log('Reset (Expired)');
+      this.log('Reset (Finished)');
 
       // Reset characteristic & sensor
       this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemReset, true);
@@ -609,9 +612,6 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
 
     return false;
   }
-
-  // Reset timers
-  this.resetTimers();
 
   // Update target state
   this.targetState = state;
@@ -954,11 +954,6 @@ SecuritySystem.prototype.sendResponse = function (res, sucess) {
 };
 
 SecuritySystem.prototype.startServer = async function () {
-  // Check option
-  if (options.isValueSet(options.serverPort) === false) {
-    return;
-  }
-
   app.get('/status', (req, res) => {
     if (this.isCodeSent(req) === false) {
       this.sendCodeRequiredError(res);
@@ -1571,14 +1566,14 @@ SecuritySystem.prototype.getModePauseSwitchOn = function (callback) {
 
 SecuritySystem.prototype.setModePauseSwitchOn = function (value, callback) {
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.log.warn('Mode switch (Triggered)');
+    this.log.warn('Pause (Alarm triggered)');
     callback('Ignore');
     return;
   }
 
   if (value) {
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-      this.log.warn('Mode switch (Not armed)');
+      this.log.warn('Pause (Not armed)');
       callback('Ignore');
       return;
     }
