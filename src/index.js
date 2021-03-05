@@ -163,12 +163,12 @@ function SecuritySystem(log, config) {
     .on('get', this.getModeOffSwitchOn.bind(this))
     .on('set', this.setModeOffSwitchOn.bind(this));
 
-  this.modeSuperAwaySwitchService = new Service.Switch('Mode Super Away', 'mode-super-away');
+  this.modeAwayExtendedSwitchService = new Service.Switch('Mode Away Extended', 'mode-away-extended');
 
-  this.modeSuperAwaySwitchService
+  this.modeAwayExtendedSwitchService
     .getCharacteristic(Characteristic.On)
-    .on('get', this.getModeSuperAwaySwitchOn.bind(this))
-    .on('set', this.setModeSuperAwaySwitchOn.bind(this));
+    .on('get', this.getModeAwayExtendedSwitchOn.bind(this))
+    .on('set', this.setModeAwayExtendedSwitchOn.bind(this));
 
   this.modePauseSwitchService = new Service.Switch('Mode Pause', 'mode-pause');
 
@@ -261,8 +261,8 @@ function SecuritySystem(log, config) {
     this.services.push(this.modeOffSwitchService);
   }
 
-  if (options.modeSuperAwaySwitch) {
-    this.services.push(this.modeSuperAwaySwitchService);
+  if (options.modeAwayExtendedSwitch) {
+    this.services.push(this.modeAwayExtendedSwitchService);
   }
 
   if (options.modePauseSwitch) {
@@ -1461,7 +1461,7 @@ SecuritySystem.prototype.resetModeSwitches = function () {
   const modeAwayCharacteristicOn = this.modeAwaySwitchService.getCharacteristic(Characteristic.On);
   const modeNightCharacteristicOn = this.modeNightSwitchService.getCharacteristic(Characteristic.On);
   const modeOffCharacteristicOn = this.modeOffSwitchService.getCharacteristic(Characteristic.On);
-  const modeSuperAwayCharacteristicOn = this.modeSuperAwaySwitchService.getCharacteristic(Characteristic.On);
+  const modeAwayExtendedCharacteristicOn = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On);
   const modePauseCharacteristicOn = this.modePauseSwitchService.getCharacteristic(Characteristic.On);
 
   if (modeHomeCharacteristicOn.value) {
@@ -1480,8 +1480,8 @@ SecuritySystem.prototype.resetModeSwitches = function () {
     modeOffCharacteristicOn.updateValue(false);
   }
 
-  if (modeSuperAwayCharacteristicOn.value) {
-    modeSuperAwayCharacteristicOn.updateValue(false);
+  if (modeAwayExtendedCharacteristicOn.value) {
+    modeAwayExtendedCharacteristicOn.updateValue(false);
   }
   
   if (modePauseCharacteristicOn.value) {
@@ -1569,12 +1569,12 @@ SecuritySystem.prototype.setModeOffSwitchOn = function (value, callback) {
   callback(null);
 };
 
-SecuritySystem.prototype.getModeSuperAwaySwitchOn = function (callback) {
-  const value = this.modeSuperAwaySwitchService.getCharacteristic(Characteristic.On).value;
+SecuritySystem.prototype.getModeAwayExtendedSwitchOn = function (callback) {
+  const value = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On).value;
   callback(null, value);
 };
 
-SecuritySystem.prototype.setModeSuperAwaySwitchOn = function (value, callback) {
+SecuritySystem.prototype.setModeAwayExtendedSwitchOn = function (value, callback) {
   if (value === false) {
     callback('Ignore');
     return;

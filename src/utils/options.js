@@ -94,7 +94,7 @@ const options = {
     options.modeSwitches = config.mode_switches;
     options.modeOffSwitch = config.mode_off_switch;
     options.modePauseSwitch = config.mode_pause_switch;
-    options.modeSuperAwaySwitch = config.mode_super_away_switch;
+    options.modeAwayExtendedSwitch = config.mode_away_extended_switch;
 
     // Double knock
     options.doubleKnock = config.double_knock;
@@ -234,8 +234,8 @@ const options = {
       options.showModePauseSwitch = false;
     }
 
-    if (options.isValueSet(options.modeSuperAwaySwitch) === false) {
-      options.modeSuperAwaySwitch = false;
+    if (options.isValueSet(options.modeAwayExtendedSwitch) === false) {
+      options.modeAwayExtendedSwitch = false;
     }
 
     if (options.isValueSet(options.pauseMinutes) === false) {

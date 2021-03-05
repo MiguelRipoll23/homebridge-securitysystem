@@ -153,9 +153,9 @@
           "default": true,
           "required": false
         },
-        "mode_super_away_switch": {
-          "title": "Show Mode Super Away Switch",
-          "description": "Adds a switch that can be used as a condition in automations to enhance the security.",
+        "mode_away_extended_switch": {
+          "title": "Show Mode Away Extended Switch",
+          "description": "Adds a switch that sets the Away mode and can be used as a condition in automations to enhance the security.",
           "type": "boolean",
           "default": false,
           "required": false
@@ -424,7 +424,7 @@
       "items": [
         "mode_switches",
         "mode_off_switch",
-        "mode_super_away_switch",
+        "mode_away_extended_switch",
         {
           "type": "div",
           "display": "flex",
