@@ -45,22 +45,7 @@ function CustomCharacteristic(Characteristic) {
   };
 
   inherits(this.SecuritySystemSiren, Characteristic);
-
-  this.SecuritySystemReset = function () {
-    this.UUID = '00003006-0000-1000-8000-135D67EC4378';
   
-    Characteristic.call(this, 'Security System Reset', this.UUID);
-  
-    this.setProps({
-      format: Characteristic.Formats.BOOL,
-      perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
-    });
-  
-    this.value = this.getDefaultValue();
-  };
-
-  inherits(this.SecuritySystemReset, Characteristic);
-
   return this;
 }
 

@@ -107,11 +107,6 @@ function SecuritySystem(log, config) {
     .on('get', this.getSiren.bind(this))
     .on('set', this.setSiren.bind(this));
 
-  this.service
-    .getCharacteristic(CustomCharacteristic.SecuritySystemReset)
-    .on('get', this.getReset.bind(this))
-    .on('set', this.setReset.bind(this));
-
   // Siren switch
   this.sirenSwitchService = new Service.Switch('Siren', 'siren-switch');
 
@@ -488,12 +483,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
       this.resetTimeout = null;
       this.log('Reset (Finished)');
 
-      // Reset characteristic & sensor
-      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemReset, true);
+      // Update reset sensor
       this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
-        this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemReset, false);
         this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
       }, 750);
 
@@ -855,16 +848,6 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
 SecuritySystem.prototype.setSiren = function (value, callback) {
   this.updateSiren(value, false, false, callback);
-};
-
-SecuritySystem.prototype.getReset = function (callback) {
-  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemReset).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.setReset = function (callback) {
-  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemReset).value;
-  callback(null, value);
 };
 
 // Server
