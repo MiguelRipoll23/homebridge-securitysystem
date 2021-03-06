@@ -419,15 +419,11 @@ SecuritySystem.prototype.logMode = function (type, state) {
 SecuritySystem.prototype.getAvailableTargetStates = function () {
   const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
   const validValues = targetStateCharacteristic.props.validValues;
+  const invalidValues = options.disabledModes.map((value) => {
+    return this.mode2State(value.toLowerCase());
+  });
 
-  const disabledStates = [];
-
-  for (let disabledMode of options.disabledModes) {
-    const state = this.mode2State(disabledMode.toLowerCase());
-    disabledStates.push(state);
-  }
-
-  return validValues.filter(mode => disabledStates.includes(mode) === false);
+  return validValues.filter(state => invalidValues.includes(state) === false);
 };
 
 SecuritySystem.prototype.getCurrentState = function (callback) {
