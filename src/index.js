@@ -163,7 +163,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getModePauseSwitchOn.bind(this))
     .on('set', this.setModePauseSwitchOn.bind(this));
 
-  // Siren Mode Switches
+  // Siren mode switches
   this.sirenHomeSwitchService = new Service.Switch('Siren Home', 'siren-home');
 
   this.sirenHomeSwitchService
@@ -816,30 +816,24 @@ SecuritySystem.prototype.setSiren = function (value, callback) {
 };
 
 // Server
-SecuritySystem.prototype.isCodeSent = function (req) {
-  // Check if auth is disabled
+SecuritySystem.prototype.isAuthenticated = function (req, res) {
+  // Check if authentication is disabled
   if (options.serverCode === null) {
-    return true;
+    return null;
   }
 
   let code = req.query.code;
 
+  // Check if code sent
   if (code === undefined) {
+    this.sendCodeRequiredError(res);
     return false;
-  }
-
-  return true;
-};
-
-SecuritySystem.prototype.isCodeValid = function (req) {
-  // Check if auth is disabled
-  if (options.serverCode === null) {
-    return true;
   }
 
   // Check brute force
   if (this.invalidCodeAttempts >= 5) {
     req.blocked = true;
+    this.sendCodeInvalidError(req, res);
     return false;
   }
 
@@ -847,6 +841,7 @@ SecuritySystem.prototype.isCodeValid = function (req) {
 
   if (userCode !== options.serverCode) {
     this.invalidCodeAttempts++;
+    this.sendCodeInvalidError(req, res);
     return false;
   }
 
@@ -857,16 +852,7 @@ SecuritySystem.prototype.isCodeValid = function (req) {
 };
 
 SecuritySystem.prototype.getDelayParameter = function (req) {
-  const delayParameter = req.query.delay;
-
-  if (delayParameter === 'true') {
-    return true;
-  }
-  else if (delayParameter === 'false') {
-    return false;
-  }
-
-  return false;
+  return req.query.delay === 'true' ? true : false;
 };
 
 SecuritySystem.prototype.sendCodeRequiredError = function (res) {
@@ -882,9 +868,7 @@ SecuritySystem.prototype.sendCodeRequiredError = function (res) {
 };
 
 SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
-  const response = {
-    'error': true
-  };
+  const response = { 'error': true };
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
@@ -898,7 +882,7 @@ SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
   res.status(403).json(response);
 };
 
-SecuritySystem.prototype.sendResponse = function (res, sucess) {
+SecuritySystem.prototype.sendResultResponse = function (res, sucess) {
   const response = {
     'error': sucess ? false : true
   };
@@ -908,20 +892,14 @@ SecuritySystem.prototype.sendResponse = function (res, sucess) {
 
 SecuritySystem.prototype.startServer = async function () {
   app.get('/status', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
     const response = {
+      'arming': this.isArming,
       'current_mode': this.state2Mode(this.currentState),
       'target_mode': this.state2Mode(this.targetState),
-      'arming': this.isArming,
       'sensor_triggered': this.triggerTimeout !== null
     };
 
@@ -929,13 +907,7 @@ SecuritySystem.prototype.startServer = async function () {
   });
 
   app.get('/triggered', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -948,7 +920,7 @@ SecuritySystem.prototype.startServer = async function () {
     else {
       // Instant
       if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
-        this.sendResponse(res, false);
+        this.sendResultResponse(res, false);
         return;
       }
 
@@ -956,17 +928,11 @@ SecuritySystem.prototype.startServer = async function () {
       this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, true);
     }
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/home', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -974,17 +940,11 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/away', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -992,17 +952,11 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/night', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -1010,17 +964,11 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/off', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -1028,7 +976,7 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   // Listener
