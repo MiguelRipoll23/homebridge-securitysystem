@@ -3,7 +3,7 @@
 [![npm downloads](https://badgen.net/npm/dt/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem)
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
-Homebridge plugin that creates a security system alarm accessory that can be triggered by HomeKit sensors.
+Homebridge plugin that creates a security system accessory that can be triggered by HomeKit sensors.
 
 [❤️ One-time donation](https://paypal.me/miguelripoll23)
 
