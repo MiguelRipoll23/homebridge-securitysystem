@@ -1,29 +1,26 @@
 const fs = require('fs');
 const path = require('path');
+const storage = require('node-persist');
 const { spawn } = require('child_process');
+const fetch = require('node-fetch');
+const express = require('express');
 
 const packageJson = require('../package.json');
 const options = require('./utils/options.js');
 const customServices = require('./hap/customServices.js');
 const customCharacteristics = require('./hap/customCharacteristics.js');
 
-const fetch = require('node-fetch');
-const storage = require('node-persist');
-const express = require('express');
-
 const app = express();
 
-let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgeStoragePath;
+let Service, Characteristic, CustomService, CustomCharacteristic, storagePath;
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-
   CustomCharacteristic = customCharacteristics.CustomCharacteristic(Characteristic);
   CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
 
-  homebridgeStoragePath = homebridge.user.storagePath();
+  storagePath = homebridge.user.storagePath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
@@ -37,7 +34,6 @@ function SecuritySystem(log, config) {
   this.targetState = this.defaultState;
   this.availableTargetStates = null;
 
-  this.hasArmingDelay = true;
   this.isArming = false;
   this.isKnocked = false;
   
@@ -98,19 +94,9 @@ function SecuritySystem(log, config) {
     .on('get', this.getTargetState.bind(this));
 
   this.service
-    .getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay)
-    .on('get', this.getArmingDelay.bind(this))
-    .on('set', this.setArmingDelay.bind(this));
-
-  this.service
     .getCharacteristic(CustomCharacteristic.SecuritySystemSiren)
     .on('get', this.getSiren.bind(this))
     .on('set', this.setSiren.bind(this));
-
-  this.service
-    .getCharacteristic(CustomCharacteristic.SecuritySystemReset)
-    .on('get', this.getReset.bind(this))
-    .on('set', this.setReset.bind(this));
 
   // Siren switch
   this.sirenSwitchService = new Service.Switch('Siren', 'siren-switch');
@@ -163,6 +149,13 @@ function SecuritySystem(log, config) {
     .on('get', this.getModeOffSwitchOn.bind(this))
     .on('set', this.setModeOffSwitchOn.bind(this));
 
+  this.modeAwayExtendedSwitchService = new Service.Switch('Mode Away Extended', 'mode-away-extended');
+
+  this.modeAwayExtendedSwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getModeAwayExtendedSwitchOn.bind(this))
+    .on('set', this.setModeAwayExtendedSwitchOn.bind(this));
+
   this.modePauseSwitchService = new Service.Switch('Mode Pause', 'mode-pause');
 
   this.modePauseSwitchService
@@ -170,7 +163,7 @@ function SecuritySystem(log, config) {
     .on('get', this.getModePauseSwitchOn.bind(this))
     .on('set', this.setModePauseSwitchOn.bind(this));
 
-  // Siren Mode Switches
+  // Siren mode switches
   this.sirenHomeSwitchService = new Service.Switch('Siren Home', 'siren-home');
 
   this.sirenHomeSwitchService
@@ -250,10 +243,12 @@ function SecuritySystem(log, config) {
     }
   }
 
-  if (options.modeSwitches) {
-    if (options.modeOffSwitch) {
-      this.services.push(this.modeOffSwitchService);
-    }
+  if (options.modeSwitches && options.modeOffSwitch) {
+    this.services.push(this.modeOffSwitchService);
+  }
+
+  if (options.modeAwayExtendedSwitch) {
+    this.services.push(this.modeAwayExtendedSwitchService);
   }
 
   if (options.modePauseSwitch) {
@@ -276,17 +271,21 @@ function SecuritySystem(log, config) {
   }
 }
 
+SecuritySystem.prototype.getServices = function () {
+  return this.services;
+};
+
 SecuritySystem.prototype.load = async function () {
   const storageOptions = {
-    'dir': path.join(homebridgeStoragePath, 'homebridge-securitysystem')
+    'dir': path.join(storagePath, 'homebridge-securitysystem')
   };
 
   await storage.init(storageOptions)
     .then()
-    .catch((error) => {
+    .catch(error => {
       this.log.error('Unable to load state.');
       this.log.error(error);
-    });
+   });
 
   if (options.testMode) {
     await storage.clear();
@@ -302,13 +301,10 @@ SecuritySystem.prototype.load = async function () {
       }
 
       this.log.debug('State (Loaded)', state);
-
-      // Data
       this.log('Saved state (Found)');
 
       const currentState = options.isValueSet(state.currentState) ? state.currentState : this.defaultState;
       const targetState = options.isValueSet(state.targetState) ? state.targetState : this.defaultState;
-      const armingDelay = options.isValueSet(state.armingDelay) ? state.armingDelay : true;
 
       // Change target state if triggered
       if (currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
@@ -319,18 +315,14 @@ SecuritySystem.prototype.load = async function () {
       }
 
       this.currentState = currentState;
-      this.hasArmingDelay = armingDelay;
 
       // Update characteristics values
       this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
       this.service.updateCharacteristic(Characteristic.SecuritySystemCurrentState, this.currentState);
-      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay, this.hasArmingDelay);
-
       this.handleStateUpdate(false);
 
       // Log
       this.logMode('Current', this.currentState);
-      this.log(`Arming delay (${this.hasArmingDelay === true ? 'On' : 'Off'})`);
     })
     .catch(error => {
       this.log.error('Saved state (Error)');
@@ -351,8 +343,7 @@ SecuritySystem.prototype.save = async function () {
 
   const state = {
     'currentState': this.currentState,
-    'targetState': this.targetState,
-    'armingDelay': this.hasArmingDelay
+    'targetState': this.targetState
   };
 
   await storage.setItem('state', state)
@@ -428,15 +419,11 @@ SecuritySystem.prototype.logMode = function (type, state) {
 SecuritySystem.prototype.getAvailableTargetStates = function () {
   const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
   const validValues = targetStateCharacteristic.props.validValues;
+  const invalidValues = options.disabledModes.map((value) => {
+    return this.mode2State(value.toLowerCase());
+  });
 
-  const disabledStates = [];
-
-  for (let disabledMode of options.disabledModes) {
-    const state = this.mode2State(disabledMode.toLowerCase());
-    disabledStates.push(state);
-  }
-
-  return validValues.filter(mode => disabledStates.includes(mode) === false);
+  return validValues.filter(state => invalidValues.includes(state) === false);
 };
 
 SecuritySystem.prototype.getCurrentState = function (callback) {
@@ -479,12 +466,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
       this.resetTimeout = null;
       this.log('Reset (Finished)');
 
-      // Reset characteristic & sensor
-      this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemReset, true);
+      // Update reset sensor
       this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
-        this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemReset, false);
         this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
       }, 750);
 
@@ -591,7 +576,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   // Check if target state is already set
-  if (this.targetState === state && isCurrentStateAlarmTriggered === false) {
+  if (state === this.targetState && isCurrentStateAlarmTriggered === false) {
     this.log.warn('Target mode (Already set)');
 
     if (callback !== null) {
@@ -625,12 +610,6 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   // Reset everything
   this.handleStateUpdate(false);
 
-  // Canceled mode change
-  // Play current sound
-  if (this.currentState === state) {
-    this.playAudio('current', this.currentState);
-  }
-
   // Commands
   this.executeCommand('target', state, external);
 
@@ -638,12 +617,14 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.sendWebhookEvent('target', state, external);
 
   // Check if current state is already set
-  if (this.currentState === state) {
+  if (state === this.currentState) {
     this.log.warn('Current mode (Already set)');
 
     if (this.isArming) {
       this.updateArming(false);
     }
+
+    this.playAudio('current', this.currentState);
 
     if (callback !== null) {
       callback(null);
@@ -652,13 +633,8 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
     return false;
   }
 
-  // Check arming delay
-  if (delay === null) {
-    delay = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-  }
-
   // Play sound
-  if (isCurrentStateAlarmTriggered === false && delay && options.armSeconds > 0) {
+  if (delay && options.armSeconds > 0 && isCurrentStateAlarmTriggered === false) {
     this.playAudio('target', state);
   }
 
@@ -697,7 +673,7 @@ SecuritySystem.prototype.getTargetState = function (callback) {
 };
 
 SecuritySystem.prototype.setTargetState = function (value, callback) {
-  this.updateTargetState(value, false, null, callback);
+  this.updateTargetState(value, false, true, callback);
 };
 
 SecuritySystem.prototype.getArming = function (callback) {
@@ -707,19 +683,6 @@ SecuritySystem.prototype.getArming = function (callback) {
 SecuritySystem.prototype.updateArming = function (value) {
   this.isArming = value;
   this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArming, this.isArming);
-};
-
-SecuritySystem.prototype.getArmingDelay = function (callback) {
-  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.setArmingDelay = function (value, callback) {
-  this.hasArmingDelay = value;
-  this.log(`Arming delay (${(this.hasArmingDelay) ? 'On' : 'Off'})`);
-  this.save();
-  
-  callback(null);
 };
 
 SecuritySystem.prototype.getSiren = function (callback) {
@@ -732,16 +695,14 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   const isCurrentStateAwayArm = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
 
   // Check if the security system is disarmed
-  if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    if (options.overrideOff === false) {
-      this.log.warn('Sensor (Not armed)');
+  if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
+    this.log.warn('Sensor (Not armed)');
 
-      if (callback !== null) {
-        callback('Ignore');
-      }
-
-      return false;
+    if (callback !== null) {
+      callback('Ignore');
     }
+
+    return false;
   }
 
   // Check if arming
@@ -809,8 +770,6 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
       this.triggerTimeout = setTimeout(() => {
         this.triggerTimeout = null;
-
-        // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
       }, options.triggerSeconds * 1000);
 
@@ -852,41 +811,25 @@ SecuritySystem.prototype.setSiren = function (value, callback) {
   this.updateSiren(value, false, false, callback);
 };
 
-SecuritySystem.prototype.getReset = function (callback) {
-  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemReset).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.setReset = function (callback) {
-  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemReset).value;
-  callback(null, value);
-};
-
 // Server
-SecuritySystem.prototype.isCodeSent = function (req) {
-  let code = req.query.code;
-
-  if (code === undefined) {
-    // Check if auth is disabled
-    if (options.serverCode === null) {
-      return true;
-    }
-
-    return false;
+SecuritySystem.prototype.isAuthenticated = function (req, res) {
+  // Check if authentication is disabled
+  if (options.serverCode === null) {
+    return null;
   }
 
-  return true;
-};
+  let code = req.query.code;
 
-SecuritySystem.prototype.isCodeValid = function (req) {
-  // Check if auth is disabled
-  if (options.serverCode === null) {
-    return true;
+  // Check if code sent
+  if (code === undefined) {
+    this.sendCodeRequiredError(res);
+    return false;
   }
 
   // Check brute force
   if (this.invalidCodeAttempts >= 5) {
     req.blocked = true;
+    this.sendCodeInvalidError(req, res);
     return false;
   }
 
@@ -894,6 +837,7 @@ SecuritySystem.prototype.isCodeValid = function (req) {
 
   if (userCode !== options.serverCode) {
     this.invalidCodeAttempts++;
+    this.sendCodeInvalidError(req, res);
     return false;
   }
 
@@ -904,16 +848,7 @@ SecuritySystem.prototype.isCodeValid = function (req) {
 };
 
 SecuritySystem.prototype.getDelayParameter = function (req) {
-  const delayParameter = req.query.delay;
-
-  if (delayParameter === 'true') {
-    return true;
-  }
-  else if (delayParameter === 'false') {
-    return false;
-  }
-
-  return false;
+  return req.query.delay === 'true' ? true : false;
 };
 
 SecuritySystem.prototype.sendCodeRequiredError = function (res) {
@@ -929,9 +864,7 @@ SecuritySystem.prototype.sendCodeRequiredError = function (res) {
 };
 
 SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
-  const response = {
-    'error': true
-  };
+  const response = { 'error': true };
 
   if (req.blocked) {
     this.log('Code blocked (Server)');
@@ -945,7 +878,7 @@ SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
   res.status(403).json(response);
 };
 
-SecuritySystem.prototype.sendResponse = function (res, sucess) {
+SecuritySystem.prototype.sendResultResponse = function (res, sucess) {
   const response = {
     'error': sucess ? false : true
   };
@@ -955,20 +888,14 @@ SecuritySystem.prototype.sendResponse = function (res, sucess) {
 
 SecuritySystem.prototype.startServer = async function () {
   app.get('/status', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
     const response = {
+      'arming': this.isArming,
       'current_mode': this.state2Mode(this.currentState),
       'target_mode': this.state2Mode(this.targetState),
-      'arming': this.isArming,
       'sensor_triggered': this.triggerTimeout !== null
     };
 
@@ -976,46 +903,32 @@ SecuritySystem.prototype.startServer = async function () {
   });
 
   app.get('/triggered', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
     let sucess = true;
 
-    // Check delay and trigger
     if (this.getDelayParameter(req)) {
+      // Delay
       sucess = this.updateSiren(true, true, false, null);
     }
     else {
-      // Check if security system is disarmed
-      if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-        if (options.overrideOff === false) {
-          this.sendResponse(res, false);
-          return;
-        } 
+      // Instant
+      if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
+        this.sendResultResponse(res, false);
+        return;
       }
 
       this.handleStateUpdate(true);
       this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, true);
     }
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/home', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -1023,17 +936,11 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/away', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -1041,17 +948,11 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/night', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -1059,17 +960,11 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   app.get('/off', (req, res) => {
-    if (this.isCodeSent(req) === false) {
-      this.sendCodeRequiredError(res);
-      return;
-    }
-
-    if (this.isCodeValid(req) === false) {
-      this.sendCodeInvalidError(req, res);
+    if (this.isAuthenticated(req, res) === false) {
       return;
     }
 
@@ -1077,7 +972,7 @@ SecuritySystem.prototype.startServer = async function () {
     const delay = this.getDelayParameter(req);
     const sucess = this.updateTargetState(state, true, delay, null);
 
-    this.sendResponse(res, sucess);
+    this.sendResultResponse(res, sucess);
   });
 
   // Listener
@@ -1401,10 +1296,8 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   if (value) {
-    if (this.currentState === switchRequiredState) {
-      this.updateSiren(value, false, false, callback);
-    }
-    else if (isCurrentStateAlarmTriggered && this.targetState === switchRequiredState) {
+    if (this.currentState === switchRequiredState ||
+       (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)) {
       this.updateSiren(value, false, false, callback);
     }
     else {
@@ -1456,6 +1349,7 @@ SecuritySystem.prototype.resetModeSwitches = function () {
   const modeAwayCharacteristicOn = this.modeAwaySwitchService.getCharacteristic(Characteristic.On);
   const modeNightCharacteristicOn = this.modeNightSwitchService.getCharacteristic(Characteristic.On);
   const modeOffCharacteristicOn = this.modeOffSwitchService.getCharacteristic(Characteristic.On);
+  const modeAwayExtendedCharacteristicOn = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On);
   const modePauseCharacteristicOn = this.modePauseSwitchService.getCharacteristic(Characteristic.On);
 
   if (modeHomeCharacteristicOn.value) {
@@ -1472,6 +1366,10 @@ SecuritySystem.prototype.resetModeSwitches = function () {
 
   if (modeOffCharacteristicOn.value) {
     modeOffCharacteristicOn.updateValue(false);
+  }
+
+  if (modeAwayExtendedCharacteristicOn.value) {
+    modeAwayExtendedCharacteristicOn.updateValue(false);
   }
   
   if (modePauseCharacteristicOn.value) {
@@ -1510,7 +1408,7 @@ SecuritySystem.prototype.setModeHomeSwitchOn = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true, null, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true, true, null);
   callback(null);
 };
 
@@ -1525,7 +1423,7 @@ SecuritySystem.prototype.setModeAwaySwitchOn = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, null, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, true, null);
   callback(null);
 };
 
@@ -1540,7 +1438,7 @@ SecuritySystem.prototype.setModeNightState = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true, null, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true, true, null);
   callback(null);
 };
 
@@ -1555,7 +1453,22 @@ SecuritySystem.prototype.setModeOffSwitchOn = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, null, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true, null);
+  callback(null);
+};
+
+SecuritySystem.prototype.getModeAwayExtendedSwitchOn = function (callback) {
+  const value = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setModeAwayExtendedSwitchOn = function (value, callback) {
+  if (value === false) {
+    callback('Ignore');
+    return;
+  }
+
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, true, null);  
   callback(null);
 };
 
@@ -1603,9 +1516,4 @@ SecuritySystem.prototype.setModePauseSwitchOn = function (value, callback) {
   }
 
   callback(null);
-};
-
-// Accessory
-SecuritySystem.prototype.getServices = function () {
-  return this.services;
 };

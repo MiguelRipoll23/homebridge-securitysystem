@@ -2,7 +2,7 @@
   "pluginAlias": "security-system",
   "pluginType": "accessory",
   "headerDisplay": "Create a security system accessory that can be triggered by HomeKit accessories.",
-  "footerDisplay": "Need help? [Ask me anything](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://paypal.me/miguelripoll23)",
+  "footerDisplay": "[Need help?](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://paypal.me/miguelripoll23)",
   "schema": {
     "title": "Security System",
     "type": "object",
@@ -144,9 +144,16 @@
       },
       "mode_off_switch": {
         "title": "Show Mode Off Switch",
-        "description": "Adds the Mode Off switch if the \"Show Mode Switches\" option is enabled.",
+        "description": "Adds a switch to disarm the security system if the \"Show Mode Switches\" option is enabled.",
         "type": "boolean",
         "default": true,
+        "required": false
+      },
+      "mode_away_extended_switch": {
+        "title": "Show Mode Away Extended Switch",
+        "description": "Adds a switch that sets the Away mode and can be used as a condition in automations to enhance the security.",
+        "type": "boolean",
+        "default": false,
         "required": false
       },
       "mode_pause_switch": {
@@ -412,6 +419,7 @@
       "items": [
         "mode_switches",
         "mode_off_switch",
+        "mode_away_extended_switch",
         {
           "type": "div",
           "display": "flex",
