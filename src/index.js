@@ -1,29 +1,26 @@
 const fs = require('fs');
 const path = require('path');
+const storage = require('node-persist');
 const { spawn } = require('child_process');
+const fetch = require('node-fetch');
+const express = require('express');
 
 const packageJson = require('../package.json');
 const options = require('./utils/options.js');
 const customServices = require('./hap/customServices.js');
 const customCharacteristics = require('./hap/customCharacteristics.js');
 
-const fetch = require('node-fetch');
-const storage = require('node-persist');
-const express = require('express');
-
 const app = express();
 
-let Service, Characteristic, CustomService, CustomCharacteristic;
-let homebridgeStoragePath;
+let Service, Characteristic, CustomService, CustomCharacteristic, storagePath;
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-
   CustomCharacteristic = customCharacteristics.CustomCharacteristic(Characteristic);
   CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
 
-  homebridgeStoragePath = homebridge.user.storagePath();
+  storagePath = homebridge.user.storagePath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
 };
@@ -274,17 +271,21 @@ function SecuritySystem(log, config) {
   }
 }
 
+SecuritySystem.prototype.getServices = function () {
+  return this.services;
+};
+
 SecuritySystem.prototype.load = async function () {
   const storageOptions = {
-    'dir': path.join(homebridgeStoragePath, 'homebridge-securitysystem')
+    'dir': path.join(storagePath, 'homebridge-securitysystem')
   };
 
   await storage.init(storageOptions)
     .then()
-    .catch((error) => {
+    .catch(error => {
       this.log.error('Unable to load state.');
       this.log.error(error);
-    });
+   });
 
   if (options.testMode) {
     await storage.clear();
@@ -300,8 +301,6 @@ SecuritySystem.prototype.load = async function () {
       }
 
       this.log.debug('State (Loaded)', state);
-
-      // Data
       this.log('Saved state (Found)');
 
       const currentState = options.isValueSet(state.currentState) ? state.currentState : this.defaultState;
@@ -320,7 +319,6 @@ SecuritySystem.prototype.load = async function () {
       // Update characteristics values
       this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
       this.service.updateCharacteristic(Characteristic.SecuritySystemCurrentState, this.currentState);
-
       this.handleStateUpdate(false);
 
       // Log
@@ -701,16 +699,14 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   const isCurrentStateAwayArm = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
 
   // Check if the security system is disarmed
-  if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-    if (options.overrideOff === false) {
-      this.log.warn('Sensor (Not armed)');
+  if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
+    this.log.warn('Sensor (Not armed)');
 
-      if (callback !== null) {
-        callback('Ignore');
-      }
-
-      return false;
+    if (callback !== null) {
+      callback('Ignore');
     }
+
+    return false;
   }
 
   // Check if arming
@@ -778,8 +774,6 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
       this.triggerTimeout = setTimeout(() => {
         this.triggerTimeout = null;
-
-        // 🎵 And there goes the alarm... 🎵
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
       }, options.triggerSeconds * 1000);
 
@@ -823,14 +817,14 @@ SecuritySystem.prototype.setSiren = function (value, callback) {
 
 // Server
 SecuritySystem.prototype.isCodeSent = function (req) {
+  // Check if auth is disabled
+  if (options.serverCode === null) {
+    return true;
+  }
+
   let code = req.query.code;
 
   if (code === undefined) {
-    // Check if auth is disabled
-    if (options.serverCode === null) {
-      return true;
-    }
-
     return false;
   }
 
@@ -947,17 +941,15 @@ SecuritySystem.prototype.startServer = async function () {
 
     let sucess = true;
 
-    // Check delay and trigger
     if (this.getDelayParameter(req)) {
+      // Delay
       sucess = this.updateSiren(true, true, false, null);
     }
     else {
-      // Check if security system is disarmed
-      if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-        if (options.overrideOff === false) {
-          this.sendResponse(res, false);
-          return;
-        } 
+      // Instant
+      if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
+        this.sendResponse(res, false);
+        return;
       }
 
       this.handleStateUpdate(true);
@@ -1360,10 +1352,8 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   if (value) {
-    if (this.currentState === switchRequiredState) {
-      this.updateSiren(value, false, false, callback);
-    }
-    else if (isCurrentStateAlarmTriggered && this.targetState === switchRequiredState) {
+    if (this.currentState === switchRequiredState ||
+       (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)) {
       this.updateSiren(value, false, false, callback);
     }
     else {
@@ -1582,9 +1572,4 @@ SecuritySystem.prototype.setModePauseSwitchOn = function (value, callback) {
   }
 
   callback(null);
-};
-
-// Accessory
-SecuritySystem.prototype.getServices = function () {
-  return this.services;
 };
