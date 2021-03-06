@@ -1,0 +1,557 @@
+{
+  "plugin_alias": "security-system",
+  "schemas": [
+    {
+      "title": "Security System",
+      "type": "object",
+      "properties": {
+        "accessory": {
+          "title": "Accessory",
+          "type": "string",
+          "const": "security-system",
+          "readOnly": true
+        },
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": "Security system",
+          "required": true
+        },
+        "default_mode": {
+          "title": "Default Mode",
+          "type": "string",
+          "default": "Off",
+          "required": true,
+          "enum": [
+            "Off",
+            "Home",
+            "Night",
+            "Away"
+          ]
+        },
+        "arm_seconds": {
+          "title": "Arming Delay Seconds",
+          "type": "integer",
+          "default": 0,
+          "required": false,
+          "minimum": 0
+        },
+        "trigger_seconds": {
+          "title": "Trigger Delay Seconds",
+          "type": "integer",
+          "default": 0,
+          "required": false,
+          "minimum": 0
+        },
+        "reset_minutes": {
+          "title": "Reset Delay Minutes",
+          "type": "integer",
+          "default": 10,
+          "required": false,
+          "minimum": 0
+        },
+        "audio": {
+          "title": "Play Audio (local only, ffmpeg required)",
+          "description": "Warns of mode or sensor updates by playing sounds.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "audio_language": {
+          "title": "Audio Language",
+          "type": "string",
+          "default": "en-US",
+          "required": true,
+          "enum": [
+            "en-US",
+            "de-DE"
+          ]
+        },
+        "save_state": {
+          "title": "Save Data Using Storage",
+          "description": "Persists the previous state after shutdowns and reboots.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "proxy_mode": {
+          "title": "Enable Proxy Mode",
+          "description": "Ignores webhooks/commands for server requests.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "test_mode": {
+          "title": "Enable Test Mode",
+          "description": "Ignores the webhook and command for the triggered event.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "override_off": {
+          "title": "Trigger During Off Mode",
+          "description": "Allows the security system to be triggered while disarmed.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "reset_off_flow": {
+          "title": "Reset Using Off Mode",
+          "description": "Resets the security system when triggered by passing through the Off mode.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "disabled_modes": {
+          "title": "Disabled Modes",
+          "type": "array",
+          "required": false,
+          "items": {
+            "title": "Mode",
+            "type": "string",
+            "enum": [
+              "Off",
+              "Home",
+              "Night",
+              "Away"
+            ],
+            "uniqueItems": true
+          }
+        },
+        "siren_sensor": {
+          "title": "Show Siren Sensor",
+          "description": "Adds a sensor that can be used to push multiple notifications during triggered mode.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "siren_sensor_seconds": {
+          "title": "Seconds",
+          "type": "integer",
+          "default": 5,
+          "required": false,
+          "minimum": 0
+        },
+        "reset_sensor": {
+          "title": "Show Reset Sensor",
+          "description": "Adds a sensor that triggers when the security system has reset.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "mode_switches": {
+          "title": "Show Mode Switches",
+          "description": "Adds switches for every mode in order to create automations based on a mode change or bypass confirmations.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "mode_off_switch": {
+          "title": "Show Mode Off Switch",
+          "description": "Adds a switch to disarm the security system if the \"Show Mode Switches\" option is enabled.",
+          "type": "boolean",
+          "default": true,
+          "required": false
+        },
+        "mode_away_extended_switch": {
+          "title": "Show Mode Away Extended Switch",
+          "description": "Adds a switch that sets the Away mode and can be used as a condition in automations to enhance the security.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "mode_pause_switch": {
+          "title": "Show Mode Pause Switch",
+          "description": "Adds a switch that will temporarily or indefinitely (if minutes is to zero) disarm the security system.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "pause_minutes": {
+          "title": "Minutes",
+          "type": "integer",
+          "default": 0,
+          "required": false,
+          "minimum": 0
+        },
+        "siren_switch": {
+          "title": "Show Siren Switch",
+          "description": "Adds a global switch that will trigger the security system.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "siren_mode_switches": {
+          "title": "Show Siren Mode Switches",
+          "description": "Adds switches for every mode that will trigger the security system.",
+          "type": "boolean",
+          "default": true,
+          "required": false
+        },
+        "double_knock": {
+          "title": "Use Double-Knock (away only)",
+          "description": "Requires the same sensor or other ones to be triggered twice within a time window.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "double_knock_seconds": {
+          "title": "Seconds",
+          "type": "integer",
+          "default": 90,
+          "required": false,
+          "minimum": 0
+        },
+        "audio_path": {
+          "title": "Custom Audio Path",
+          "description": "Instructions will be created in this path.",
+          "type": "string",
+          "required": false,
+          "placeholder": "/home/user/sounds"
+        },
+        "audio_volume": {
+          "title": "Audio Volume",
+          "type": "string",
+          "required": false,
+          "default": 100,
+          "placeholder": "100"
+        },
+        "audio_arming_looped": {
+          "title": "Loop Arming Sound",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "audio_alert_looped": {
+          "title": "Loop Warning Sound",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
+        "server_port": {
+          "title": "Listening Port",
+          "type": "integer",
+          "required": false,
+          "minimum": 0,
+          "placeholder": 80
+        },
+        "server_code": {
+          "title": "Security Code",
+          "description": "All requests will require this code to be sent.",
+          "type": "integer",
+          "required": false,
+          "minimum": 0,
+          "placeholder": "XXXX"
+        },
+        "webhook_url": {
+          "title": "Base URL",
+          "type": "string",
+          "required": false,
+          "format": "uri",
+          "placeholder": "http://localhost"
+        },
+        "webhook_target_home": {
+          "title": "Target Mode: Home",
+          "type": "string",
+          "required": false,
+          "placeholder": "/target/home"
+        },
+        "webhook_target_away": {
+          "title": "Target Mode: Away",
+          "type": "string",
+          "required": false,
+          "placeholder": "/target/away"
+        },
+        "webhook_target_night": {
+          "title": "Target Mode: Night",
+          "type": "string",
+          "required": false,
+          "placeholder": "/target/night"
+        },
+        "webhook_target_off": {
+          "title": "Target Mode: Off",
+          "type": "string",
+          "required": false,
+          "placeholder": "/target/off"
+        },
+        "webhook_current_home": {
+          "title": "Current Mode: Home",
+          "type": "string",
+          "required": false,
+          "placeholder": "/current/home"
+        },
+        "webhook_current_away": {
+          "title": "Current Mode: Away",
+          "type": "string",
+          "required": false,
+          "placeholder": "/current/away"
+        },
+        "webhook_current_night": {
+          "title": "Current Mode: Night",
+          "type": "string",
+          "required": false,
+          "placeholder": "/current/night"
+        },
+        "webhook_current_off": {
+          "title": "Current Mode: Off",
+          "type": "string",
+          "required": false,
+          "placeholder": "/current/off"
+        },
+        "webhook_current_warning": {
+          "title": "Current Event: Warning",
+          "type": "string",
+          "required": false,
+          "placeholder": "/current/warning"
+        },
+        "webhook_current_triggered": {
+          "title": "Current Mode: Triggered",
+          "type": "string",
+          "required": false,
+          "placeholder": "/current/triggered"
+        },
+        "command_target_home": {
+          "title": "Target Mode: Home",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo target home"
+        },
+        "command_target_away": {
+          "title": "Target Mode: Away",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo target away"
+        },
+        "command_target_off": {
+          "title": "Target Mode: Off",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo target off"
+        },
+        "command_target_night": {
+          "title": "Target Mode: Night",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo target night"
+        },
+        "command_current_home": {
+          "title": "Current Mode: Home",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo current home"
+        },
+        "command_current_away": {
+          "title": "Current Mode: Away",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo current away"
+        },
+        "command_current_night": {
+          "title": "Current Mode: Night",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo current night"
+        },
+        "command_current_off": {
+          "title": "Current Mode: Off",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo current off"
+        },
+        "command_current_warning": {
+          "title": "Current Event: Warning",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo current warning"
+        },
+        "command_current_triggered": {
+          "title": "Current Mode: Triggered",
+          "type": "string",
+          "required": false,
+          "placeholder": "echo current triggered"
+        }
+      }
+    }
+  ],
+  "layout": [
+    "name",
+    "default_mode",
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "arm_seconds",
+        "trigger_seconds",
+        "reset_minutes"
+      ]
+    },
+    {
+      "type": "div",
+      "display": "flex",
+      "flex-direction": "row",
+      "items": [
+        {
+          "key": "audio",
+          "flex": "1"
+        },
+        {
+          "key": "audio_language",
+          "flex": "200px"
+        }
+      ]
+    },
+    "save_state",
+    "test_mode",
+    {
+      "type": "fieldset",
+      "title": "Advanced Options",
+      "description": "Need more options? You know what do do.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "override_off",
+        "reset_off_flow",
+        "proxy_mode",
+        "disabled_modes"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Switches",
+      "description": "Create simpler automations or bypass HomeKit confirmations.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "mode_switches",
+        "mode_off_switch",
+        "mode_away_extended_switch",
+        {
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "mode_pause_switch",
+              "flex": "1"
+            },
+            {
+              "key": "pause_minutes",
+              "flex": "200px"
+            }
+          ]
+        },
+        "siren_switch",
+        "siren_mode_switches"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Sensors",
+      "description": "Run an automation when an event not captured by HomeKit ocurrs.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "double_knock",
+              "flex": "1"
+            },
+            {
+              "key": "double_knock_seconds",
+              "flex": "200px"
+            }
+          ]
+        },
+        {
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "siren_sensor",
+              "flex": "1"
+            },
+            {
+              "key": "siren_sensor_seconds",
+              "flex": "200px"
+            }
+          ]
+        },
+        "reset_sensor"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Audio",
+      "description": "Change sounds directory and playback behavior.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "audio_path",
+            "audio_volume"
+          ]
+        },
+        "audio_arming_looped",
+        "audio_alert_looped"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Server",
+      "description": "Start a web server to interact with the security system remotely.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "server_port",
+        "server_code"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Webhooks",
+      "description": "Send events to other web server under your control.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "webhook_url",
+        "webhook_target_home",
+        "webhook_target_away",
+        "webhook_target_night",
+        "webhook_target_off",
+        "webhook_current_home",
+        "webhook_current_away",
+        "webhook_current_night",
+        "webhook_current_off",
+        "webhook_current_warning",
+        "webhook_current_triggered"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Commands",
+      "description": "Execute commands on this device based on events.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "command_target_home",
+        "command_target_away",
+        "command_target_night",
+        "command_target_off",
+        "command_current_home",
+        "command_current_away",
+        "command_current_night",
+        "command_current_off",
+        "command_current_warning",
+        "command_current_triggered"
+      ]
+    }
+  ]
+}
