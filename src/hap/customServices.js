@@ -6,19 +6,19 @@ function CustomService(Service, Characteristic, CustomCharacteristic) {
 
     Service.call(this, displayName, this.UUID, subtype);
 
-    // Required characteristics
-    this.addCharacteristic(CustomCharacteristic.SecuritySystemArming);
-
+    // Required
     this.addCharacteristic(Characteristic.SecuritySystemCurrentState);
     this.addCharacteristic(Characteristic.SecuritySystemTargetState);
-    this.addCharacteristic(CustomCharacteristic.SecuritySystemArmingDelay);
-    this.addCharacteristic(CustomCharacteristic.SecuritySystemSiren);
 
-    // Optional characteristics
+    // Optional
     this.addOptionalCharacteristic(Characteristic.StatusFault);
     this.addOptionalCharacteristic(Characteristic.StatusTampered);
     this.addOptionalCharacteristic(Characteristic.SecuritySystemAlarmType);
     this.addOptionalCharacteristic(Characteristic.Name);
+
+    // Custom
+    this.addCharacteristic(CustomCharacteristic.SecuritySystemArming);
+    this.addCharacteristic(CustomCharacteristic.SecuritySystemSiren);
   };
 
   inherits(this.SecuritySystem, Service);
