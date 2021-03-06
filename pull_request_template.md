@@ -1,6 +1,6 @@
 **Issue (if exists)**
 
-*#XX / None*
+*Fixes #XX / None*
 
 **Changes proposed**
 
