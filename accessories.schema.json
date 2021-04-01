@@ -95,6 +95,13 @@
           "default": false,
           "required": false
         },
+        "night_arming_delay": {
+          "title": "Arm Night Mode With Delay",
+          "description": "Sets the Night mode after the arming time has passed.",
+          "type": "boolean",
+          "default": true,
+          "required": false
+        },
         "reset_off_flow": {
           "title": "Reset Using Off Mode",
           "description": "Resets the security system when triggered by passing through the Off mode.",
@@ -189,7 +196,7 @@
           "required": false
         },
         "double_knock": {
-          "title": "Use Double-Knock (away only)",
+          "title": "Use Double-Knock",
           "description": "Requires the same sensor or other ones to be triggered twice within a time window.",
           "type": "boolean",
           "default": false,
@@ -410,6 +417,7 @@
       "expanded": false,
       "items": [
         "override_off",
+        "night_arming_delay",
         "reset_off_flow",
         "proxy_mode",
         "disabled_modes"
