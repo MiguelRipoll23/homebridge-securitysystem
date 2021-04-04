@@ -222,11 +222,11 @@ const options = {
 
     // Siren switches
     if (options.isValueSet(options.sirenSwitch) === false) {
-      options.sirenSwitch = true;
+      options.sirenSwitch = false;
     }
 
     if (options.isValueSet(options.sirenModeSwitches) === false) {
-      options.sirenModeSwitches = false;
+      options.sirenModeSwitches = true;
     }
 
     // Reset sensor
