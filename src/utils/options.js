@@ -80,6 +80,9 @@ const options = {
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
 
+    // Arming lock switch
+    options.armingLockSwitch = config.arming_lock_switch;
+
     // Siren switches
     options.sirenSwitch = config.siren_switch;
     options.sirenModeSwitches = config.siren_mode_switches;
@@ -210,6 +213,11 @@ const options = {
 
     if (options.isValueSet(options.sirenSensorSeconds) === false) {
       options.sirenSensorSeconds = 5;
+    }
+
+    // Arming lock switch
+    if (options.isValueSet(options.armingLockSwitch) === false) {
+      options.armingLockSwitch = true;
     }
 
     // Siren switches

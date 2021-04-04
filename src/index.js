@@ -36,9 +36,11 @@ function SecuritySystem(log, config) {
 
   this.isArming = false;
   this.isKnocked = false;
+
+  this.armingLockCount = 0;
+  this.invalidCodeCount = 0;
   
   this.pausedCurrentState = null;
-  this.invalidCodeAttempts = 0;
   this.audioProcess = null;
 
   this.armTimeout = null;
@@ -119,6 +121,14 @@ function SecuritySystem(log, config) {
   this.resetMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', this.getResetMotionDetected.bind(this));
+
+  // Arming Lock
+  this.armingLockSwitchService = new Service.Switch('Arming Lock', 'arming-lock');
+
+  this.armingLockSwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getArmingLockSwitch.bind(this))
+    .on('set', this.setArmingLockSwitch.bind(this));
 
   // Mode switches
   this.modeHomeSwitchService = new Service.Switch('Mode Home', 'mode-home');
@@ -205,12 +215,16 @@ function SecuritySystem(log, config) {
     this.services.push(this.sirenMotionSensorService);
   }
 
-  if (options.sirenSwitch) {
-    this.services.push(this.sirenSwitchService);
-  }
-
   if (options.resetSensor) {
     this.services.push(this.resetMotionSensorService);
+  }
+
+  if (options.armingLockSwitch) {
+    this.services.push(this.armingLockSwitchService);
+  }
+
+  if (options.sirenSwitch) {
+    this.services.push(this.sirenSwitchService);
   }
 
   if (this.availableTargetStates.includes(Characteristic.SecuritySystemTargetState.STAY_ARM)) {
@@ -380,6 +394,9 @@ SecuritySystem.prototype.state2Mode = function (state) {
       return 'off';
 
     // Custom
+    case 'lock':
+      return state;
+
     case 'warning':
       return state;
 
@@ -589,6 +606,18 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   // Check if state is enabled
   if (this.availableTargetStates.includes(state) === false) {
     this.log.warn('Target mode (Disabled)');
+
+    if (callback !== null) {
+      // Tip: this will revert the original state
+      callback(Characteristic.SecuritySystemTargetState.DISARM);
+    }
+
+    return false;
+  }
+
+  // Check arming lock
+  if (this.armingLockCount > 0) {
+    this.log.warn(`Arming lock (${this.armingLockCount})`);
 
     if (callback !== null) {
       // Tip: this will revert the original state
@@ -840,7 +869,7 @@ SecuritySystem.prototype.isAuthenticated = function (req, res) {
   }
 
   // Check brute force
-  if (this.invalidCodeAttempts >= 5) {
+  if (this.invalidCodeCount >= 5) {
     req.blocked = true;
     this.sendCodeInvalidError(req, res);
     return false;
@@ -849,13 +878,13 @@ SecuritySystem.prototype.isAuthenticated = function (req, res) {
   const userCode = parseInt(req.query.code);
 
   if (userCode !== options.serverCode) {
-    this.invalidCodeAttempts++;
+    this.invalidCodeCount++;
     this.sendCodeInvalidError(req, res);
     return false;
   }
 
   // Reset
-  this.invalidCodeAttempts = 0;
+  this.invalidCodeCount = 0;
 
   return true;
 };
@@ -900,6 +929,10 @@ SecuritySystem.prototype.sendResultResponse = function (res, sucess) {
 };
 
 SecuritySystem.prototype.startServer = async function () {
+  app.get('/', (req, res) => {
+    res.redirect('https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki/Server');
+  });
+
   app.get('/status', (req, res) => {
     if (this.isAuthenticated(req, res) === false) {
       return;
@@ -986,6 +1019,17 @@ SecuritySystem.prototype.startServer = async function () {
     const sucess = this.updateTargetState(state, true, delay, null);
 
     this.sendResultResponse(res, sucess);
+  });
+
+  app.get('/arming-lock/:value', (req, res) => {
+    if (this.isAuthenticated(req, res) === false) {
+      return;
+    }
+
+    const value = req.params['value'].includes('true');
+    const result = this.updateArmingLock(value);
+
+    this.sendResultResponse(res, result);
   });
 
   // Listener
@@ -1354,6 +1398,34 @@ SecuritySystem.prototype.setSirenNightSwitch = function (value, callback) {
 SecuritySystem.prototype.getResetMotionDetected = function (callback) {
   const value = this.resetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
+};
+
+// Arming Lock Switch
+SecuritySystem.prototype.getArmingLockSwitch = function (callback) {
+  const value = this.armingLockSwitchService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.updateArmingLock = function(value) {
+  if (value) {
+    this.armingLockCount++;
+    this.log(`Arming lock (+)`);
+  }
+  else {
+    if (this.armingLockCount === 0) {
+      return false;
+    }
+  
+    this.armingLockCount--;
+    this.log(`Arming lock (-)`);
+  }
+
+  return true;
+};
+
+SecuritySystem.prototype.setArmingLockSwitch = function (value, callback) {
+  this.updateArmingLock(value);
+  callback(null);
 };
 
 // Mode Switches

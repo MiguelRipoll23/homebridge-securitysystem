@@ -181,6 +181,13 @@
           "required": false,
           "minimum": 0
         },
+        "arming_lock_switch": {
+          "title": "Show Arming Lock Switch",
+          "description": "Adds a switch that will prevent arming the security system.",
+          "type": "boolean",
+          "default": false,
+          "required": false
+        },
         "siren_switch": {
           "title": "Show Siren Switch",
           "description": "Adds a global switch that will trigger the security system.",
@@ -448,6 +455,7 @@
             }
           ]
         },
+        "arming_lock_switch",
         "siren_switch",
         "siren_mode_switches"
       ]
