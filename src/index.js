@@ -616,7 +616,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   }
 
   // Check arming lock
-  if (this.armingLockCount > 0) {
+  if (state === Characteristic.SecuritySystemTargetState.AWAY_ARM && this.armingLockCount > 0) {
     this.log.warn(`Arming lock (${this.armingLockCount})`);
 
     if (callback !== null) {
