@@ -76,6 +76,7 @@ const options = {
     options.testMode = config.test_mode;
 
     options.overrideOff = config.override_off;
+    options.nightArmingDelay = config.night_arming_delay;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
 
@@ -180,6 +181,10 @@ const options = {
 
     if (options.isValueSet(options.overrideOff) === false) {
       options.overrideOff = false;
+    }
+
+    if (options.isValueSet(options.nightArmingDelay) === false) {
+      options.nightArmingDelay = true;
     }
 
     if (options.isValueSet(options.resetOff) === false) {

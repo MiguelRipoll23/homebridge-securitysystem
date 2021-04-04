@@ -602,6 +602,9 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.targetState = state;
   this.logMode('Target', state);
 
+  const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
+  const isTargetStateNight = this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+
   // Update characteristic
   if (external) {
     this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
@@ -634,16 +637,26 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   }
 
   // Play sound
-  if (delay && options.armSeconds > 0 && isCurrentStateAlarmTriggered === false) {
+  armingSound: if (delay && options.armSeconds > 0 && isCurrentStateAlarmTriggered === false) {
+    // Check if night state
+    // arming delay is disabled
+    if (isTargetStateNight && options.nightArmingDelay === false) {
+      break armingSound;
+    }
+
     this.playAudio('target', state);
   }
-
-  const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
 
   // Set arming delay (if neccessary)
   let armSeconds = 0;
 
-  if (delay && isCurrentStateAlarmTriggered === false && isTargetStateDisarm === false) {
+  armingDelay: if (delay && isCurrentStateAlarmTriggered === false && isTargetStateDisarm === false) {
+    // Check if night state
+    // arming delay is disabled
+    if (isTargetStateNight && options.nightArmingDelay === false) {
+      break armingDelay;
+    }
+
     armSeconds = options.armSeconds;
 
     // Update arming characteristic
