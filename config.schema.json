@@ -178,7 +178,7 @@
         "minimum": 0
       },
       "arming_lock_switch": {
-        "title": "Show Arming Lock Switch",
+        "title": "Show Arming Lock Switch (Beta)",
         "description": "Adds a switch that will prevent arming the security system when set to Away mode.",
         "type": "boolean",
         "default": false,
