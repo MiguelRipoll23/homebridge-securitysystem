@@ -632,7 +632,6 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.logMode('Target', state);
 
   const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
-  const isTargetStateNight = this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
 
   // Update characteristic
   if (external) {
@@ -666,26 +665,14 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   }
 
   // Play sound
-  armingSound: if (delay && options.armSeconds > 0 && isCurrentStateAlarmTriggered === false) {
-    // Check if night state
-    // arming delay is disabled
-    if (isTargetStateNight && options.nightArmingDelay === false) {
-      break armingSound;
-    }
-
+  if (delay && options.armSeconds > 0 && isCurrentStateAlarmTriggered === false) {
     this.playAudio('target', state);
   }
 
   // Set arming delay (if neccessary)
   let armSeconds = 0;
 
-  armingDelay: if (delay && isCurrentStateAlarmTriggered === false && isTargetStateDisarm === false) {
-    // Check if night state
-    // arming delay is disabled
-    if (isTargetStateNight && options.nightArmingDelay === false) {
-      break armingDelay;
-    }
-
+  if (delay && isCurrentStateAlarmTriggered === false && isTargetStateDisarm === false) {
     armSeconds = options.armSeconds;
 
     // Update arming characteristic
@@ -810,13 +797,22 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
         return false;
       }
 
+      const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
+      
+      // Set trigger delay (if neccessary)
+      let triggerSeconds = options.triggerSeconds;
+
+      if (isCurrentStateNight && options.nightTriggerDelay === false) {
+        triggerSeconds = 0;
+      }
+
       this.triggerTimeout = setTimeout(() => {
         this.triggerTimeout = null;
         this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
-      }, options.triggerSeconds * 1000);
+      }, triggerSeconds * 1000);
 
       // Audio
-      if (options.triggerSeconds > 0) {
+      if (triggerSeconds > 0) {
         this.playAudio('current', 'warning');
       }
 
