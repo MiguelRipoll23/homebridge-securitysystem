@@ -95,9 +95,9 @@
           "default": false,
           "required": false
         },
-        "night_arming_delay": {
-          "title": "Arm Night Mode With Delay",
-          "description": "Sets the Night mode after the arming time has passed.",
+        "night_trigger_delay": {
+          "title": "Trigger During Night Mode With Delay",
+          "description": "Adds a delay for the triggered event when set to Night mode.",
           "type": "boolean",
           "default": true,
           "required": false
@@ -180,6 +180,13 @@
           "default": 0,
           "required": false,
           "minimum": 0
+        },
+        "arming_lock_switch": {
+          "title": "Show Arming Lock Switch (Beta)",
+          "description": "Adds a switch that will prevent arming the security system when set to Away mode.",
+          "type": "boolean",
+          "default": false,
+          "required": false
         },
         "siren_switch": {
           "title": "Show Siren Switch",
@@ -417,7 +424,7 @@
       "expanded": false,
       "items": [
         "override_off",
-        "night_arming_delay",
+        "night_trigger_delay",
         "reset_off_flow",
         "proxy_mode",
         "disabled_modes"
@@ -448,6 +455,7 @@
             }
           ]
         },
+        "arming_lock_switch",
         "siren_switch",
         "siren_mode_switches"
       ]

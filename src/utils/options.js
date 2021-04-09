@@ -76,9 +76,12 @@ const options = {
     options.testMode = config.test_mode;
 
     options.overrideOff = config.override_off;
-    options.nightArmingDelay = config.night_arming_delay;
+    options.nightTriggerDelay = config.night_trigger_delay;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
+
+    // Arming lock switch
+    options.armingLockSwitch = config.arming_lock_switch;
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
@@ -183,8 +186,8 @@ const options = {
       options.overrideOff = false;
     }
 
-    if (options.isValueSet(options.nightArmingDelay) === false) {
-      options.nightArmingDelay = true;
+    if (options.isValueSet(options.nightTriggerDelay) === false) {
+      options.nightTriggerDelay = true;
     }
 
     if (options.isValueSet(options.resetOff) === false) {
@@ -212,13 +215,18 @@ const options = {
       options.sirenSensorSeconds = 5;
     }
 
+    // Arming lock switch
+    if (options.isValueSet(options.armingLockSwitch) === false) {
+      options.armingLockSwitch = true;
+    }
+
     // Siren switches
     if (options.isValueSet(options.sirenSwitch) === false) {
-      options.sirenSwitch = true;
+      options.sirenSwitch = false;
     }
 
     if (options.isValueSet(options.sirenModeSwitches) === false) {
-      options.sirenModeSwitches = false;
+      options.sirenModeSwitches = true;
     }
 
     // Reset sensor
