@@ -37,7 +37,6 @@ function SecuritySystem(log, config) {
   this.isArming = false;
   this.isKnocked = false;
 
-  this.armingLockCount = 0;
   this.invalidCodeCount = 0;
   
   this.pausedCurrentState = null;
@@ -616,8 +615,11 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   }
 
   // Check arming lock
-  if (state === Characteristic.SecuritySystemTargetState.AWAY_ARM && this.armingLockCount > 0) {
-    this.log.warn(`Arming lock (${this.armingLockCount})`);
+  const armingLockOnCharacteristic = this.armingLockSwitchService.getCharacteristic(Characteristic.On);
+  const armingLockOnValue = armingLockOnCharacteristic.value;
+
+  if (armingLockOnValue) {
+    this.log.warn('Arming lock (Blocked)');
 
     if (callback !== null) {
       // Tip: this will revert the original state
@@ -1402,25 +1404,21 @@ SecuritySystem.prototype.getArmingLockSwitch = function (callback) {
   callback(null, value);
 };
 
+SecuritySystem.prototype.logArmingLock = function(value) {
+  this.log(`Arming lock (${(value) ? 'On' : 'Off'})`);
+};
+
 SecuritySystem.prototype.updateArmingLock = function(value) {
-  if (value) {
-    this.armingLockCount++;
-    this.log(`Arming lock (+)`);
-  }
-  else {
-    if (this.armingLockCount === 0) {
-      return false;
-    }
-  
-    this.armingLockCount--;
-    this.log(`Arming lock (-)`);
-  }
+  this.logArmingLock(value);
+
+  const onCharacteristic = this.armingLockSwitchService.getCharacteristic(Characteristic.On);
+  onCharacteristic.updateValue(value);
 
   return true;
 };
 
 SecuritySystem.prototype.setArmingLockSwitch = function (value, callback) {
-  this.updateArmingLock(value);
+  this.logArmingLock(value);
   callback(null);
 };
 
