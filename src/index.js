@@ -50,22 +50,74 @@ function SecuritySystem(log, config) {
   
   this.sirenInterval = null;
   
+  // File logger
+  if (options.isValueSet(options.logDirectory)) {
+    const logInfo = this.log.info.bind(this.log);
+    const logWarn = this.log.warn.bind(this.log);
+    const logError = this.log.error.bind(this.log);
+
+    this.log.info = (message) => {
+      logInfo.apply(null, [message]);
+      this.log.appendFile(message);
+    };
+
+    this.log.warn = (message) => {
+      logWarn.apply(null, [message]);
+      this.log.appendFile(message);
+    };
+
+    this.log.error = (message) => {
+      logError.apply(null, [message]);
+      this.log.appendFile(message);
+    };
+
+    this.log.appendFile = async (message) => {
+      const date = new Date();
+
+      try {
+        const stats = await fs.promises.stat(`${options.logDirectory}/securitysystem.log`);
+
+        if (stats.birthtime.toLocaleDateString() !== date.toLocaleDateString()) {
+          await fs.promises.rename(
+            `${options.logDirectory}/securitysystem.log`,
+            `${options.logDirectory}/securitysystem-${stats.birthtime.toLocaleDateString().replaceAll('/', '-')}.log`
+          );
+        }
+      }
+      catch (error) {
+        this.log.debug('Previous log file not found.');
+      }
+
+      try {
+        await fs.promises.appendFile(
+          `${options.logDirectory}/securitysystem.log`,
+          `[${new Date().toLocaleString()}] ${message}\n`,
+          { flag: 'a' }
+        );
+      }
+      catch (error) {
+        logError('File logger (Error)');
+        logError(error);
+      };
+    }
+  }
+
   // Log
   if (options.testMode) {
     this.log.warn('Test Mode');
   }
 
   this.logMode('Default', this.defaultState);
-  this.log(`Arm delay (${options.armSeconds} second/s)`);
-  this.log(`Trigger delay (${options.triggerSeconds} second/s)`);
-  this.log(`Audio (${(options.audio) ? 'Enabled' : 'Disabled'})`);
+  this.log.info(`Arm delay (${options.armSeconds} second/s)`);
+  this.log.info(`Trigger delay (${options.triggerSeconds} second/s)`);
+  this.log.info(`Audio (${(options.audio) ? 'Enabled' : 'Disabled'})`);
 
   if (options.proxyMode) {
-    this.log('Proxy mode (Enabled)');
+    this.log.info('Proxy mode (Enabled)');
   }
 
   if (options.isValueSet(options.webhookUrl)) {
-    this.log(`Webhook (${options.webhookUrl})`);
+    this.log.info(`Webhook (${options.webhookUrl})`);
   }
 
   // Security system
@@ -314,7 +366,7 @@ SecuritySystem.prototype.load = async function () {
       }
 
       this.log.debug('State (Loaded)', state);
-      this.log('Saved state (Found)');
+      this.log.info('Saved state (Found)');
 
       const currentState = options.isValueSet(state.currentState) ? state.currentState : this.defaultState;
       const targetState = options.isValueSet(state.targetState) ? state.targetState : this.defaultState;
@@ -370,7 +422,7 @@ SecuritySystem.prototype.save = async function () {
 };
 
 SecuritySystem.prototype.identify = function (callback) {
-  this.log('Identify');
+  this.log.info('Identify');
   callback(null);
 };
 
@@ -429,7 +481,7 @@ SecuritySystem.prototype.logMode = function (type, state) {
   let mode = this.state2Mode(state);
   mode = mode.charAt(0).toUpperCase() + mode.slice(1);
 
-  this.log(`${type} mode (${mode})`);
+  this.log.info(`${type} mode (${mode})`);
 };
 
 SecuritySystem.prototype.getAvailableTargetStates = function () {
@@ -480,7 +532,7 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
     // when time runs out
     this.resetTimeout = setTimeout(() => {
       this.resetTimeout = null;
-      this.log('Reset (Finished)');
+      this.log.info('Reset (Finished)');
 
       // Update reset sensor
       this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
@@ -757,7 +809,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
         this.doubleKnockTimeout = null;
         this.isKnocked = false;
   
-        this.log('Sensor (Reset)');
+        this.log.info('Sensor (Reset)');
       }, options.doubleKnockSeconds * 1000);
   
       if (callback !== null) {
@@ -792,7 +844,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       return false;
     }
     else {
-      this.log('Sensor (Triggered)');
+      this.log.info('Sensor (Triggered)');
 
       // Check if sensor already triggered
       if (this.triggerTimeout !== null) {
@@ -827,7 +879,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
   else {
     // Off
-    this.log('Sensor (Cancelled)');
+    this.log.info('Sensor (Cancelled)');
     this.stopAudio();
 
     if (isCurrentStateAlarmTriggered) {
@@ -892,7 +944,7 @@ SecuritySystem.prototype.getDelayParameter = function (req) {
 };
 
 SecuritySystem.prototype.sendCodeRequiredError = function (res) {
-  this.log('Code required (Server)');
+  this.log.info('Code required (Server)');
 
   const response = {
     'error': true,
@@ -907,11 +959,11 @@ SecuritySystem.prototype.sendCodeInvalidError = function (req, res) {
   const response = { 'error': true };
 
   if (req.blocked) {
-    this.log('Code blocked (Server)');
+    this.log.info('Code blocked (Server)');
     response.message = 'Code blocked';
   }
   else {
-    this.log('Code invalid (Server)');
+    this.log.info('Code invalid (Server)');
     response.message = 'Code invalid';
   }
 
@@ -1038,7 +1090,7 @@ SecuritySystem.prototype.startServer = async function () {
       return;
     }
 
-    this.log(`Server (${options.serverPort})`);
+    this.log.info(`Server (${options.serverPort})`);
   });
 
   server.on('error', (error) => {
@@ -1219,7 +1271,7 @@ SecuritySystem.prototype.executeCommand = function (type, state, external) {
   });
 
   process.stdout.on('data', (data) => {
-    this.log(`Command output: ${data}`);
+    this.log.info(`Command output: ${data}`);
   });
 };
 
@@ -1304,7 +1356,7 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
         throw new Error(`Status code (${response.status})`);
       }
 
-      this.log('Webhook event (Sent)');
+      this.log.info('Webhook event (Sent)');
     })
     .catch(error => {
       this.log.error(`Request to webhook failed. (${path})`);
@@ -1405,7 +1457,7 @@ SecuritySystem.prototype.getArmingLockSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.logArmingLock = function(value) {
-  this.log(`Arming lock (${(value) ? 'On' : 'Off'})`);
+  this.log.info(`Arming lock (${(value) ? 'On' : 'Off'})`);
 };
 
 SecuritySystem.prototype.updateArmingLock = function(value) {
@@ -1570,7 +1622,7 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
       return;
     }
 
-    this.log('Pause (Started)');
+    this.log.info('Pause (Started)');
 
     this.pausedCurrentState = this.currentState;
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true, null);
@@ -1578,13 +1630,13 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     // Check if time is set to unlimited
     if (options.pauseMinutes !== 0) {
       this.pauseTimeout = setTimeout(() => {
-        this.log('Pause (Finished)');
+        this.log.info('Pause (Finished)');
         this.updateTargetState(this.pausedCurrentState, true, true, null);
       }, options.pauseMinutes * 60 * 1000);
     }
   }
   else {
-    this.log('Pause (Cancelled)');
+    this.log.info('Pause (Cancelled)');
 
     if (this.pauseTimeout !== null) {
       clearTimeout(this.pauseTimeout);
