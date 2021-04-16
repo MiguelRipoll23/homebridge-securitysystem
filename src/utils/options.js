@@ -74,6 +74,7 @@ const options = {
     options.saveState = config.save_state;
     options.proxyMode = config.proxy_mode;
     options.testMode = config.test_mode;
+    options.logDirectory = config.log_directory;
 
     options.overrideOff = config.override_off;
     options.nightTriggerDelay = config.night_trigger_delay;
@@ -204,6 +205,10 @@ const options = {
 
     if (options.isValueSet(options.testMode) === false) {
       options.testMode = false;
+    }
+
+    if (options.isValueSet(options.logDirectory) === false) {
+      options.logDirectory = null;
     }
 
     // Siren sensor

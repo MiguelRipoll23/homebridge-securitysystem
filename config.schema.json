@@ -84,6 +84,12 @@
         "default": false,
         "required": false
       },
+      "log_directory": {
+        "title": "Log Directory Path",
+        "type": "string",
+        "required": false,
+        "placeholder": "/home/user/logs"
+      },
       "override_off": {
         "title": "Trigger During Off Mode",
         "description": "Allows the security system to be triggered while disarmed.",
@@ -418,6 +424,7 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        "log_directory",
         "override_off",
         "night_trigger_delay",
         "reset_off_flow",
