@@ -152,6 +152,11 @@ const options = {
 
   isValueSet: (value) => {
     if (value === undefined || value === null) {
+      // Check empty strings
+      if (typeof value === 'string' && value.trim() === '') {
+        return false;
+      }
+
       return false;
     }
 
