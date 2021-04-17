@@ -168,6 +168,10 @@ const options = {
   },
 
   setDefaultValues: () => {
+    if (options.isValueSet(options.name) === false) {
+      options.name = 'Security System';
+    }
+
     if (options.isValueSet(options.defaultMode) === false) {
       options.defaultMode = 'off';
     }
