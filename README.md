@@ -15,11 +15,11 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 ## Demo
 <div align="left">
   <img align="right" width="180" height="389" src="https://media1.giphy.com/media/bzwNi1NJOwIBjFygTo/giphy.gif">
-  <p>Want to know how it looks like? It's pretty customizable, you can have one single switch, one for every mode available or even no switches at all.</p>
-  <p>What you are seeing at your right it's <b>the friendliest</b> configuration that you can start with. Each <code>Siren</code> switch that you see can only be activated if its mode is selected on the security system, this allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
+  <p>Want to know how it looks like? It's pretty customizable, you can configure it to show as many switches as you like or use an advanced HomeKit app to create powerful automations.</p>
+  <p>What you are seeing at your right it's <b>the friendliest</b> configuration that you can start with. Each <code>Siren</code> switch that you see can only trigger the security system if the mode is set on the security system, this allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
   <p>There are also the so called <code>Mode</code> switches which let you trigger automations when a mode is changed or bypass HomeKit confirmation dialogs. Need to temporarily disarm the security system? There's a <code>Pause</code> switch for that.</p>
-  <p>If you thought that was all... there is a server to interact with the security system, webhooks or even commands to integrate with other devices or services and a plenty of more settings to make this plugin your own DIY security system.</p>
-  <p>Homebridge / HOOBS UI is recommended to configure the plugin. If you need to submit feedback, create an issue or discussion here.</p>
+  <p>If you thought that was all... there is a server to interact with the security system, webhooks or even shell commands to integrate with other devices or services and a plenty of more settings to make this plugin your own DIY security system.</p>
+  <p>Homebridge / HOOBS UI is recommended to configure the plugin. If you need to submit feedback, create an issue or discussion here.</p> <p>For additional help, please check the <a href="https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki">Wiki</a> page.</p>
 </div>
 
 ## Automations
