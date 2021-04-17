@@ -14,7 +14,7 @@
         "name": {
           "title": "Name",
           "type": "string",
-          "default": "Security system",
+          "default": "Security System",
           "required": true
         },
         "default_mode": {
