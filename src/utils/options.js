@@ -231,7 +231,7 @@ const options = {
 
     // Arming lock switch
     if (options.isValueSet(options.armingLockSwitch) === false) {
-      options.armingLockSwitch = true;
+      options.armingLockSwitch = false;
     }
 
     // Siren switches
