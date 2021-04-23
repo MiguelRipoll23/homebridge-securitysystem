@@ -14,7 +14,7 @@
         "name": {
           "title": "Name",
           "type": "string",
-          "default": "Security system",
+          "default": "Security System",
           "required": true
         },
         "default_mode": {
@@ -87,6 +87,12 @@
           "type": "boolean",
           "default": false,
           "required": false
+        },
+        "log_directory": {
+          "title": "Log Directory Path",
+          "type": "string",
+          "required": false,
+          "placeholder": "/home/user/logs"
         },
         "override_off": {
           "title": "Trigger During Off Mode",
@@ -423,6 +429,7 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        "log_directory",
         "override_off",
         "night_trigger_delay",
         "reset_off_flow",

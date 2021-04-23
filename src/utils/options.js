@@ -74,6 +74,7 @@ const options = {
     options.saveState = config.save_state;
     options.proxyMode = config.proxy_mode;
     options.testMode = config.test_mode;
+    options.logDirectory = config.log_directory;
 
     options.overrideOff = config.override_off;
     options.nightTriggerDelay = config.night_trigger_delay;
@@ -151,6 +152,11 @@ const options = {
 
   isValueSet: (value) => {
     if (value === undefined || value === null) {
+      // Check empty strings
+      if (typeof value === 'string' && value.trim() === '') {
+        return false;
+      }
+
       return false;
     }
 
@@ -162,6 +168,10 @@ const options = {
   },
 
   setDefaultValues: () => {
+    if (options.isValueSet(options.name) === false) {
+      options.name = 'Security System';
+    }
+
     if (options.isValueSet(options.defaultMode) === false) {
       options.defaultMode = 'off';
     }
@@ -206,6 +216,10 @@ const options = {
       options.testMode = false;
     }
 
+    if (options.isValueSet(options.logDirectory) === false) {
+      options.logDirectory = null;
+    }
+
     // Siren sensor
     if (options.isValueSet(options.sirenSensor) === false) {
       options.sirenSensor = false;
@@ -217,7 +231,7 @@ const options = {
 
     // Arming lock switch
     if (options.isValueSet(options.armingLockSwitch) === false) {
-      options.armingLockSwitch = true;
+      options.armingLockSwitch = false;
     }
 
     // Siren switches
