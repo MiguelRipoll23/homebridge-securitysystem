@@ -119,7 +119,6 @@
           "title": "Mode",
           "type": "string",
           "enum": [
-            "Off",
             "Home",
             "Night",
             "Away"
