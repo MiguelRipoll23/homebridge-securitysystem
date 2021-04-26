@@ -1408,7 +1408,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
       this.updateSiren(value, false, false, callback);
     }
     else {
-      this.log.warn('Sensor (Invalid mode)');
+      this.log.warn('Sensor (Mode not set)');
       callback('Ignore');
     }
   }
