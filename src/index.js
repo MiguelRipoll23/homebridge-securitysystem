@@ -782,7 +782,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     this.log.warn('Sensor (Not armed)');
 
     if (callback !== null) {
-      callback('Ignore');
+      callback(-70412, false);
     }
 
     return false;
@@ -793,7 +793,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     this.log.warn('Sensor (Still arming)');
 
     if (callback !== null) {
-      callback('Ignore');
+      callback(-70412, false);
     }
 
     return false;
@@ -813,7 +813,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       }, options.doubleKnockSeconds * 1000);
   
       if (callback !== null) {
-        callback('Ignore');
+        callback(-70412, false);
       }
   
       return false;
@@ -838,7 +838,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       this.log.warn('Sensor (Already triggered)');
       
       if (callback !== null) {
-        callback('Ignore');
+        callback(-70412, false);
       }
 
       return false;
@@ -1409,7 +1409,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
     }
     else {
       this.log.warn('Sensor (Mode not set)');
-      callback('Ignore');
+      callback(-70412, false);
     }
   }
   else {
@@ -1535,7 +1535,7 @@ SecuritySystem.prototype.getModeHomeSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeHomeSwitch = function (value, callback) {
   if (value === false) {
-    callback('Ignore');
+    callback(-70412, false);
     return;
   }
 
@@ -1550,7 +1550,7 @@ SecuritySystem.prototype.getModeAwaySwitch = function (callback) {
 
 SecuritySystem.prototype.setModeAwaySwitch = function (value, callback) {
   if (value === false) {
-    callback('Ignore');
+    callback(-70412, false);
     return;
   }
 
@@ -1565,7 +1565,7 @@ SecuritySystem.prototype.getModeNightSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeNightSwitch = function (value, callback) {
   if (value === false) {
-    callback('Ignore');
+    callback(-70412, false);
     return;
   }
 
@@ -1580,7 +1580,7 @@ SecuritySystem.prototype.getModeOffSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeOffSwitch = function (value, callback) {
   if (value === false) {
-    callback('Ignore');
+    callback(-70412, false);
     return;
   }
 
@@ -1595,7 +1595,7 @@ SecuritySystem.prototype.getModeAwayExtendedSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeAwayExtendedSwitch = function (value, callback) {
   if (value === false) {
-    callback('Ignore');
+    callback(-70412, false);
     return;
   }
 
@@ -1611,14 +1611,14 @@ SecuritySystem.prototype.getModePauseSwitch = function (callback) {
 SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     this.log.warn('Pause (Alarm triggered)');
-    callback('Ignore');
+    callback(-70412, false);
     return;
   }
 
   if (value) {
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
       this.log.warn('Pause (Not armed)');
-      callback('Ignore');
+      callback(-70412, false);
       return;
     }
 
