@@ -4,9 +4,9 @@ on:
   push:
     tags:
       # https://semver.org/ proper release tags, more or less
-      - v[0-9]+.[0-9]+.[0-9]+
+      - 'v[0-9]+.[0-9]+.[0-9]+'
       # prerelease tags, more or less
-      - v[0-9]+.[0-9]+.[0-9]+-*
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
       
 jobs:
   publish-npm:
@@ -31,5 +31,5 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         TAG_REF: ${{ github.ref }}
-      run: >-
+      run: |
         npm publish --access public --tag "$(if [[ $TAG_REF == *-* ]]; then echo beta; else echo latest; fi)"
