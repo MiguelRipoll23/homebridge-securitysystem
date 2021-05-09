@@ -10,6 +10,7 @@ on:
       
 jobs:
   publish-npm:
+    name: Publish package
     runs-on: ubuntu-latest
 
     steps:
