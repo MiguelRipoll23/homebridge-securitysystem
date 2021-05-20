@@ -77,6 +77,7 @@ const options = {
     options.logDirectory = config.log_directory;
 
     options.overrideOff = config.override_off;
+    options.nightArmDelay = config.night_arm_delay;
     options.nightTriggerDelay = config.night_trigger_delay;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
@@ -194,6 +195,10 @@ const options = {
 
     if (options.isValueSet(options.overrideOff) === false) {
       options.overrideOff = false;
+    }
+
+    if (options.isValueSet(options.nightArmDelay) === false) {
+      options.nightArmDelay = true;
     }
 
     if (options.isValueSet(options.nightTriggerDelay) === false) {

@@ -90,6 +90,13 @@
         "required": false,
         "placeholder": "/home/user/logs"
       },
+      "night_arm_delay": {
+        "title": "Arm During Night Mode With Delay",
+        "description": "Adds a delay for arming when set to Night mode.",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
       "override_off": {
         "title": "Trigger During Off Mode",
         "description": "Allows the security system to be triggered while disarmed.",
@@ -184,7 +191,7 @@
       },
       "arming_lock_switch": {
         "title": "Show Arming Lock Switch (beta)",
-        "description": "Adds a switch that will prevent arming the security system",
+        "description": "Adds a switch that will prevent arming the security system.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -424,6 +431,7 @@
       "expanded": false,
       "items": [
         "log_directory",
+        "night_arm_delay",
         "override_off",
         "night_trigger_delay",
         "reset_off_flow",
