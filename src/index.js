@@ -685,6 +685,8 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.targetState = state;
   this.logMode('Target', state);
 
+  const isTargetStateHome = this.targetState === Characteristic.SecuritySystemTargetState.STAY_ARM;
+  const isTargetStateAway = this.targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM;
   const isTargetStateNight = this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
   const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
 
@@ -706,10 +708,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   if (state === this.currentState) {
     this.log.warn('Current mode (Already set)');
 
-    if (this.isArming) {
-      this.updateArming(false);
-    }
-
+    // Play audio
     this.playAudio('current', this.currentState);
 
     if (callback !== null) {
@@ -725,12 +724,25 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   if (delay) {
     armSeconds = options.armSeconds;
 
-    // Exceptions
+    // No delay when triggered or set to Off
     if (isCurrentStateAlarmTriggered || isTargetStateDisarm) {
       armSeconds = 0;
     }
 
+    // User options
+    if (isTargetStateHome && options.homeArmSeconds > 0) {
+      armSeconds = options.homeArmSeconds;
+    }
+
+    if (isTargetStateAway && options.awayArmSeconds > 0) {
+      armSeconds = options.awayArmSeconds;
+    }
+
     if (isTargetStateNight) {
+      if (options.nightArmSeconds > 0) {
+        armSeconds = options.nightArmSeconds;
+      }
+
       if (options.nightArmDelay === false) {
         armSeconds = 0;
       }
@@ -752,7 +764,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
     this.setCurrentState(state, external);
 
     // Update arming characteristic
-    if (armSeconds > 0) {
+    if (this.isArming) {
       this.updateArming(false);
     }
   }, armSeconds * 1000);
@@ -846,7 +858,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   if (value) {
-    // On
+    // Already triggered
     if (isCurrentStateAlarmTriggered) {
       this.log.warn('Sensor (Already triggered)');
       
@@ -856,39 +868,55 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
       return false;
     }
-    else {
-      this.log.info('Sensor (Triggered)');
 
-      // Check if sensor already triggered
-      if (this.triggerTimeout !== null) {
-        return false;
+    this.log.info('Sensor (Triggered)');
+
+    // Already about to trigger
+    if (this.triggerTimeout !== null) {
+      return false;
+    }
+
+    const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
+    const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+    const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
+    
+    // Set trigger delay
+    let triggerSeconds = options.triggerSeconds;
+
+    // User options
+    if (isCurrentStateHome && options.homeTriggerSeconds > 0) {
+      triggerSeconds = options.homeTriggerSeconds;
+    }
+
+    if (isCurrentStateAway && options.awayTriggerSeconds > 0) {
+      triggerSeconds = options.awayTriggerSeconds;
+    }
+
+    if (isCurrentStateNight) {
+      if (options.nightTriggerSeconds > 0) {
+        triggerSeconds = options.nightTriggerSeconds;
       }
 
-      const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
-      
-      // Set trigger delay (if neccessary)
-      let triggerSeconds = options.triggerSeconds;
-
-      if (isCurrentStateNight && options.nightTriggerDelay === false) {
+      if (options.nightTriggerDelay === false) {
         triggerSeconds = 0;
       }
-
-      this.triggerTimeout = setTimeout(() => {
-        this.triggerTimeout = null;
-        this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
-      }, triggerSeconds * 1000);
-
-      // Audio
-      if (triggerSeconds > 0) {
-        this.playAudio('current', 'warning');
-      }
-
-      // Commands
-      this.executeCommand('current', 'warning', external);
-
-      // Webhooks
-      this.sendWebhookEvent('current', 'warning', external);
     }
+
+    this.triggerTimeout = setTimeout(() => {
+      this.triggerTimeout = null;
+      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
+    }, triggerSeconds * 1000);
+
+    // Audio
+    if (triggerSeconds > 0) {
+      this.playAudio('current', 'warning');
+    }
+
+    // Commands
+    this.executeCommand('current', 'warning', external);
+
+    // Webhooks
+    this.sendWebhookEvent('current', 'warning', external);
   }
   else {
     // Off

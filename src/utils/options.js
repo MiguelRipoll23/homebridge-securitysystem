@@ -77,10 +77,19 @@ const options = {
     options.logDirectory = config.log_directory;
 
     options.overrideOff = config.override_off;
-    options.nightArmDelay = config.night_arm_delay;
-    options.nightTriggerDelay = config.night_trigger_delay;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
+
+    options.homeArmSeconds = config.home_arm_seconds;
+    options.awayArmSeconds = config.away_arm_seconds;
+    options.nightArmSeconds = config.night_arm_seconds;
+
+    options.homeTriggerSeconds = config.home_trigger_seconds;
+    options.awayTriggerSeconds = config.away_trigger_seconds;
+    options.nightTriggerSeconds = config.night_trigger_seconds;
+
+    options.nightArmDelay = config.night_arm_delay;
+    options.nightTriggerDelay = config.night_trigger_delay;
 
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
