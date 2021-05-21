@@ -5,7 +5,9 @@ on:
 
 jobs:
   stale:
+    name: Check activity
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/stale@v3
         with:
