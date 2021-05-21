@@ -98,7 +98,7 @@ function SecuritySystem(log, config) {
       catch (error) {
         logError('File logger (Error)');
         logError(error);
-      };
+      }
     }
   }
 
