@@ -56,22 +56,22 @@ function SecuritySystem(log, config) {
     const logWarn = this.log.warn.bind(this.log);
     const logError = this.log.error.bind(this.log);
 
-    this.log.info = (message) => {
+    this.log.info = message => {
       logInfo.apply(null, [message]);
       this.log.appendFile(message);
     };
 
-    this.log.warn = (message) => {
+    this.log.warn = message => {
       logWarn.apply(null, [message]);
       this.log.appendFile(message);
     };
 
-    this.log.error = (message) => {
+    this.log.error = message => {
       logError.apply(null, [message]);
       this.log.appendFile(message);
     };
 
-    this.log.appendFile = async (message) => {
+    this.log.appendFile = async message => {
       const date = new Date();
 
       try {
@@ -483,7 +483,7 @@ SecuritySystem.prototype.logMode = function (type, state) {
 SecuritySystem.prototype.getAvailableTargetStates = function () {
   const targetStateCharacteristic = this.service.getCharacteristic(Characteristic.SecuritySystemTargetState);
   const validValues = targetStateCharacteristic.props.validValues;
-  const invalidValues = options.disabledModes.map((value) => {
+  const invalidValues = options.disabledModes.map(value => {
     return this.mode2State(value.toLowerCase());
   });
 
@@ -1111,7 +1111,7 @@ SecuritySystem.prototype.startServer = async function () {
     this.log.info(`Server (${options.serverPort})`);
   });
 
-  server.on('error', (error) => {
+  server.on('error', error => {
     this.log.error('Error while starting server.');
     this.log.error(error);
   });
@@ -1187,7 +1187,7 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
   this.audioProcess = spawn('ffplay', commandArguments);
   this.log.debug(`ffplay ${commandArguments.join(' ')}`);
 
-  this.audioProcess.stderr.on('data', (data) => {
+  this.audioProcess.stderr.on('data', data => {
     this.log.error(`Audio failed\n${data}`);
   });
 
@@ -1284,11 +1284,11 @@ SecuritySystem.prototype.executeCommand = function (type, state, external) {
 
   const process = spawn(command, { shell: true });
 
-  process.stderr.on('data', (data) => {
+  process.stderr.on('data', data => {
     this.log.error(`Command failed (${command})\n${data}`);
   });
 
-  process.stdout.on('data', (data) => {
+  process.stdout.on('data', data => {
     this.log.info(`Command output: ${data}`);
   });
 };
