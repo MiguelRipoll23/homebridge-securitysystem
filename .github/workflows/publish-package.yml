@@ -23,14 +23,22 @@ jobs:
         node-version: 14.x
         registry-url: https://registry.npmjs.org/
 
-    - name: Get package version
-      env:
-        TAG_REF: ${{ github.ref }}
-      run: echo $TAG_REF 
+    - name: Get version
+      run: |
+        echo "NPM_VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
+
+    - name: Update version
+      run: |
+        npm version $NPM_VERSION --no-git-tag-version
+
+    - name: Commit and push
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish package
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         TAG_REF: ${{ github.ref }}
       run: |
-        npm publish --access public --tag "$(if [[ $TAG_REF == *-* ]]; then echo beta; else echo latest; fi)"
+        npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
