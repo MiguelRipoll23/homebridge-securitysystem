@@ -1,12 +1,8 @@
 name: Publish package
 
 on:
-  push:
-    tags:
-      # https://semver.org/ proper release tags, more or less
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      # prerelease tags, more or less
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  release:
+    types: [published]
       
 jobs:
   publish-npm:
@@ -25,7 +21,11 @@ jobs:
 
     - name: Get version
       run: |
-        echo "NPM_VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
+        echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+
+    - name: Check version
+      if: ${{ github.event.release.target_commitish == 'release' }}
+      run: if [[ $NPM_VERSION == *-* ]]; then exit 1;
 
     - name: Publish package
       env:
