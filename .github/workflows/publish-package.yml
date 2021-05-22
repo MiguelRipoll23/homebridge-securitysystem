@@ -23,20 +23,25 @@ jobs:
         node-version: 14.x
         registry-url: https://registry.npmjs.org/
 
-    - name: Get version
-      run: |
-        echo "NPM_VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
-
-    - name: Update version
-      run: |
-        npm version $NPM_VERSION --no-git-tag-version
-
     - name: Get branch
       id: branch-getter
       run: |
         raw=$(git branch -r --contains ${{ github.ref }})
         branch=${raw/origin\/}
         echo ::set-output name=BRANCH_NAME::$branch
+
+    - name: Get version
+      run: |
+        echo "NPM_VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
+
+    - name: Check version
+      if: ${{ steps.branch-getter.outputs.BRANCH_NAME == 'release' }}
+      run: |
+        if [[ $NPM_VERSION == *-* ]]; then exit 0;
+
+    - name: Update version
+      run: |
+        npm version $NPM_VERSION --no-git-tag-version
 
     - name: Commit and push
       uses: actions-js/push@master
@@ -47,6 +52,5 @@ jobs:
     - name: Publish package
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        TAG_REF: ${{ github.ref }}
       run: |
         npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
