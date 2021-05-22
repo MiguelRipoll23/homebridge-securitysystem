@@ -31,10 +31,18 @@ jobs:
       run: |
         npm version $NPM_VERSION --no-git-tag-version
 
+    - name: Get branch
+      id: branch-getter
+      run: |
+        raw=$(git branch -r --contains ${{ github.ref }})
+        branch=${raw/origin\/}
+        echo ::set-output name=BRANCH_NAME::$branch
+
     - name: Commit and push
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ steps.branch-getter.outputs.BRANCH_NAME }}
 
     - name: Publish package
       env:
