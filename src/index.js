@@ -143,10 +143,6 @@ function SecuritySystem(log, config) {
     .on('get', this.getCurrentState.bind(this));
 
   this.service
-    .getCharacteristic(CustomCharacteristic.SecuritySystemArming)
-    .on('get', this.getTargetState.bind(this));
-
-  this.service
     .getCharacteristic(CustomCharacteristic.SecuritySystemSiren)
     .on('get', this.getSiren.bind(this))
     .on('set', this.setSiren.bind(this));
@@ -744,11 +740,10 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
 
     // Delay actions
     if (armSeconds > 0) {
+      this.isArming = true;
+
       // Play sound
       this.playAudio('target', state);
-
-      // Update arming characteristic
-      this.updateArming(true);
     }
   }
 
@@ -756,11 +751,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.armTimeout = setTimeout(() => {
     this.armTimeout = null;
     this.setCurrentState(state, external);
-
-    // Update arming characteristic
-    if (this.isArming) {
-      this.updateArming(false);
-    }
+    this.isArming = false;
   }, armSeconds * 1000);
 
   if (callback !== null) {
@@ -778,15 +769,6 @@ SecuritySystem.prototype.setTargetState = function (value, callback) {
   this.updateTargetState(value, false, true, callback);
 };
 
-SecuritySystem.prototype.getArming = function (callback) {
-  callback(null, this.isArming);
-};
-
-SecuritySystem.prototype.updateArming = function (value) {
-  this.isArming = value;
-  this.service.updateCharacteristic(CustomCharacteristic.SecuritySystemArming, this.isArming);
-};
-
 SecuritySystem.prototype.getSiren = function (callback) {
   const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren).value;
   callback(null, value);
@@ -798,7 +780,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
   // Check if the security system is disarmed
   if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
-    this.log.warn('Sensor (Not armed)');
+    this.log.warn('Siren (Not armed)');
 
     if (callback !== null) {
       callback(-70412, false);
@@ -809,7 +791,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
   // Check if arming
   if (this.isArming) {
-    this.log.warn('Sensor (Still arming)');
+    this.log.warn('Siren (Still arming)');
 
     if (callback !== null) {
       callback(-70412, false);
@@ -821,14 +803,14 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   // Check double knock
   if (value && isCurrentStateAwayArm && options.doubleKnock) {
     if (this.isKnocked === false) {
-      this.log.warn('Sensor (Knock)');
+      this.log.warn('Siren (Knock)');
       this.isKnocked = true;
   
       this.doubleKnockTimeout = setTimeout(() => {
         this.doubleKnockTimeout = null;
         this.isKnocked = false;
   
-        this.log.info('Sensor (Reset)');
+        this.log.info('Siren (Reset)');
       }, options.doubleKnockSeconds * 1000);
   
       if (callback !== null) {
@@ -854,7 +836,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   if (value) {
     // Already triggered
     if (isCurrentStateAlarmTriggered) {
-      this.log.warn('Sensor (Already triggered)');
+      this.log.warn('Siren (Already triggered)');
       
       if (callback !== null) {
         callback(-70412, false);
@@ -863,12 +845,13 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       return false;
     }
 
-    this.log.info('Sensor (Triggered)');
-
     // Already about to trigger
     if (this.triggerTimeout !== null) {
+      this.log.warn('Siren (Already on)');
       return false;
     }
+
+    this.log.info('Siren (On)');
 
     const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
     const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
@@ -914,7 +897,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
   else {
     // Off
-    this.log.info('Sensor (Cancelled)');
+    this.log.info('Siren (Cancelled)');
     this.stopAudio();
 
     if (isCurrentStateAlarmTriggered) {
@@ -1443,7 +1426,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
       this.updateSiren(value, false, false, callback);
     }
     else {
-      this.log.warn('Sensor (Mode not set)');
+      this.log.warn('Siren (Mode not set)');
       callback(-70412, false);
     }
   }
