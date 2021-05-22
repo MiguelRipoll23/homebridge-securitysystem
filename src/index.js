@@ -730,22 +730,16 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
     }
 
     // User options
-    if (isTargetStateHome && options.homeArmSeconds > 0) {
+    if (isTargetStateHome && options.homeArmSeconds !== null) {
       armSeconds = options.homeArmSeconds;
     }
 
-    if (isTargetStateAway && options.awayArmSeconds > 0) {
+    if (isTargetStateAway && options.awayArmSeconds !== null) {
       armSeconds = options.awayArmSeconds;
     }
 
-    if (isTargetStateNight) {
-      if (options.nightArmSeconds > 0) {
-        armSeconds = options.nightArmSeconds;
-      }
-
-      if (options.nightArmDelay === false) {
-        armSeconds = 0;
-      }
+    if (isTargetStateNight && options.nightArmSeconds !== null) {
+      armSeconds = options.nightArmSeconds;
     }
 
     // Delay actions
@@ -884,16 +878,16 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     let triggerSeconds = options.triggerSeconds;
 
     // User options
-    if (isCurrentStateHome && options.homeTriggerSeconds > 0) {
+    if (isCurrentStateHome && options.homeTriggerSeconds !== null) {
       triggerSeconds = options.homeTriggerSeconds;
     }
 
-    if (isCurrentStateAway && options.awayTriggerSeconds > 0) {
+    if (isCurrentStateAway && options.awayTriggerSeconds !== null) {
       triggerSeconds = options.awayTriggerSeconds;
     }
 
     if (isCurrentStateNight) {
-      if (options.nightTriggerSeconds > 0) {
+      if (options.nightTriggerSeconds !== null) {
         triggerSeconds = options.nightTriggerSeconds;
       }
 

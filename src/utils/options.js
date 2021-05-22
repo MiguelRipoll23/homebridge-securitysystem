@@ -25,7 +25,6 @@ const options = {
     options.awayTriggerSeconds = config.away_trigger_seconds;
     options.nightTriggerSeconds = config.night_trigger_seconds;
 
-    options.nightArmDelay = config.night_arm_delay;
     options.nightTriggerDelay = config.night_trigger_delay;
 
     // Arming lock switch
@@ -111,7 +110,9 @@ const options = {
   },
 
   checkDeprecated: (log, config) => {
-    
+    if (options.isValueSet(config.nightTriggerDelay) === false) {
+      log.warn('Setting \'Trigger During Night Mode With Delay\' has been deprecated, please use `Night Trigger Seconds`.');
+    }
   },
 
   setDefaultValues: () => {
@@ -143,10 +144,6 @@ const options = {
       options.overrideOff = false;
     }
 
-    if (options.isValueSet(options.nightArmDelay) === false) {
-      options.nightArmDelay = true;
-    }
-
     if (options.isValueSet(options.nightTriggerDelay) === false) {
       options.nightTriggerDelay = true;
     }
@@ -169,6 +166,30 @@ const options = {
 
     if (options.isValueSet(options.logDirectory) === false) {
       options.logDirectory = null;
+    }
+
+    if (options.isValueSet(options.homeArmSeconds) === false) {
+      options.homeArmSeconds = null;
+    }
+
+    if (options.isValueSet(options.awayArmSeconds) === false) {
+      options.awayArmSeconds = null;
+    }
+
+    if (options.isValueSet(options.nightArmSeconds) === false) {
+      options.nightArmSeconds = null;
+    }
+
+    if (options.isValueSet(options.homeTriggerSeconds) === false) {
+      options.homeTriggerSeconds = null;
+    }
+
+    if (options.isValueSet(options.awayTriggerSeconds) === false) {
+      options.awayTriggerSeconds = null;
+    }
+
+    if (options.isValueSet(options.nightTriggerSeconds) === false) {
+      options.nightTriggerSeconds = null;
     }
 
     // Siren sensor

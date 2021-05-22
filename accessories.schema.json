@@ -51,7 +51,7 @@
           "minimum": 0
         },
         "audio": {
-          "title": "Play Audio (local only, ffmpeg required)",
+          "title": "Play Audio (local-only, ffmpeg required)",
           "description": "Warns of mode or sensor updates by playing sounds.",
           "type": "boolean",
           "default": false,
@@ -122,12 +122,19 @@
           "required": false,
           "minimum": 0
         },
-        "night_arm_delay": {
-          "title": "Arm During Night Mode With Delay",
-          "description": "Adds a delay for arming when set to Night mode.",
-          "type": "boolean",
-          "default": true,
-          "required": false
+        "night_trigger_seconds": {
+          "title": "Night Trigger Seconds",
+          "type": ["null", "integer"],
+          "default": "null",
+          "required": false,
+          "minimum": 0
+        },
+        "away_trigger_seconds": {
+          "title": "Away Trigger Seconds",
+          "type": ["null", "integer"],
+          "default": "null",
+          "required": false,
+          "minimum": 0
         },
         "override_off": {
           "title": "Trigger During Off Mode",
@@ -137,7 +144,7 @@
           "required": false
         },
         "night_trigger_delay": {
-          "title": "Trigger During Night Mode With Delay",
+          "title": "Trigger During Night Mode With Delay (deprecated)",
           "description": "Adds a delay for the triggered event when set to Night mode.",
           "type": "boolean",
           "default": true,
@@ -244,7 +251,7 @@
         },
         "double_knock": {
           "title": "Use Double-Knock",
-          "description": "Requires the same sensor or other ones to be triggered twice within a time window.",
+          "description": "Requires the same sensor or other ones to be triggered twice within a time window if Away mode is set.",
           "type": "boolean",
           "default": false,
           "required": false
@@ -482,7 +489,6 @@
             "night_trigger_seconds"
           ]
         },
-        "night_arm_delay",
         "override_off",
         "night_trigger_delay",
         "reset_off_flow",
