@@ -897,7 +897,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
   else {
     // Off
-    this.log.info('Siren (Cancelled)');
+    this.log.info('Siren (Off)');
     this.stopAudio();
 
     if (isCurrentStateAlarmTriggered) {
