@@ -17,7 +17,6 @@ function CustomService(Service, Characteristic, CustomCharacteristic) {
     this.addOptionalCharacteristic(Characteristic.Name);
 
     // Custom
-    this.addCharacteristic(CustomCharacteristic.SecuritySystemArming);
     this.addCharacteristic(CustomCharacteristic.SecuritySystemSiren);
   };
 

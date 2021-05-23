@@ -1,67 +1,4 @@
 const options = {
-  name: null,
-  defaultMode: null,
-  disabledModes: null,
-  armSeconds: null,
-  triggerSeconds: null,
-  pauseMinutes: null,
-  resetMinutes: null,
-  overrideOff: null,
-  testMode: null,
-
-  // Siren switches
-  sirenSwitch: null,
-  sirenModeSwitches: null,
-
-  // Mode switches
-  modeSwitches: null,
-  hideModeOffSwitch: null,
-  showModePauseSwitch: null,
-
-  // Siren sensor
-  sirenSensor: null,
-  sirenSensorSeconds: null,
-
-  // Audio
-  audio: null,
-  audioPath: null,
-  audioLanguage: null,
-  audioArmingLooped: null,
-  audioAlertLooped: null,
-  saveState: null,
-
-  // Server
-  serverPort: null,
-  serverCode: null,
-
-  // Commands
-  commandTargetHome: null,
-  commandTargetAway: null,
-  commandTargetNight: null,
-  commandTargetOff: null,
-
-  commandCurrentHome: null,
-  commandCurrentAway: null,
-  commandCurrentNight: null,
-  commandCurrentOff: null,
-  commandCurrentWarning: null,
-  commandCurrentTriggered: null,
-
-  // Webhook
-  webhookUrl: null,
-
-  webhookTargetHome: null,
-  webhookTargetAway: null,
-  webhookTargetNight: null,
-  webhookTargetOff: null,
-
-  webhookCurrentHome: null,
-  webhookCurrentAway: null,
-  webhookCurrentNight: null,
-  webhookCurrentOff: null,
-  webhookCurrentWarning: null,
-  webhookCurrentTriggered: null,
-
   init: (log, config) => {
     options.checkDeprecated(log, config);
 
@@ -77,9 +14,18 @@ const options = {
     options.logDirectory = config.log_directory;
 
     options.overrideOff = config.override_off;
-    options.nightTriggerDelay = config.night_trigger_delay;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
+
+    options.homeArmSeconds = config.home_arm_seconds;
+    options.awayArmSeconds = config.away_arm_seconds;
+    options.nightArmSeconds = config.night_arm_seconds;
+
+    options.homeTriggerSeconds = config.home_trigger_seconds;
+    options.awayTriggerSeconds = config.away_trigger_seconds;
+    options.nightTriggerSeconds = config.night_trigger_seconds;
+
+    options.nightTriggerDelay = config.night_trigger_delay;
 
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
@@ -164,7 +110,9 @@ const options = {
   },
 
   checkDeprecated: (log, config) => {
-    
+    if (options.isValueSet(config.nightTriggerDelay) === false) {
+      log.warn('Setting \'Trigger During Night Mode With Delay\' has been deprecated, please use `Night Trigger Seconds`.');
+    }
   },
 
   setDefaultValues: () => {
@@ -218,6 +166,30 @@ const options = {
 
     if (options.isValueSet(options.logDirectory) === false) {
       options.logDirectory = null;
+    }
+
+    if (options.isValueSet(options.homeArmSeconds) === false) {
+      options.homeArmSeconds = null;
+    }
+
+    if (options.isValueSet(options.awayArmSeconds) === false) {
+      options.awayArmSeconds = null;
+    }
+
+    if (options.isValueSet(options.nightArmSeconds) === false) {
+      options.nightArmSeconds = null;
+    }
+
+    if (options.isValueSet(options.homeTriggerSeconds) === false) {
+      options.homeTriggerSeconds = null;
+    }
+
+    if (options.isValueSet(options.awayTriggerSeconds) === false) {
+      options.awayTriggerSeconds = null;
+    }
+
+    if (options.isValueSet(options.nightTriggerSeconds) === false) {
+      options.nightTriggerSeconds = null;
     }
 
     // Siren sensor

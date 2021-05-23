@@ -47,7 +47,7 @@
         "minimum": 0
       },
       "audio": {
-        "title": "Play Audio (local only, ffmpeg required)",
+        "title": "Play Audio (local-only, ffmpeg required)",
         "description": "Warns of mode or sensor updates by playing sounds.",
         "type": "boolean",
         "default": false,
@@ -90,6 +90,48 @@
         "required": false,
         "placeholder": "/home/user/logs"
       },
+      "home_arm_seconds": {
+        "title": "Home Arming Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "night_arm_seconds": {
+        "title": "Night Arming Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "away_arm_seconds": {
+        "title": "Away Arming Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "home_trigger_seconds": {
+        "title": "Home Trigger Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "night_trigger_seconds": {
+        "title": "Night Trigger Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "away_trigger_seconds": {
+        "title": "Away Trigger Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
       "override_off": {
         "title": "Trigger During Off Mode",
         "description": "Allows the security system to be triggered while disarmed.",
@@ -98,7 +140,7 @@
         "required": false
       },
       "night_trigger_delay": {
-        "title": "Trigger During Night Mode With Delay",
+        "title": "Trigger During Night Mode With Delay (deprecated)",
         "description": "Adds a delay for the triggered event when set to Night mode.",
         "type": "boolean",
         "default": true,
@@ -184,7 +226,7 @@
       },
       "arming_lock_switch": {
         "title": "Show Arming Lock Switch (beta)",
-        "description": "Adds a switch that will prevent arming the security system",
+        "description": "Adds a switch that will prevent arming the security system.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -424,6 +466,24 @@
       "expanded": false,
       "items": [
         "log_directory",
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "home_arm_seconds",
+            "away_arm_seconds",
+            "night_arm_seconds"
+          ]
+        },
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "home_trigger_seconds",
+            "away_trigger_seconds",
+            "night_trigger_seconds"
+          ]
+        },
         "override_off",
         "night_trigger_delay",
         "reset_off_flow",

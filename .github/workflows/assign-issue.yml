@@ -6,7 +6,9 @@ on:
 
 jobs:
   auto-assign:
+    name: Assign issue
     runs-on: ubuntu-latest
+
     steps:
     - name: Assign issue
       uses: pozil/auto-assign-issue@v1
