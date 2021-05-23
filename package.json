@@ -6,10 +6,9 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "update": "npm install -g",
-    "test": "exit 0",
-    "publish-beta": "npm publish --tag beta",
-    "publish-release": "npm publish"
+    "test": "npm install -g && homebridge -I",
+    "beta": "publish --tag beta",
+    "release": "publish"
   },
   "keywords": [
     "homebridge-plugin",
