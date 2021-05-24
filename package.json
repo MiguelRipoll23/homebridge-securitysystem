@@ -14,8 +14,7 @@
     "homebridge-plugin",
     "homebridge",
     "homekit",
-    "security",
-    "system",
+    "security system",
     "alarm",
     "category-security"
   ],
