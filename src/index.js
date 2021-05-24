@@ -756,9 +756,10 @@ SecuritySystem.prototype.setTargetState = function (value, callback) {
 SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
   const isCurrentStateAwayArm = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+  const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
 
   // Check if the security system is disarmed
-  if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
+  if (isCurrentStateDisarmed && options.overrideOff === false) {
     this.log.warn('Siren (Not armed)');
 
     if (callback !== null) {
@@ -1007,8 +1008,10 @@ SecuritySystem.prototype.startServer = async function () {
       sucess = this.updateSiren(true, true, false, null);
     }
     else {
-      // Instant
-      if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED && options.overrideOff === false) {
+      const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
+
+      // Not armed
+      if (isCurrentStateDisarmed && options.overrideOff === false) {
         this.sendResultResponse(res, false);
         return;
       }
