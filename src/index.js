@@ -755,7 +755,6 @@ SecuritySystem.prototype.setTargetState = function (value, callback) {
 
 SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-  const isCurrentStateAwayArm = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
   const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
 
   // Check if the security system is disarmed
@@ -781,22 +780,26 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   // Check double knock
-  if (value && isCurrentStateAwayArm && options.doubleKnock) {
-    if (this.isKnocked === false) {
+  if (value && options.doubleKnock && this.isKnocked === false) {
+    const doubleKnockModes = options.doubleKnockModes.map(value => {
+      return this.mode2State(value.toLowerCase());
+    });
+
+    if (doubleKnockModes.includes(this.currentState)) {
       this.log.warn('Siren (Knock)');
       this.isKnocked = true;
-  
+
       this.doubleKnockTimeout = setTimeout(() => {
         this.doubleKnockTimeout = null;
         this.isKnocked = false;
-  
+
         this.log.info('Siren (Reset)');
       }, options.doubleKnockSeconds * 1000);
-  
+
       if (callback !== null) {
         callback(-70412, false);
       }
-  
+
       return false;
     }
   }

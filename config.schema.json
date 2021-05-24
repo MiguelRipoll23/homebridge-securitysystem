@@ -153,6 +153,38 @@
         "default": false,
         "required": false
       },
+      "double_knock": {
+        "title": "Use Double-Knock",
+        "description": "Requires the Siren switch to be turn on twice within a time window.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "double_knock_seconds": {
+        "title": "Seconds",
+        "type": "integer",
+        "default": 90,
+        "required": false,
+        "minimum": 0
+      },
+      "double_knock_modes": {
+        "title": "Double-Knock Modes",
+        "type": "array",
+        "default": [
+          "Away"
+        ],
+        "required": false,
+        "items": {
+          "title": "Mode",
+          "type": "string",
+          "enum": [
+            "Home",
+            "Night",
+            "Away"
+          ],
+          "uniqueItems": true
+        }
+      },
       "disabled_modes": {
         "title": "Disabled Modes",
         "type": "array",
@@ -244,20 +276,6 @@
         "type": "boolean",
         "default": true,
         "required": false
-      },
-      "double_knock": {
-        "title": "Use Double-Knock",
-        "description": "Requires the same sensor or other ones to be triggered twice within a time window if Away mode is set.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "double_knock_seconds": {
-        "title": "Seconds",
-        "type": "integer",
-        "default": 90,
-        "required": false,
-        "minimum": 0
       },
       "audio_path": {
         "title": "Custom Audio Path",
@@ -488,6 +506,22 @@
         "night_trigger_delay",
         "reset_off_flow",
         "proxy_mode",
+        {
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "double_knock",
+              "flex": "1"
+            },
+            {
+              "key": "double_knock_seconds",
+              "flex": "200px"
+            }
+          ]
+        },
+        "double_knock_modes",
         "disabled_modes"
       ]
     },
@@ -528,21 +562,6 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        {
-          "type": "div",
-          "display": "flex",
-          "flex-direction": "row",
-          "items": [
-            {
-              "key": "double_knock",
-              "flex": "1"
-            },
-            {
-              "key": "double_knock_seconds",
-              "flex": "200px"
-            }
-          ]
-        },
         {
           "type": "div",
           "display": "flex",
