@@ -33,7 +33,7 @@ function SecuritySystem(log, config) {
   this.isKnocked = false;
 
   this.invalidCodeCount = 0;
-  
+
   this.pausedCurrentState = null;
   this.audioProcess = null;
 
@@ -42,9 +42,9 @@ function SecuritySystem(log, config) {
   this.triggerTimeout = null;
   this.doubleKnockTimeout = null;
   this.resetTimeout = null;
-  
+
   this.sirenInterval = null;
-  
+
   // File logger
   if (options.isValueSet(options.logDirectory)) {
     const logInfo = this.log.info.bind(this.log);
@@ -336,7 +336,7 @@ SecuritySystem.prototype.load = async function () {
     .catch(error => {
       this.log.error('Unable to load state.');
       this.log.error(error);
-   });
+    });
 
   if (options.testMode) {
     await storage.clear();
@@ -820,7 +820,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     // Already triggered
     if (isCurrentStateAlarmTriggered) {
       this.log.warn('Siren (Already triggered)');
-      
+
       if (callback !== null) {
         callback(-70412, false);
       }
@@ -839,7 +839,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
     const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
     const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
-    
+
     // Set trigger delay
     let triggerSeconds = options.triggerSeconds;
 
@@ -1146,7 +1146,7 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
 
   // Arguments
   let commandArguments = ['-loglevel', 'error', '-nodisp', '-i', `${filePath}`];
- 
+
   if (mode === 'triggered') {
     commandArguments.push('-loop');
     commandArguments.push('-1');
@@ -1407,7 +1407,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
 
   if (value) {
     if (this.currentState === switchRequiredState ||
-       (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)) {
+      (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)) {
       this.updateSiren(value, false, false, callback);
     }
     else {
@@ -1459,11 +1459,11 @@ SecuritySystem.prototype.getArmingLockSwitch = function (callback) {
   callback(null, value);
 };
 
-SecuritySystem.prototype.logArmingLock = function(value) {
+SecuritySystem.prototype.logArmingLock = function (value) {
   this.log.info(`Arming lock (${(value) ? 'On' : 'Off'})`);
 };
 
-SecuritySystem.prototype.updateArmingLock = function(value) {
+SecuritySystem.prototype.updateArmingLock = function (value) {
   this.logArmingLock(value);
 
   const onCharacteristic = this.armingLockSwitchService.getCharacteristic(Characteristic.On);
@@ -1505,7 +1505,7 @@ SecuritySystem.prototype.resetModeSwitches = function () {
   if (modeAwayExtendedCharacteristicOn.value) {
     modeAwayExtendedCharacteristicOn.updateValue(false);
   }
-  
+
   if (modePauseCharacteristicOn.value) {
     modePauseCharacteristicOn.updateValue(false);
   }
@@ -1602,7 +1602,7 @@ SecuritySystem.prototype.setModeAwayExtendedSwitch = function (value, callback) 
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, true, null);  
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, true, null);
   callback(null);
 };
 
