@@ -7,19 +7,14 @@ const express = require('express');
 
 const packageJson = require('../package.json');
 const options = require('./utils/options.js');
-const customServices = require('./hap/customServices.js');
-const customCharacteristics = require('./hap/customCharacteristics.js');
 
 const app = express();
 
-let Service, Characteristic, CustomService, CustomCharacteristic, storagePath;
+let Service, Characteristic, storagePath;
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  CustomCharacteristic = customCharacteristics.CustomCharacteristic(Characteristic);
-  CustomService = customServices.CustomService(Service, Characteristic, CustomCharacteristic);
-
   storagePath = homebridge.user.storagePath();
 
   homebridge.registerAccessory('homebridge-securitysystem', 'security-system', SecuritySystem);
@@ -121,7 +116,7 @@ function SecuritySystem(log, config) {
   }
 
   // Security system
-  this.service = new CustomService.SecuritySystem(options.name);
+  this.service = new Service.SecuritySystem(options.name);
   this.availableTargetStates = this.getAvailableTargetStates();
 
   this.service
@@ -141,11 +136,6 @@ function SecuritySystem(log, config) {
   this.service
     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
     .on('get', this.getCurrentState.bind(this));
-
-  this.service
-    .getCharacteristic(CustomCharacteristic.SecuritySystemSiren)
-    .on('get', this.getSiren.bind(this))
-    .on('set', this.setSiren.bind(this));
 
   // Siren switch
   this.sirenSwitchService = new Service.Switch('Siren', 'siren-switch');
@@ -621,12 +611,6 @@ SecuritySystem.prototype.handleStateUpdate = function (alarmTriggered) {
     return;
   }
 
-  const sirenCharacteristic = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren);
-
-  if (sirenCharacteristic.value) {
-    sirenCharacteristic.updateValue(false);
-  }
-
   const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
 
   if (sirenOnCharacteristic.value) {
@@ -767,11 +751,6 @@ SecuritySystem.prototype.getTargetState = function (callback) {
 
 SecuritySystem.prototype.setTargetState = function (value, callback) {
   this.updateTargetState(value, false, true, callback);
-};
-
-SecuritySystem.prototype.getSiren = function (callback) {
-  const value = this.service.getCharacteristic(CustomCharacteristic.SecuritySystemSiren).value;
-  callback(null, value);
 };
 
 SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
