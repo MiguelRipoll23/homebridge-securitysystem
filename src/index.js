@@ -651,7 +651,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   const armingLockOnValue = armingLockOnCharacteristic.value;
 
   if (armingLockOnValue) {
-    this.log.warn('Arming lock (Blocked)');
+    this.log.warn('Arming lock (Not allowed)');
 
     if (callback !== null) {
       // Tip: this will revert the original state
