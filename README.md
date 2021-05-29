@@ -32,7 +32,7 @@ Here are some examples of automations that can be created:
 | Motion is Detected            | Turn on `Siren Night`             |
 | Door is Opened                | Turn on `Siren Away`              |
 | NFC Tag is Detected (1)       | Set Security system to `Home`     |
-| Security system Triggers      | Play Audio (2)                    |
+| Security System Triggers      | Play Audio (2)                    |
 
 (1) Shortcuts app is required to create this automation.
 

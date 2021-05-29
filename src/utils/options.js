@@ -50,6 +50,7 @@ const options = {
     // Double knock
     options.doubleKnock = config.double_knock;
     options.doubleKnockSeconds = config.double_knock_seconds;
+    options.doubleKnockModes = config.double_knock_modes;
 
     // Server
     options.serverPort = config.server_port;
@@ -248,6 +249,10 @@ const options = {
 
     if (options.isValueSet(options.doubleKnockSeconds) === false) {
       options.doubleKnockSeconds = 90;
+    }
+
+    if (options.isValueSet(options.doubleKnockModes) === false) {
+      options.doubleKnockModes = ['Away'];
     }
 
     // Audio
