@@ -111,7 +111,7 @@ const options = {
   },
 
   checkDeprecated: (log, config) => {
-    if (options.isValueSet(config.nightTriggerDelay) === false) {
+    if (options.isValueSet(config.night_trigger_delay) && config.night_trigger_delay === false) {
       log.warn('Setting \'Trigger During Night Mode With Delay\' has been deprecated, please use `Night Trigger Seconds`.');
     }
   },
