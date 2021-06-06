@@ -145,7 +145,14 @@ function SecuritySystem(log, config) {
     .on('get', this.getSirenSwitch.bind(this))
     .on('set', this.setSirenSwitch.bind(this));
 
-  // Siren sensor
+  // Siren tripped sensor
+  this.sirenTrippedMotionSensorService = new Service.MotionSensor('Siren Tripped', 'siren-tripped');
+
+  this.sirenTrippedMotionSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getSirenTrippedMotionDetected.bind(this));
+
+  // Siren triggered sensor
   this.sirenTriggeredMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
 
   this.sirenTriggeredMotionSensorService
@@ -247,6 +254,10 @@ function SecuritySystem(log, config) {
     this.service,
     this.accessoryInformationService
   ];
+
+  if (options.trippedSensor) {
+    this.services.push(this.sirenTrippedMotionSensorService);
+  }
 
   if (options.sirenSensor) {
     this.services.push(this.sirenTriggeredMotionSensorService);
@@ -836,6 +847,11 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
     this.log.info('Siren (On)');
 
+    // Update siren tripped sensor
+    if (options.trippedSensor) {
+      this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+    }
+
     const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
     const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
     const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
@@ -890,6 +906,11 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     }
     else {
       this.resetTimers();
+    }
+
+    // Update siren tripped sensor
+    if (options.trippedSensor) {
+      this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
     }
   }
 
@@ -1365,6 +1386,12 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
       this.log.error(`Request to webhook failed. (${path})`);
       this.log.error(error);
     });
+};
+
+// Siren Tripped Motion Sensor
+SecuritySystem.prototype.getSirenTrippedMotionDetected = function (callback) {
+  const value = this.sirenTrippedMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
 };
 
 // Siren Triggered Motion Sensor
