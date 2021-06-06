@@ -152,14 +152,14 @@ function SecuritySystem(log, config) {
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', this.getSirenMotionDetected.bind(this));
 
-  // Reset sensor
-  this.resetMotionSensorService = new Service.MotionSensor('Reset Event', 'reset-event');
+  // Siren reset sensor
+  this.sirenResetMotionSensorService = new Service.MotionSensor('Siren Reset', 'reset-event');
 
-  this.resetMotionSensorService
+  this.sirenResetMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getResetMotionDetected.bind(this));
+    .on('get', this.getSirenResetMotionDetected.bind(this));
 
-  // Arming Lock
+  // Arming lock
   this.armingLockSwitchService = new Service.Switch('Arming Lock', 'arming-lock');
 
   this.armingLockSwitchService
@@ -253,7 +253,7 @@ function SecuritySystem(log, config) {
   }
 
   if (options.resetSensor) {
-    this.services.push(this.resetMotionSensorService);
+    this.services.push(this.sirenResetMotionSensorService);
   }
 
   if (options.armingLockSwitch) {
@@ -521,10 +521,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
       this.log.info('Reset (Finished)');
 
       // Update reset sensor
-      this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+      this.sirenResetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
-        this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+        this.sirenResetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
       }, 750);
 
       // Alternative flow (Triggered -> Off -> Armed mode)
@@ -1447,9 +1447,9 @@ SecuritySystem.prototype.setSirenNightSwitch = function (value, callback) {
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, value, callback);
 };
 
-// Reset Motion Sensor
-SecuritySystem.prototype.getResetMotionDetected = function (callback) {
-  const value = this.resetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+// Siren Reset Motion Sensor
+SecuritySystem.prototype.getSirenResetMotionDetected = function (callback) {
+  const value = this.sirenResetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
 };
 
