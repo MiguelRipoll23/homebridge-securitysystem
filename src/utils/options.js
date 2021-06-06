@@ -25,8 +25,6 @@ const options = {
     options.awayTriggerSeconds = config.away_trigger_seconds;
     options.nightTriggerSeconds = config.night_trigger_seconds;
 
-    options.nightTriggerDelay = config.night_trigger_delay;
-
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
 
@@ -114,9 +112,7 @@ const options = {
   },
 
   checkDeprecated: (log, config) => {
-    if (options.isValueSet(config.night_trigger_delay) && config.night_trigger_delay === false) {
-      log.warn('Setting \'Trigger During Night Mode With Delay\' has been deprecated, please use `Night Trigger Seconds`.');
-    }
+    // ...
   },
 
   setDefaultValues: () => {

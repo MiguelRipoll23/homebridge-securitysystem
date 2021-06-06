@@ -868,14 +868,8 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       triggerSeconds = options.awayTriggerSeconds;
     }
 
-    if (isCurrentStateNight) {
-      if (options.nightTriggerSeconds !== null) {
-        triggerSeconds = options.nightTriggerSeconds;
-      }
-
-      if (options.nightTriggerDelay === false) {
-        triggerSeconds = 0;
-      }
+    if (isCurrentStateNight && options.nightTriggerSeconds !== null) {
+      triggerSeconds = options.nightTriggerSeconds;
     }
 
     this.triggerTimeout = setTimeout(() => {
