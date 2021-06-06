@@ -146,11 +146,11 @@ function SecuritySystem(log, config) {
     .on('set', this.setSirenSwitch.bind(this));
 
   // Siren sensor
-  this.sirenMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
+  this.sirenTriggeredMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
 
-  this.sirenMotionSensorService
+  this.sirenTriggeredMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getSirenMotionDetected.bind(this));
+    .on('get', this.getSirenTriggeredMotionDetected.bind(this));
 
   // Siren reset sensor
   this.sirenResetMotionSensorService = new Service.MotionSensor('Siren Reset', 'reset-event');
@@ -249,7 +249,7 @@ function SecuritySystem(log, config) {
   ];
 
   if (options.sirenSensor) {
-    this.services.push(this.sirenMotionSensorService);
+    this.services.push(this.sirenTriggeredMotionSensorService);
   }
 
   if (options.resetSensor) {
@@ -507,10 +507,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
     // Change motion sensor state to detected every x seconds
     // to allow multiple notifications
     this.sirenInterval = setInterval(() => {
-      this.sirenMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+      this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
-        this.sirenMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+        this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
       }, 750);
     }, options.sirenSensorSeconds * 1000);
 
@@ -1367,9 +1367,9 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
     });
 };
 
-// Siren Motion Sensor
-SecuritySystem.prototype.getSirenMotionDetected = function (callback) {
-  const value = this.sirenMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+// Siren Triggered Motion Sensor
+SecuritySystem.prototype.getSirenTriggeredMotionDetected = function (callback) {
+  const value = this.sirenTriggeredMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
 };
 
