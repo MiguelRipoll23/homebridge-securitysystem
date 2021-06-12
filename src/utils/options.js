@@ -34,6 +34,7 @@ const options = {
 
     // Tripped sensor
     options.trippedSensor = config.tripped_sensor;
+    options.trippedSensorSeconds = config.tripped_sensor_seconds;
 
     // Siren sensor
     options.sirenSensor = config.siren_sensor;
@@ -195,6 +196,10 @@ const options = {
     // Tripped sensor
     if (options.isValueSet(options.trippedSensor) === false) {
       options.trippedSensor = false;
+    }
+
+    if (options.isValueSet(options.trippedSensorSeconds) === false) {
+      options.trippedSensorSeconds = 5;
     }
 
     // Siren sensor

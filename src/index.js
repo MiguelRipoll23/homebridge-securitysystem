@@ -43,7 +43,8 @@ function SecuritySystem(log, config) {
   this.doubleKnockTimeout = null;
   this.resetTimeout = null;
 
-  this.sirenInterval = null;
+  this.sirenTrippedInterval = null;
+  this.sirenTriggeredInterval = null;
 
   // File logger
   if (options.isValueSet(options.logDirectory)) {
@@ -517,7 +518,7 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Change motion sensor state to detected every x seconds
     // to allow multiple notifications
-    this.sirenInterval = setInterval(() => {
+    this.sirenTriggeredInterval = setInterval(() => {
       this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
@@ -577,11 +578,19 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 
   // Clear siren triggered sensor
-  if (this.sirenInterval !== null) {
-    clearInterval(this.sirenInterval);
+  if (this.sirenTriggeredInterval !== null) {
+    clearInterval(this.sirenTriggeredInterval);
 
-    this.sirenInterval = null;
-    this.log.debug('Siren interval (Cleared)');
+    this.sirenTriggeredInterval = null;
+    this.log.debug('Siren triggered interval (Cleared)');
+  }
+
+  // Clear siren tripped sensor
+  if (this.sirenTrippedInterval !== null) {
+    clearInterval(this.sirenTrippedInterval);
+
+    this.sirenTrippedInterval = null;
+    this.log.debug('Siren tripped interval (Cleared)');
   }
 
   // Clear double-knock timeout
@@ -849,7 +858,11 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
     // Update siren tripped sensor
     if (options.trippedSensor) {
-      this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+      this.updateSirenTrippedMotionDetected();
+
+      this.sirenTrippedInterval = setInterval(() => {
+        this.updateSirenTrippedMotionDetected();
+      }, options.trippedSensorSeconds * 1000);
     }
 
     const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
@@ -1386,6 +1399,14 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
 SecuritySystem.prototype.getSirenTrippedMotionDetected = function (callback) {
   const value = this.sirenTrippedMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
+};
+
+SecuritySystem.prototype.updateSirenTrippedMotionDetected = function () {
+  this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+
+  setTimeout(() => {
+    this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+  }, 750);
 };
 
 // Siren Triggered Motion Sensor

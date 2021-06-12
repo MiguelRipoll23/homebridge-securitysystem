@@ -195,20 +195,27 @@
       },
       "tripped_sensor": {
         "title": "Show Siren Tripped Sensor",
-        "description": "Adds a sensor that triggers when a Siren switch is turned on.",
+        "description": "Adds a sensor that triggers when any of the siren switches have been turned on.",
         "type": "boolean",
         "default": false,
         "required": false
       },
+      "tripped_sensor_seconds": {
+        "title": "Siren Tripped Seconds",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0
+      },
       "siren_sensor": {
         "title": "Show Siren Triggered Sensor",
-        "description": "Adds a sensor that triggers multiple times when the security system has triggered.",
+        "description": "Adds a sensor that triggers multiple times when the security system has been triggered.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "siren_sensor_seconds": {
-        "title": "Seconds",
+        "title": "Siren Triggered Seconds",
         "type": "integer",
         "default": 5,
         "required": false,
@@ -555,18 +562,19 @@
     {
       "type": "fieldset",
       "title": "Sensors",
-      "description": "Run an automation when an event not captured by HomeKit ocurrs.",
+      "description": "Automate based on custom events or get alerted by multiple notifications.",
       "expandable": true,
       "expanded": false,
       "items": [
         "tripped_sensor",
+        "siren_sensor",
         {
           "type": "div",
           "display": "flex",
           "flex-direction": "row",
           "items": [
             {
-              "key": "siren_sensor"
+              "key": "tripped_sensor_seconds"
             },
             {
               "key": "siren_sensor_seconds"
