@@ -43,7 +43,8 @@ function SecuritySystem(log, config) {
   this.doubleKnockTimeout = null;
   this.resetTimeout = null;
 
-  this.sirenInterval = null;
+  this.sirenTrippedInterval = null;
+  this.sirenTriggeredInterval = null;
 
   // File logger
   if (options.isValueSet(options.logDirectory)) {
@@ -145,21 +146,28 @@ function SecuritySystem(log, config) {
     .on('get', this.getSirenSwitch.bind(this))
     .on('set', this.setSirenSwitch.bind(this));
 
-  // Siren sensor
-  this.sirenMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
+  // Siren tripped sensor
+  this.sirenTrippedMotionSensorService = new Service.MotionSensor('Siren Tripped', 'siren-tripped');
 
-  this.sirenMotionSensorService
+  this.sirenTrippedMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getSirenMotionDetected.bind(this));
+    .on('get', this.getSirenTrippedMotionDetected.bind(this));
 
-  // Reset sensor
-  this.resetMotionSensorService = new Service.MotionSensor('Reset Event', 'reset-event');
+  // Siren triggered sensor
+  this.sirenTriggeredMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
 
-  this.resetMotionSensorService
+  this.sirenTriggeredMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getResetMotionDetected.bind(this));
+    .on('get', this.getSirenTriggeredMotionDetected.bind(this));
 
-  // Arming Lock
+  // Siren reset sensor
+  this.sirenResetMotionSensorService = new Service.MotionSensor('Siren Reset', 'reset-event');
+
+  this.sirenResetMotionSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getSirenResetMotionDetected.bind(this));
+
+  // Arming lock
   this.armingLockSwitchService = new Service.Switch('Arming Lock', 'arming-lock');
 
   this.armingLockSwitchService
@@ -248,12 +256,16 @@ function SecuritySystem(log, config) {
     this.accessoryInformationService
   ];
 
+  if (options.trippedSensor) {
+    this.services.push(this.sirenTrippedMotionSensorService);
+  }
+
   if (options.sirenSensor) {
-    this.services.push(this.sirenMotionSensorService);
+    this.services.push(this.sirenTriggeredMotionSensorService);
   }
 
   if (options.resetSensor) {
-    this.services.push(this.resetMotionSensorService);
+    this.services.push(this.sirenResetMotionSensorService);
   }
 
   if (options.armingLockSwitch) {
@@ -506,11 +518,11 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Change motion sensor state to detected every x seconds
     // to allow multiple notifications
-    this.sirenInterval = setInterval(() => {
-      this.sirenMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+    this.sirenTriggeredInterval = setInterval(() => {
+      this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
-        this.sirenMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+        this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
       }, 750);
     }, options.sirenSensorSeconds * 1000);
 
@@ -521,10 +533,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
       this.log.info('Reset (Finished)');
 
       // Update reset sensor
-      this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+      this.sirenResetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
 
       setTimeout(() => {
-        this.resetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+        this.sirenResetMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
       }, 750);
 
       // Alternative flow (Triggered -> Off -> Armed mode)
@@ -566,11 +578,19 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 
   // Clear siren triggered sensor
-  if (this.sirenInterval !== null) {
-    clearInterval(this.sirenInterval);
+  if (this.sirenTriggeredInterval !== null) {
+    clearInterval(this.sirenTriggeredInterval);
 
-    this.sirenInterval = null;
-    this.log.debug('Siren interval (Cleared)');
+    this.sirenTriggeredInterval = null;
+    this.log.debug('Siren triggered interval (Cleared)');
+  }
+
+  // Clear siren tripped sensor
+  if (this.sirenTrippedInterval !== null) {
+    clearInterval(this.sirenTrippedInterval);
+
+    this.sirenTrippedInterval = null;
+    this.log.debug('Siren tripped interval (Cleared)');
   }
 
   // Clear double-knock timeout
@@ -836,6 +856,15 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
     this.log.info('Siren (On)');
 
+    // Update siren tripped sensor
+    if (options.trippedSensor) {
+      this.updateSirenTrippedMotionDetected();
+
+      this.sirenTrippedInterval = setInterval(() => {
+        this.updateSirenTrippedMotionDetected();
+      }, options.trippedSensorSeconds * 1000);
+    }
+
     const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
     const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
     const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
@@ -852,14 +881,8 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       triggerSeconds = options.awayTriggerSeconds;
     }
 
-    if (isCurrentStateNight) {
-      if (options.nightTriggerSeconds !== null) {
-        triggerSeconds = options.nightTriggerSeconds;
-      }
-
-      if (options.nightTriggerDelay === false) {
-        triggerSeconds = 0;
-      }
+    if (isCurrentStateNight && options.nightTriggerSeconds !== null) {
+      triggerSeconds = options.nightTriggerSeconds;
     }
 
     this.triggerTimeout = setTimeout(() => {
@@ -890,6 +913,11 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     }
     else {
       this.resetTimers();
+    }
+
+    // Update siren tripped sensor
+    if (options.trippedSensor) {
+      this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
     }
   }
 
@@ -1367,9 +1395,23 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
     });
 };
 
-// Siren Motion Sensor
-SecuritySystem.prototype.getSirenMotionDetected = function (callback) {
-  const value = this.sirenMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+// Siren Tripped Motion Sensor
+SecuritySystem.prototype.getSirenTrippedMotionDetected = function (callback) {
+  const value = this.sirenTrippedMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.updateSirenTrippedMotionDetected = function () {
+  this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+
+  setTimeout(() => {
+    this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+  }, 750);
+};
+
+// Siren Triggered Motion Sensor
+SecuritySystem.prototype.getSirenTriggeredMotionDetected = function (callback) {
+  const value = this.sirenTriggeredMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
 };
 
@@ -1447,9 +1489,9 @@ SecuritySystem.prototype.setSirenNightSwitch = function (value, callback) {
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, value, callback);
 };
 
-// Reset Motion Sensor
-SecuritySystem.prototype.getResetMotionDetected = function (callback) {
-  const value = this.resetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+// Siren Reset Motion Sensor
+SecuritySystem.prototype.getSirenResetMotionDetected = function (callback) {
+  const value = this.sirenResetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
 };
 

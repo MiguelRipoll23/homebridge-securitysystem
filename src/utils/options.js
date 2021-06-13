@@ -25,14 +25,16 @@ const options = {
     options.awayTriggerSeconds = config.away_trigger_seconds;
     options.nightTriggerSeconds = config.night_trigger_seconds;
 
-    options.nightTriggerDelay = config.night_trigger_delay;
-
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
     options.sirenModeSwitches = config.siren_mode_switches;
+
+    // Tripped sensor
+    options.trippedSensor = config.tripped_sensor;
+    options.trippedSensorSeconds = config.tripped_sensor_seconds;
 
     // Siren sensor
     options.sirenSensor = config.siren_sensor;
@@ -111,9 +113,7 @@ const options = {
   },
 
   checkDeprecated: (log, config) => {
-    if (options.isValueSet(config.night_trigger_delay) && config.night_trigger_delay === false) {
-      log.warn('Setting \'Trigger During Night Mode With Delay\' has been deprecated, please use `Night Trigger Seconds`.');
-    }
+    // ...
   },
 
   setDefaultValues: () => {
@@ -191,6 +191,15 @@ const options = {
 
     if (options.isValueSet(options.nightTriggerSeconds) === false) {
       options.nightTriggerSeconds = null;
+    }
+
+    // Tripped sensor
+    if (options.isValueSet(options.trippedSensor) === false) {
+      options.trippedSensor = false;
+    }
+
+    if (options.isValueSet(options.trippedSensorSeconds) === false) {
+      options.trippedSensorSeconds = 5;
     }
 
     // Siren sensor

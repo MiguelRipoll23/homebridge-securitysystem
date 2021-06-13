@@ -57,7 +57,7 @@
         "title": "Audio Language",
         "type": "string",
         "default": "en-US",
-        "required": true,
+        "required": false,
         "enum": [
           "en-US",
           "de-DE"
@@ -79,7 +79,7 @@
       },
       "test_mode": {
         "title": "Enable Test Mode",
-        "description": "Ignores the webhook and command for the triggered event.",
+        "description": "Ignores the webhook and command when the security system triggers.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -139,13 +139,6 @@
         "default": false,
         "required": false
       },
-      "night_trigger_delay": {
-        "title": "Trigger During Night Mode With Delay (deprecated)",
-        "description": "Adds a delay for the triggered event when set to Night mode.",
-        "type": "boolean",
-        "default": true,
-        "required": false
-      },
       "reset_off_flow": {
         "title": "Reset Using Off Mode",
         "description": "Resets the security system when triggered by passing through the Off mode.",
@@ -155,7 +148,7 @@
       },
       "double_knock": {
         "title": "Use Double-Knock",
-        "description": "Requires the Siren switch to be turn on twice within a time window.",
+        "description": "Needs the Siren switch to be turn on twice within a time window.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -200,22 +193,36 @@
           "uniqueItems": true
         }
       },
+      "tripped_sensor": {
+        "title": "Show Siren Tripped Sensor",
+        "description": "Adds a sensor that triggers when any of the siren switches have been turned on.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "tripped_sensor_seconds": {
+        "title": "Siren Tripped Seconds",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0
+      },
       "siren_sensor": {
-        "title": "Show Siren Sensor",
-        "description": "Adds a sensor that can be used to push multiple notifications during triggered mode.",
+        "title": "Show Siren Triggered Sensor",
+        "description": "Adds a sensor that triggers multiple times when the security system has been triggered.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "siren_sensor_seconds": {
-        "title": "Seconds",
+        "title": "Siren Triggered Seconds",
         "type": "integer",
         "default": 5,
         "required": false,
         "minimum": 0
       },
       "reset_sensor": {
-        "title": "Show Reset Sensor",
+        "title": "Show Siren Reset Sensor",
         "description": "Adds a sensor that triggers when the security system has reset.",
         "type": "boolean",
         "default": false,
@@ -503,21 +510,20 @@
           ]
         },
         "override_off",
-        "night_trigger_delay",
         "reset_off_flow",
         "proxy_mode",
         {
           "type": "div",
-          "display": "flex",
+          "displayFlex": true,
           "flex-direction": "row",
           "items": [
             {
               "key": "double_knock",
-              "flex": "1"
+              "flex": "2"
             },
             {
               "key": "double_knock_seconds",
-              "flex": "200px"
+              "flex": "50px"
             }
           ]
         },
@@ -537,16 +543,14 @@
         "mode_away_extended_switch",
         {
           "type": "div",
-          "display": "flex",
+          "displayFlex": true,
           "flex-direction": "row",
           "items": [
             {
-              "key": "mode_pause_switch",
-              "flex": "1"
+              "key": "mode_pause_switch"
             },
             {
-              "key": "pause_minutes",
-              "flex": "200px"
+              "key": "pause_minutes"
             }
           ]
         },
@@ -558,22 +562,22 @@
     {
       "type": "fieldset",
       "title": "Sensors",
-      "description": "Run an automation when an event not captured by HomeKit ocurrs.",
+      "description": "Automate based on custom events or get alerted by multiple notifications.",
       "expandable": true,
       "expanded": false,
       "items": [
+        "tripped_sensor",
+        "siren_sensor",
         {
           "type": "div",
           "display": "flex",
           "flex-direction": "row",
           "items": [
             {
-              "key": "siren_sensor",
-              "flex": "1"
+              "key": "tripped_sensor_seconds"
             },
             {
-              "key": "siren_sensor_seconds",
-              "flex": "200px"
+              "key": "siren_sensor_seconds"
             }
           ]
         },
