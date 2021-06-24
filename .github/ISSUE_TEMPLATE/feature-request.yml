@@ -1,6 +1,5 @@
 name: Feature Request
 description: Suggest a new feature
-title: ""
 labels: [enhancement]
 assignees:
   - MiguelRipoll23
@@ -14,7 +13,5 @@ body:
     attributes:
       label: What would you to be added?
       description: A description of the feature suggested to be added
-      placeholder:
-      value: ""
     validations:
       required: true

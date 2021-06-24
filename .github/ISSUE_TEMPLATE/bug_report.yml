@@ -1,6 +1,5 @@
 name: Bug Report
 description: File a bug report
-title: ""
 labels: [bug]
 assignees:
   - MiguelRipoll23
@@ -31,7 +30,6 @@ body:
       label: What happened?
       description: A description of the bug found plus the steps to reproduce the issue
       placeholder:
-      value: ""
     validations:
       required: true
   - type: textarea
