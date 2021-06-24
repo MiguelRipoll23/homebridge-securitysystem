@@ -516,14 +516,9 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
   this.sendWebhookEvent('current', state, external);
 
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Change motion sensor state to detected every x seconds
-    // to allow multiple notifications
+    // Update siren triggered sensor
     this.sirenTriggeredInterval = setInterval(() => {
-      this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
-
-      setTimeout(() => {
-        this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
-      }, 750);
+      this.updateSirenTriggeredMotionDetected();
     }, options.sirenSensorSeconds * 1000);
 
     // Automatically arm the security system
@@ -1413,6 +1408,14 @@ SecuritySystem.prototype.updateSirenTrippedMotionDetected = function () {
 SecuritySystem.prototype.getSirenTriggeredMotionDetected = function (callback) {
   const value = this.sirenTriggeredMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
   callback(null, value);
+};
+
+SecuritySystem.prototype.updateSirenTriggeredMotionDetected = function (callback) {
+  this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+
+  setTimeout(() => {
+    this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+  }, 750);
 };
 
 // Siren Switch

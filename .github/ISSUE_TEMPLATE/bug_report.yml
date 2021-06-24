@@ -1,0 +1,42 @@
+name: Bug Report
+description: File a bug report
+title: ""
+labels: [bug]
+assignees:
+  - MiguelRipoll23
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Installed version of the plugin
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: homebridge-version
+    attributes:
+      label: Homebridge version
+      description: Installed version of Homebridge
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A description of the bug found plus the steps to reproduce the issue
+      placeholder:
+      value: ""
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
