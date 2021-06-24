@@ -11,7 +11,7 @@ body:
   - type: textarea
     id: feature-description
     attributes:
-      label: What would you to be added?
+      label: What are you missing?
       description: A description of the feature suggested to be added
     validations:
       required: true
