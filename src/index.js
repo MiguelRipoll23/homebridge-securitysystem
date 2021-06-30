@@ -1196,6 +1196,12 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
   this.log.debug(`ffplay ${commandArguments.join(' ')}`);
 
   this.audioProcess.on('error', data => {
+    // Check if command is missing
+    if (data !== null && data.toString().indexOf('ENOENT') > -1) {
+      this.log.error('Unable to play sound, ffmpeg is not installed.');
+      return;
+    }
+
     this.log.error(`Unable to play sound.\n${data}`);
   });
 
