@@ -16,7 +16,7 @@ body:
       placeholder: 1.0.0
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: plugin-configuration
     attributes:
       label: Plugin configuration
