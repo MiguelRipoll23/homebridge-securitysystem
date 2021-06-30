@@ -44,11 +44,11 @@
         "type": "integer",
         "default": 10,
         "required": false,
-        "minimum": 0
+        "minimum": 1
       },
       "audio": {
         "title": "Play Audio (local-only, ffmpeg required)",
-        "description": "Warns of mode or sensor updates by playing sounds.",
+        "description": "Warns of mode changes by playing sounds.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -466,21 +466,6 @@
         "reset_minutes"
       ]
     },
-    {
-      "type": "div",
-      "display": "flex",
-      "flex-direction": "row",
-      "items": [
-        {
-          "key": "audio",
-          "flex": "1"
-        },
-        {
-          "key": "audio_language",
-          "flex": "200px"
-        }
-      ]
-    },
     "save_state",
     "test_mode",
     {
@@ -587,10 +572,25 @@
     {
       "type": "fieldset",
       "title": "Audio",
-      "description": "Change sounds directory and playback behavior.",
+      "description": "Play sounds on your connected speakers to notify events.",
       "expandable": true,
       "expanded": false,
       "items": [
+        {
+          "type": "div",
+          "display": "flex",
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "audio",
+              "flex": "1"
+            },
+            {
+              "key": "audio_language",
+              "flex": "200px"
+            }
+          ]
+        },
         {
           "type": "flex",
           "flex-flow": "row wrap",
@@ -606,7 +606,7 @@
     {
       "type": "fieldset",
       "title": "Server",
-      "description": "Start a web server to interact with the security system remotely.",
+      "description": "Expose a server to interact with the security system remotely.",
       "expandable": true,
       "expanded": false,
       "items": [
@@ -617,7 +617,7 @@
     {
       "type": "fieldset",
       "title": "Webhooks",
-      "description": "Send events to other web server under your control.",
+      "description": "Interact with other devices or web services during events",
       "expandable": true,
       "expanded": false,
       "items": [
