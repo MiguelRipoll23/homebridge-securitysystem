@@ -288,9 +288,14 @@ const options = {
   },
 
   validateValues: (log) => {
+    if (options.isValueSet(options.resetMinutes) && options.resetMinutes === 0) {
+      log.error('Value of setting \'Reset Delay Seconds\' should be at least 1.');
+      options.resetMinutes = 1;
+    }
+
     if (options.serverPort !== null) {
       if (options.serverPort < 0 || options.serverPort > 65535) {
-        log.error('Server port is invalid.');
+        log.error('Value of setting \'Server Port\' not between 0 and 65535.');
       }
     }
   },
