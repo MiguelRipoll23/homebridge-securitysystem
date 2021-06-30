@@ -46,23 +46,6 @@
         "required": false,
         "minimum": 1
       },
-      "audio": {
-        "title": "Play Audio (local-only, ffmpeg required)",
-        "description": "Warns of mode changes by playing sounds.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "audio_language": {
-        "title": "Audio Language",
-        "type": "string",
-        "default": "en-US",
-        "required": false,
-        "enum": [
-          "en-US",
-          "de-DE"
-        ]
-      },
       "save_state": {
         "title": "Save Data Using Storage",
         "description": "Persists the previous state after shutdowns and reboots.",
@@ -283,6 +266,23 @@
         "type": "boolean",
         "default": true,
         "required": false
+      },
+      "audio": {
+        "title": "Play Sounds (local-only, ffmpeg required)",
+        "description": "Warns of pending or current events by playing sounds.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "audio_language": {
+        "title": "Audio Language",
+        "type": "string",
+        "default": "en-US",
+        "required": false,
+        "enum": [
+          "en-US",
+          "de-DE"
+        ]
       },
       "audio_path": {
         "title": "Custom Audio Path",
