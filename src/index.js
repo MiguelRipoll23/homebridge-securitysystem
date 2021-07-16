@@ -724,16 +724,14 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
       armSeconds = 0;
     }
 
-    // User options
+    // Custom mode seconds
     if (isTargetStateHome && options.homeArmSeconds !== null) {
       armSeconds = options.homeArmSeconds;
     }
-
-    if (isTargetStateAway && options.awayArmSeconds !== null) {
+    else if (isTargetStateAway && options.awayArmSeconds !== null) {
       armSeconds = options.awayArmSeconds;
     }
-
-    if (isTargetStateNight && options.nightArmSeconds !== null) {
+    else if (isTargetStateNight && options.nightArmSeconds !== null) {
       armSeconds = options.nightArmSeconds;
     }
 
@@ -770,6 +768,9 @@ SecuritySystem.prototype.setTargetState = function (value, callback) {
 
 SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
+  const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+  const isCurrentStateNight = this.currentState === Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
   const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
 
   // Check if the security system is disarmed
@@ -804,12 +805,25 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
       this.log.warn('Siren (Knock)');
       this.isKnocked = true;
 
+      // Custom mode seconds
+      let doubleKnockSeconds = options.doubleKnockSeconds;
+
+      if (isCurrentStateHome && options.homeDoubleKnockSeconds !== null) {
+        doubleKnockSeconds = options.homeDoubleKnockSeconds;
+      }
+      else if (isCurrentStateAway && options.awayDoubleKnockSeconds !== null) {
+        doubleKnockSeconds = options.awayDoubleKnockSeconds;
+      }
+      else if (isCurrentStateNight && options.nightDoubleKnockSeconds !== null) {
+        doubleKnockSeconds = options.nightDoubleKnockSeconds;
+      }
+
       this.doubleKnockTimeout = setTimeout(() => {
         this.doubleKnockTimeout = null;
         this.isKnocked = false;
 
         this.log.info('Siren (Reset)');
-      }, options.doubleKnockSeconds * 1000);
+      }, doubleKnockSeconds * 1000);
 
       if (callback !== null) {
         callback(-70412, false);
