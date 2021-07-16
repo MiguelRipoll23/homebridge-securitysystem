@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to provide feedback!
+        Thanks for taking the time to suggest new features!
   - type: textarea
     id: feature-description
     attributes:
