@@ -54,6 +54,10 @@ const options = {
     options.doubleKnockSeconds = config.double_knock_seconds;
     options.doubleKnockModes = config.double_knock_modes;
 
+    options.homeDoubleKnockSeconds = config.home_double_knock_seconds;
+    options.awayDoubleKnockSeconds = config.away_double_knock_seconds;
+    options.nightDoubleKnockSeconds = config.night_double_knock_seconds;
+
     // Server
     options.serverPort = config.server_port;
     options.serverCode = config.server_code;

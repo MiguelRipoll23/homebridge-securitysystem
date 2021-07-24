@@ -1,0 +1,41 @@
+name: Ask Something
+description: Get an answer to your question
+labels: [question]
+assignees:
+  - MiguelRipoll23
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to learn about this plugin!
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Installed version of the plugin
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: plugin-configuration
+    attributes:
+      label: Plugin configuration
+      description: Configuration of the plugin
+    validations:
+      required: true
+  - type: input
+    id: homebridge-version
+    attributes:
+      label: Homebridge version
+      description: Installed version of Homebridge
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-question
+    attributes:
+      label: What's your question?
+      description: A description of the question using your use case and expected behavior
+      placeholder:
+    validations:
+      required: true

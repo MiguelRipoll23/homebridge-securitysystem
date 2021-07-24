@@ -143,6 +143,27 @@
         "required": false,
         "minimum": 0
       },
+      "home_double_knock_seconds": {
+        "title": "Home Double-Knock Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "away_double_knock_seconds": {
+        "title": "Away Double-Knock Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
+      "night_double_knock_seconds": {
+        "title": "Night Double-Knock Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
       "double_knock_modes": {
         "title": "Double-Knock Modes",
         "type": "array",
@@ -510,6 +531,15 @@
               "key": "double_knock_seconds",
               "flex": "50px"
             }
+          ]
+        },
+        {
+          "type": "flex",
+          "flex-flow": "row wrap",
+          "items": [
+            "home_double_knock_seconds",
+            "away_double_knock_seconds",
+            "night_double_knock_seconds"
           ]
         },
         "double_knock_modes",
