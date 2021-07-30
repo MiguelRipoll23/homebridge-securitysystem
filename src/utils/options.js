@@ -173,30 +173,6 @@ const options = {
       options.logDirectory = null;
     }
 
-    if (options.isValueSet(options.homeArmSeconds) === false) {
-      options.homeArmSeconds = null;
-    }
-
-    if (options.isValueSet(options.awayArmSeconds) === false) {
-      options.awayArmSeconds = null;
-    }
-
-    if (options.isValueSet(options.nightArmSeconds) === false) {
-      options.nightArmSeconds = null;
-    }
-
-    if (options.isValueSet(options.homeTriggerSeconds) === false) {
-      options.homeTriggerSeconds = null;
-    }
-
-    if (options.isValueSet(options.awayTriggerSeconds) === false) {
-      options.awayTriggerSeconds = null;
-    }
-
-    if (options.isValueSet(options.nightTriggerSeconds) === false) {
-      options.nightTriggerSeconds = null;
-    }
-
     // Tripped sensor
     if (options.isValueSet(options.trippedSensor) === false) {
       options.trippedSensor = false;
