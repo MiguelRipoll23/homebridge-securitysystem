@@ -30,6 +30,7 @@ const options = {
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
+    options.sirenOverrideSwitch = config.siren_override_switch;
     options.sirenModeSwitches = config.siren_mode_switches;
 
     // Tripped sensor
@@ -199,6 +200,10 @@ const options = {
     // Siren switches
     if (options.isValueSet(options.sirenSwitch) === false) {
       options.sirenSwitch = false;
+    }
+
+    if (options.isValueSet(options.sirenOverrideSwitch) === false) {
+      options.sirenOverrideSwitch = false;
     }
 
     if (options.isValueSet(options.sirenModeSwitches) === false) {
