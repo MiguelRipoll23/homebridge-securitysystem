@@ -206,7 +206,7 @@
       },
       "tripped_sensor": {
         "title": "Show Siren Tripped Sensor",
-        "description": "Adds a sensor that triggers when any of the siren switches have been turned on.",
+        "description": "Adds a sensor that triggers multiple times when any of the siren switches have been turned on.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -234,7 +234,7 @@
       },
       "reset_sensor": {
         "title": "Show Siren Reset Sensor",
-        "description": "Adds a sensor that triggers when the security system has reset.",
+        "description": "Adds a sensor that triggers when the security system has reset after triggering.",
         "type": "boolean",
         "default": false,
         "required": false
