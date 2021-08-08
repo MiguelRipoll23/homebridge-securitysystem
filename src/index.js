@@ -8,8 +8,14 @@ const express = require('express');
 const packageJson = require('../package.json');
 const options = require('./utils/options.js');
 
-const app = express();
+const originTypes = {
+  REGULAR_SWITCH: 0,
+  SPECIAL_SWITCH: 1,
+  INTERNAL: 3,
+  EXTERNAL: 4
+};
 
+const app = express();
 let Service, Characteristic, storagePath;
 
 module.exports = function (homebridge) {
@@ -138,7 +144,7 @@ function SecuritySystem(log, config) {
     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
     .on('get', this.getCurrentState.bind(this));
 
-  // Siren switch
+  // Siren switches
   this.sirenSwitchService = new Service.Switch('Siren', 'siren-switch');
 
   this.sirenSwitchService
@@ -146,28 +152,35 @@ function SecuritySystem(log, config) {
     .on('get', this.getSirenSwitch.bind(this))
     .on('set', this.setSirenSwitch.bind(this));
 
-  // Siren tripped sensor
-  this.sirenTrippedMotionSensorService = new Service.MotionSensor('Siren Tripped', 'siren-tripped');
+  this.sirenOverrideSwitchService = new Service.Switch('Siren Override', 'BdW9ce0mUYatqiRqEjT4iA');
 
-  this.sirenTrippedMotionSensorService
-    .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getSirenTrippedMotionDetected.bind(this));
+  this.sirenOverrideSwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getSirenOverrideSwitch.bind(this))
+    .on('set', this.setSirenOverrideSwitch.bind(this));
 
-  // Siren triggered sensor
-  this.sirenTriggeredMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
+  this.sirenHomeSwitchService = new Service.Switch('Siren Home', 'siren-home');
 
-  this.sirenTriggeredMotionSensorService
-    .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getSirenTriggeredMotionDetected.bind(this));
+  this.sirenHomeSwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getSirenHomeSwitch.bind(this))
+    .on('set', this.setSirenHomeSwitch.bind(this));
 
-  // Siren reset sensor
-  this.sirenResetMotionSensorService = new Service.MotionSensor('Siren Reset', 'reset-event');
+  this.sirenAwaySwitchService = new Service.Switch('Siren Away', 'siren-away');
 
-  this.sirenResetMotionSensorService
-    .getCharacteristic(Characteristic.MotionDetected)
-    .on('get', this.getSirenResetMotionDetected.bind(this));
+  this.sirenAwaySwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getSirenAwaySwitch.bind(this))
+    .on('set', this.setSirenAwaySwitch.bind(this));
 
-  // Arming lock
+  this.sirenNightSwitchService = new Service.Switch('Siren Night', 'siren-night');
+
+  this.sirenNightSwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getSirenNightSwitch.bind(this))
+    .on('set', this.setSirenNightSwitch.bind(this));
+
+  // Blocker switches
   this.armingLockSwitchService = new Service.Switch('Arming Lock', 'arming-lock');
 
   this.armingLockSwitchService
@@ -218,27 +231,24 @@ function SecuritySystem(log, config) {
     .on('get', this.getModePauseSwitch.bind(this))
     .on('set', this.setModePauseSwitch.bind(this));
 
-  // Siren mode switches
-  this.sirenHomeSwitchService = new Service.Switch('Siren Home', 'siren-home');
+  // Siren sensors
+  this.sirenTrippedMotionSensorService = new Service.MotionSensor('Siren Tripped', 'siren-tripped');
 
-  this.sirenHomeSwitchService
-    .getCharacteristic(Characteristic.On)
-    .on('get', this.getSirenHomeSwitch.bind(this))
-    .on('set', this.setSirenHomeSwitch.bind(this));
+  this.sirenTrippedMotionSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getSirenTrippedMotionDetected.bind(this));
 
-  this.sirenAwaySwitchService = new Service.Switch('Siren Away', 'siren-away');
+  this.sirenTriggeredMotionSensorService = new Service.MotionSensor('Siren Triggered', 'siren-triggered');
 
-  this.sirenAwaySwitchService
-    .getCharacteristic(Characteristic.On)
-    .on('get', this.getSirenAwaySwitch.bind(this))
-    .on('set', this.setSirenAwaySwitch.bind(this));
+  this.sirenTriggeredMotionSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getSirenTriggeredMotionDetected.bind(this));
 
-  this.sirenNightSwitchService = new Service.Switch('Siren Night', 'siren-night');
+  this.sirenResetMotionSensorService = new Service.MotionSensor('Siren Reset', 'reset-event');
 
-  this.sirenNightSwitchService
-    .getCharacteristic(Characteristic.On)
-    .on('get', this.getSirenNightSwitch.bind(this))
-    .on('set', this.setSirenNightSwitch.bind(this));
+  this.sirenResetMotionSensorService
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on('get', this.getSirenResetMotionDetected.bind(this));
 
   // Accessory information
   this.accessoryInformationService = new Service.AccessoryInformation();
@@ -274,6 +284,10 @@ function SecuritySystem(log, config) {
 
   if (options.sirenSwitch) {
     this.services.push(this.sirenSwitchService);
+  }
+
+  if (options.sirenOverrideSwitch) {
+    this.services.push(this.sirenOverrideSwitchService);
   }
 
   if (this.availableTargetStates.includes(Characteristic.SecuritySystemTargetState.STAY_ARM)) {
@@ -496,7 +510,7 @@ SecuritySystem.prototype.getCurrentState = function (callback) {
   callback(null, this.currentState);
 };
 
-SecuritySystem.prototype.setCurrentState = function (state, external) {
+SecuritySystem.prototype.setCurrentState = function (state, origin) {
   // Check if mode already set
   if (this.currentState === state) {
     return;
@@ -510,10 +524,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
   this.playAudio('current', state);
 
   // Commands
-  this.executeCommand('current', state, external);
+  this.executeCommand('current', state, origin);
 
   // Webhooks
-  this.sendWebhookEvent('current', state, external);
+  this.sendWebhookEvent('current', state, origin);
 
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
     // Update siren triggered sensor
@@ -537,10 +551,10 @@ SecuritySystem.prototype.setCurrentState = function (state, external) {
       // Alternative flow (Triggered -> Off -> Armed mode)
       if (options.resetOffFlow) {
         const originalTargetState = this.targetState;
-        this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false, null);
+        this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, originTypes.INTERNAL, false, null);
 
         setTimeout(() => {
-          this.updateTargetState(originalTargetState, true, true, null);
+          this.updateTargetState(originalTargetState, originTypes.INTERNAL, true, null);
         }, 100);
 
         return;
@@ -629,17 +643,18 @@ SecuritySystem.prototype.handleStateUpdate = function (alarmTriggered) {
   const sirenOnCharacteristic = this.sirenSwitchService.getCharacteristic(Characteristic.On);
 
   if (sirenOnCharacteristic.value) {
-    this.updateSiren(false, true, true, null);
+    this.updateSiren(false, originTypes.INTERNAL, true, null);
   }
 
   this.resetSirenSwitches();
 };
 
-SecuritySystem.prototype.updateTargetState = function (state, external, delay, callback) {
+SecuritySystem.prototype.updateTargetState = function (state, origin, delay, callback) {
+  const isTargetStateAlreadySet = this.targetState === state;
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   // Check if target state is already set
-  if (state === this.targetState && isCurrentStateAlarmTriggered === false) {
+  if (isTargetStateAlreadySet && isCurrentStateAlarmTriggered === false) {
     this.log.warn('Target mode (Already set)');
 
     if (callback !== null) {
@@ -686,7 +701,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
 
   // Update characteristic
-  if (external) {
+  if (origin === originTypes.INTERNAL || origin === originTypes.EXTERNAL) {
     this.service.updateCharacteristic(Characteristic.SecuritySystemTargetState, this.targetState);
   }
 
@@ -694,10 +709,10 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   this.handleStateUpdate(false);
 
   // Commands
-  this.executeCommand('target', state, external);
+  this.executeCommand('target', state, origin);
 
   // Webhooks
-  this.sendWebhookEvent('target', state, external);
+  this.sendWebhookEvent('target', state, origin);
 
   // Check if current state is already set
   if (state === this.currentState) {
@@ -725,13 +740,13 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
     }
 
     // Custom mode seconds
-    if (isTargetStateHome && options.homeArmSeconds !== null) {
+    if (isTargetStateHome && options.isValueSet(options.homeArmSeconds)) {
       armSeconds = options.homeArmSeconds;
     }
-    else if (isTargetStateAway && options.awayArmSeconds !== null) {
+    else if (isTargetStateAway && options.isValueSet(options.awayArmSeconds)) {
       armSeconds = options.awayArmSeconds;
     }
-    else if (isTargetStateNight && options.nightArmSeconds !== null) {
+    else if (isTargetStateNight && options.isValueSet(options.nightArmSeconds)) {
       armSeconds = options.nightArmSeconds;
     }
 
@@ -747,7 +762,7 @@ SecuritySystem.prototype.updateTargetState = function (state, external, delay, c
   // Arm the security system
   this.armTimeout = setTimeout(() => {
     this.armTimeout = null;
-    this.setCurrentState(state, external);
+    this.setCurrentState(state, origin);
     this.isArming = false;
   }, armSeconds * 1000);
 
@@ -763,10 +778,10 @@ SecuritySystem.prototype.getTargetState = function (callback) {
 };
 
 SecuritySystem.prototype.setTargetState = function (value, callback) {
-  this.updateTargetState(value, false, true, callback);
+  this.updateTargetState(value, originTypes.REGULAR_SWITCH, true, callback);
 };
 
-SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, callback) {
+SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, callback) {
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
   const isCurrentStateHome = this.currentState === Characteristic.SecuritySystemCurrentState.STAY_ARM;
   const isCurrentStateAway = this.currentState === Characteristic.SecuritySystemCurrentState.AWAY_ARM;
@@ -774,7 +789,10 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
 
   // Check if the security system is disarmed
-  if (isCurrentStateDisarmed && options.overrideOff === false) {
+  const isNotOverridingOff = options.overrideOff === false;
+  const isNotSpecialSwitch = origin !== originTypes.SPECIAL_SWITCH;
+
+  if (isCurrentStateDisarmed && isNotOverridingOff && isNotSpecialSwitch) {
     this.log.warn('Siren (Not armed)');
 
     if (callback !== null) {
@@ -796,25 +814,29 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
   }
 
   // Check double knock
-  if (value && options.doubleKnock && this.isKnocked === false) {
-    const doubleKnockModes = options.doubleKnockModes.map(value => {
+  if (options.doubleKnock) {
+    const doubleKnockStates = options.doubleKnockModes.map(value => {
       return this.mode2State(value.toLowerCase());
     });
 
-    if (doubleKnockModes.includes(this.currentState)) {
+    const isFirstKnock = this.isKnocked === false;
+    const isSpecialSwitch = origin === originTypes.SPECIAL_SWITCH;
+    const isStateKnockable = doubleKnockStates.includes(this.currentState);
+
+    if (value && isStateKnockable && isFirstKnock && isSpecialSwitch === false) {
       this.log.warn('Siren (Knock)');
       this.isKnocked = true;
 
       // Custom mode seconds
       let doubleKnockSeconds = options.doubleKnockSeconds;
 
-      if (isCurrentStateHome && options.homeDoubleKnockSeconds !== null) {
+      if (isCurrentStateHome && options.isValueSet(options.homeDoubleKnockSeconds)) {
         doubleKnockSeconds = options.homeDoubleKnockSeconds;
       }
-      else if (isCurrentStateAway && options.awayDoubleKnockSeconds !== null) {
+      else if (isCurrentStateAway && options.isValueSet(options.awayDoubleKnockSeconds)) {
         doubleKnockSeconds = options.awayDoubleKnockSeconds;
       }
-      else if (isCurrentStateNight && options.nightDoubleKnockSeconds !== null) {
+      else if (isCurrentStateNight && options.isValueSet(options.nightDoubleKnockSeconds)) {
         doubleKnockSeconds = options.nightDoubleKnockSeconds;
       }
 
@@ -841,7 +863,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     this.log.debug('Double-knock timeout (Cleared)');
   }
 
-  if (external) {
+  if (origin === originTypes.INTERNAL || origin === originTypes.EXTERNAL) {
     this.sirenSwitchService.updateCharacteristic(Characteristic.On, value);
   }
 
@@ -860,6 +882,11 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     // Already about to trigger
     if (this.triggerTimeout !== null) {
       this.log.warn('Siren (Already on)');
+
+      if (callback !== null) {
+        callback(-70412, false);
+      }
+
       return false;
     }
 
@@ -882,21 +909,21 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     let triggerSeconds = options.triggerSeconds;
 
     // User options
-    if (isCurrentStateHome && options.homeTriggerSeconds !== null) {
+    if (isCurrentStateHome && options.isValueSet(options.homeTriggerSeconds)) {
       triggerSeconds = options.homeTriggerSeconds;
     }
 
-    if (isCurrentStateAway && options.awayTriggerSeconds !== null) {
+    if (isCurrentStateAway && options.isValueSet(options.awayTriggerSeconds)) {
       triggerSeconds = options.awayTriggerSeconds;
     }
 
-    if (isCurrentStateNight && options.nightTriggerSeconds !== null) {
+    if (isCurrentStateNight && options.isValueSet(options.nightTriggerSeconds)) {
       triggerSeconds = options.nightTriggerSeconds;
     }
 
     this.triggerTimeout = setTimeout(() => {
       this.triggerTimeout = null;
-      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, external);
+      this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, origin);
     }, triggerSeconds * 1000);
 
     // Audio
@@ -905,10 +932,10 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     }
 
     // Commands
-    this.executeCommand('current', 'warning', external);
+    this.executeCommand('current', 'warning', origin);
 
     // Webhooks
-    this.sendWebhookEvent('current', 'warning', external);
+    this.sendWebhookEvent('current', 'warning', origin);
   }
   else {
     // Off
@@ -917,7 +944,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 
     if (isCurrentStateAlarmTriggered) {
       if (stateChanged === false) {
-        this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, false, null);
+        this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, originTypes.INTERNAL, false, null);
       }
     }
     else {
@@ -928,6 +955,8 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
     if (options.trippedSensor) {
       this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
     }
+
+    this.isKnocked = false;
   }
 
   if (callback !== null) {
@@ -938,7 +967,7 @@ SecuritySystem.prototype.updateSiren = function (value, external, stateChanged, 
 };
 
 SecuritySystem.prototype.setSiren = function (value, callback) {
-  this.updateSiren(value, false, false, callback);
+  this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
 };
 
 // Server
@@ -1045,7 +1074,7 @@ SecuritySystem.prototype.startServer = async function () {
 
     if (this.getDelayParameter(req)) {
       // Delay
-      sucess = this.updateSiren(true, true, false, null);
+      sucess = this.updateSiren(true, originTypes.EXTERNAL, false, null);
     }
     else {
       const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -1070,7 +1099,7 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.STAY_ARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, true, delay, null);
+    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
     this.sendResultResponse(res, sucess);
   });
@@ -1082,7 +1111,7 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.AWAY_ARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, true, delay, null);
+    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
     this.sendResultResponse(res, sucess);
   });
@@ -1094,7 +1123,7 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, true, delay, null);
+    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
     this.sendResultResponse(res, sucess);
   });
@@ -1106,7 +1135,7 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.DISARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, true, delay, null);
+    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
     this.sendResultResponse(res, sucess);
   });
@@ -1244,9 +1273,9 @@ SecuritySystem.prototype.setupAudio = async function () {
 };
 
 // Command
-SecuritySystem.prototype.executeCommand = function (type, state, external) {
+SecuritySystem.prototype.executeCommand = function (type, state, origin) {
   // Check proxy mode
-  if (options.proxyMode && external) {
+  if (options.proxyMode && origin === originTypes.EXTERNAL) {
     this.log.debug('Command bypassed as proxy mode is enabled.');
     return;
   }
@@ -1322,15 +1351,15 @@ SecuritySystem.prototype.executeCommand = function (type, state, external) {
 };
 
 // Webhooks
-SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
-  // Check option
+SecuritySystem.prototype.sendWebhookEvent = function (type, state, origin) {
+  // Check webhook host
   if (options.isValueSet(options.webhookUrl) === false) {
     this.log.debug('Webhook base URL option is not set.');
     return;
   }
 
   // Check proxy mode
-  if (options.proxyMode && external) {
+  if (options.proxyMode && origin === originTypes.EXTERNAL) {
     this.log.debug('Webhook bypassed as proxy mode is enabled.');
     return;
   }
@@ -1410,49 +1439,35 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, external) {
     });
 };
 
-// Siren Tripped Motion Sensor
-SecuritySystem.prototype.getSirenTrippedMotionDetected = function (callback) {
-  const value = this.sirenTrippedMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.updateSirenTrippedMotionDetected = function () {
-  this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
-
-  setTimeout(() => {
-    this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
-  }, 750);
-};
-
-// Siren Triggered Motion Sensor
-SecuritySystem.prototype.getSirenTriggeredMotionDetected = function (callback) {
-  const value = this.sirenTriggeredMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.updateSirenTriggeredMotionDetected = function () {
-  this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
-
-  setTimeout(() => {
-    this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
-  }, 750);
-};
-
-// Siren Switch
+// Siren switches
 SecuritySystem.prototype.getSirenSwitch = function (callback) {
   const value = this.sirenSwitchService.getCharacteristic(Characteristic.On).value;
   callback(null, value);
 };
 
 SecuritySystem.prototype.setSirenSwitch = function (value, callback) {
-  this.updateSiren(value, false, false, callback);
+  this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
 };
 
-// Siren Mode Switches
+SecuritySystem.prototype.getSirenOverrideSwitch = function (callback) {
+  const value = this.sirenOverrideSwitchService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setSirenOverrideSwitch = function (value, callback) {
+  this.updateSiren(value, originTypes.SPECIAL_SWITCH, false, callback);
+};
+
 SecuritySystem.prototype.resetSirenSwitches = function () {
+  const sirenOverrideOnCharacteristic = this.sirenOverrideSwitchService.getCharacteristic(Characteristic.On);
+
   const sirenHomeOnCharacteristic = this.sirenHomeSwitchService.getCharacteristic(Characteristic.On);
   const sirenAwayOnCharacteristic = this.sirenAwaySwitchService.getCharacteristic(Characteristic.On);
   const sirenNightOnCharacteristic = this.sirenNightSwitchService.getCharacteristic(Characteristic.On);
+
+  if (sirenOverrideOnCharacteristic.value) {
+    sirenOverrideOnCharacteristic.updateValue(false);
+  }
 
   if (sirenHomeOnCharacteristic.value) {
     sirenHomeOnCharacteristic.updateValue(false);
@@ -1473,7 +1488,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
   if (value) {
     if (this.currentState === switchRequiredState ||
       (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)) {
-      this.updateSiren(value, false, false, callback);
+      this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
     }
     else {
       this.log.warn('Siren (Mode not set)');
@@ -1481,7 +1496,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
     }
   }
   else {
-    this.updateSiren(value, false, false, callback);
+    this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
   }
 };
 
@@ -1512,13 +1527,7 @@ SecuritySystem.prototype.setSirenNightSwitch = function (value, callback) {
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, value, callback);
 };
 
-// Siren Reset Motion Sensor
-SecuritySystem.prototype.getSirenResetMotionDetected = function (callback) {
-  const value = this.sirenResetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
-  callback(null, value);
-};
-
-// Arming Lock Switch
+// Blocker switches
 SecuritySystem.prototype.getArmingLockSwitch = function (callback) {
   const value = this.armingLockSwitchService.getCharacteristic(Characteristic.On).value;
   callback(null, value);
@@ -1607,7 +1616,7 @@ SecuritySystem.prototype.setModeHomeSwitch = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, true, true, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.STAY_ARM, originTypes.INTERNAL, true, null);
   callback(null);
 };
 
@@ -1622,7 +1631,7 @@ SecuritySystem.prototype.setModeAwaySwitch = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, true, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, originTypes.INTERNAL, true, null);
   callback(null);
 };
 
@@ -1637,7 +1646,7 @@ SecuritySystem.prototype.setModeNightSwitch = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, true, true, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.NIGHT_ARM, originTypes.INTERNAL, true, null);
   callback(null);
 };
 
@@ -1652,7 +1661,7 @@ SecuritySystem.prototype.setModeOffSwitch = function (value, callback) {
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, originTypes.INTERNAL, true, null);
   callback(null);
 };
 
@@ -1667,7 +1676,7 @@ SecuritySystem.prototype.setModeAwayExtendedSwitch = function (value, callback) 
     return;
   }
 
-  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, true, true, null);
+  this.updateTargetState(Characteristic.SecuritySystemTargetState.AWAY_ARM, originTypes.INTERNAL, true, null);
   callback(null);
 };
 
@@ -1693,13 +1702,13 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     this.log.info('Pause (Started)');
 
     this.pausedCurrentState = this.currentState;
-    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, true, true, null);
+    this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, originTypes.INTERNAL, true, null);
 
     // Check if time is set to unlimited
     if (options.pauseMinutes !== 0) {
       this.pauseTimeout = setTimeout(() => {
         this.log.info('Pause (Finished)');
-        this.updateTargetState(this.pausedCurrentState, true, true, null);
+        this.updateTargetState(this.pausedCurrentState, originTypes.INTERNAL, true, null);
       }, options.pauseMinutes * 60 * 1000);
     }
   }
@@ -1711,8 +1720,42 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
       this.pauseTimeout = null;
     }
 
-    this.updateTargetState(this.pausedCurrentState, true, true, null);
+    this.updateTargetState(this.pausedCurrentState, originTypes.INTERNAL, true, null);
   }
 
   callback(null);
+};
+
+// Siren Tripped Motion Sensor
+SecuritySystem.prototype.getSirenTrippedMotionDetected = function (callback) {
+  const value = this.sirenTrippedMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.updateSirenTrippedMotionDetected = function () {
+  this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+
+  setTimeout(() => {
+    this.sirenTrippedMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+  }, 750);
+};
+
+// Siren Triggered Motion Sensor
+SecuritySystem.prototype.getSirenTriggeredMotionDetected = function (callback) {
+  const value = this.sirenTriggeredMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.updateSirenTriggeredMotionDetected = function () {
+  this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, true);
+
+  setTimeout(() => {
+    this.sirenTriggeredMotionSensorService.updateCharacteristic(Characteristic.MotionDetected, false);
+  }, 750);
+};
+
+// Siren Reset Motion Sensor
+SecuritySystem.prototype.getSirenResetMotionDetected = function (callback) {
+  const value = this.sirenResetMotionSensorService.getCharacteristic(Characteristic.MotionDetected).value;
+  callback(null, value);
 };

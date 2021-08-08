@@ -30,6 +30,7 @@ const options = {
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;
+    options.sirenOverrideSwitch = config.siren_override_switch;
     options.sirenModeSwitches = config.siren_mode_switches;
 
     // Tripped sensor
@@ -173,30 +174,6 @@ const options = {
       options.logDirectory = null;
     }
 
-    if (options.isValueSet(options.homeArmSeconds) === false) {
-      options.homeArmSeconds = null;
-    }
-
-    if (options.isValueSet(options.awayArmSeconds) === false) {
-      options.awayArmSeconds = null;
-    }
-
-    if (options.isValueSet(options.nightArmSeconds) === false) {
-      options.nightArmSeconds = null;
-    }
-
-    if (options.isValueSet(options.homeTriggerSeconds) === false) {
-      options.homeTriggerSeconds = null;
-    }
-
-    if (options.isValueSet(options.awayTriggerSeconds) === false) {
-      options.awayTriggerSeconds = null;
-    }
-
-    if (options.isValueSet(options.nightTriggerSeconds) === false) {
-      options.nightTriggerSeconds = null;
-    }
-
     // Tripped sensor
     if (options.isValueSet(options.trippedSensor) === false) {
       options.trippedSensor = false;
@@ -223,6 +200,10 @@ const options = {
     // Siren switches
     if (options.isValueSet(options.sirenSwitch) === false) {
       options.sirenSwitch = false;
+    }
+
+    if (options.isValueSet(options.sirenOverrideSwitch) === false) {
+      options.sirenOverrideSwitch = false;
     }
 
     if (options.isValueSet(options.sirenModeSwitches) === false) {
