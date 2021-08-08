@@ -25,6 +25,8 @@ const options = {
     options.awayTriggerSeconds = config.away_trigger_seconds;
     options.nightTriggerSeconds = config.night_trigger_seconds;
 
+    options.awayExtendedTriggerSeconds = config.away_extended_trigger_seconds;
+
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
 

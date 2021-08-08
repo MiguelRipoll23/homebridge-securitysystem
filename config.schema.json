@@ -115,6 +115,13 @@
         "required": false,
         "minimum": 0
       },
+      "away_extended_trigger_seconds": {
+        "title": "Trigger Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
       "override_off": {
         "title": "Trigger During Off Mode",
         "description": "Allows the security system to be triggered while disarmed.",
@@ -562,7 +569,19 @@
       "items": [
         "mode_switches",
         "mode_off_switch",
-        "mode_away_extended_switch",
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "mode_away_extended_switch"
+            },
+            {
+              "key": "away_extended_trigger_seconds"
+            }
+          ]
+        },
         {
           "type": "div",
           "displayFlex": true,

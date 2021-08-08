@@ -913,8 +913,16 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
       triggerSeconds = options.homeTriggerSeconds;
     }
 
-    if (isCurrentStateAway && options.isValueSet(options.awayTriggerSeconds)) {
-      triggerSeconds = options.awayTriggerSeconds;
+    if (isCurrentStateAway) {
+      const modeAwayExtendedSwitchCharacteristicOn = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On);
+      const modeAwayExtendedSwitchCharacteristicOnValue = modeAwayExtendedSwitchCharacteristicOn.value;
+
+      if (options.isValueSet(options.awayExtendedTriggerSeconds) && modeAwayExtendedSwitchCharacteristicOnValue) {
+        triggerSeconds = options.awayExtendedTriggerSeconds;
+      }
+      else if (options.isValueSet(options.awayTriggerSeconds)) {
+        triggerSeconds = options.awayTriggerSeconds;
+      }
     }
 
     if (isCurrentStateNight && options.isValueSet(options.nightTriggerSeconds)) {
