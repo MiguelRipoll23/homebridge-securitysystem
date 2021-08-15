@@ -913,8 +913,16 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
       triggerSeconds = options.homeTriggerSeconds;
     }
 
-    if (isCurrentStateAway && options.isValueSet(options.awayTriggerSeconds)) {
-      triggerSeconds = options.awayTriggerSeconds;
+    if (isCurrentStateAway) {
+      const modeAwayExtendedSwitchCharacteristicOn = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On);
+      const modeAwayExtendedSwitchCharacteristicOnValue = modeAwayExtendedSwitchCharacteristicOn.value;
+
+      if (options.isValueSet(options.awayExtendedTriggerSeconds) && modeAwayExtendedSwitchCharacteristicOnValue) {
+        triggerSeconds = options.awayExtendedTriggerSeconds;
+      }
+      else if (options.isValueSet(options.awayTriggerSeconds)) {
+        triggerSeconds = options.awayTriggerSeconds;
+      }
     }
 
     if (isCurrentStateNight && options.isValueSet(options.nightTriggerSeconds)) {
@@ -1553,35 +1561,35 @@ SecuritySystem.prototype.setArmingLockSwitch = function (value, callback) {
 
 // Mode Switches
 SecuritySystem.prototype.resetModeSwitches = function () {
-  const modeHomeCharacteristicOn = this.modeHomeSwitchService.getCharacteristic(Characteristic.On);
-  const modeAwayCharacteristicOn = this.modeAwaySwitchService.getCharacteristic(Characteristic.On);
-  const modeNightCharacteristicOn = this.modeNightSwitchService.getCharacteristic(Characteristic.On);
-  const modeOffCharacteristicOn = this.modeOffSwitchService.getCharacteristic(Characteristic.On);
-  const modeAwayExtendedCharacteristicOn = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On);
-  const modePauseCharacteristicOn = this.modePauseSwitchService.getCharacteristic(Characteristic.On);
+  const modeHomeSwitchCharacteristicOn = this.modeHomeSwitchService.getCharacteristic(Characteristic.On);
+  const modeAwaySwitchCharacteristicOn = this.modeAwaySwitchService.getCharacteristic(Characteristic.On);
+  const modeNightSwitchCharacteristicOn = this.modeNightSwitchService.getCharacteristic(Characteristic.On);
+  const modeOffSwitchCharacteristicOn = this.modeOffSwitchService.getCharacteristic(Characteristic.On);
+  const modeAwayExtendedSwitchCharacteristicOn = this.modeAwayExtendedSwitchService.getCharacteristic(Characteristic.On);
+  const modePauseSwitchCharacteristicOn = this.modePauseSwitchService.getCharacteristic(Characteristic.On);
 
-  if (modeHomeCharacteristicOn.value) {
-    modeHomeCharacteristicOn.updateValue(false);
+  if (modeHomeSwitchCharacteristicOn.value) {
+    modeHomeSwitchCharacteristicOn.updateValue(false);
   }
 
-  if (modeAwayCharacteristicOn.value) {
-    modeAwayCharacteristicOn.updateValue(false);
+  if (modeAwaySwitchCharacteristicOn.value) {
+    modeAwaySwitchCharacteristicOn.updateValue(false);
   }
 
-  if (modeNightCharacteristicOn.value) {
-    modeNightCharacteristicOn.updateValue(false);
+  if (modeNightSwitchCharacteristicOn.value) {
+    modeNightSwitchCharacteristicOn.updateValue(false);
   }
 
-  if (modeOffCharacteristicOn.value) {
-    modeOffCharacteristicOn.updateValue(false);
+  if (modeOffSwitchCharacteristicOn.value) {
+    modeOffSwitchCharacteristicOn.updateValue(false);
   }
 
-  if (modeAwayExtendedCharacteristicOn.value) {
-    modeAwayExtendedCharacteristicOn.updateValue(false);
+  if (modeAwayExtendedSwitchCharacteristicOn.value) {
+    modeAwayExtendedSwitchCharacteristicOn.updateValue(false);
   }
 
-  if (modePauseCharacteristicOn.value) {
-    modePauseCharacteristicOn.updateValue(false);
+  if (modePauseSwitchCharacteristicOn.value) {
+    modePauseSwitchCharacteristicOn.updateValue(false);
   }
 };
 

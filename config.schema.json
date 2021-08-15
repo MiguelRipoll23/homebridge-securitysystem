@@ -115,6 +115,13 @@
         "required": false,
         "minimum": 0
       },
+      "away_extended_trigger_seconds": {
+        "title": "Trigger Seconds",
+        "type": ["null", "integer"],
+        "default": "null",
+        "required": false,
+        "minimum": 0
+      },
       "override_off": {
         "title": "Trigger During Off Mode",
         "description": "Allows the security system to be triggered while disarmed.",
@@ -199,7 +206,7 @@
       },
       "tripped_sensor": {
         "title": "Show Siren Tripped Sensor",
-        "description": "Adds a sensor that triggers when any of the siren switches have been turned on.",
+        "description": "Adds a sensor that triggers multiple times when any of the siren switches have been turned on.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -227,7 +234,7 @@
       },
       "reset_sensor": {
         "title": "Show Siren Reset Sensor",
-        "description": "Adds a sensor that triggers when the security system has reset.",
+        "description": "Adds a sensor that triggers when the security system has reset after triggering.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -562,7 +569,19 @@
       "items": [
         "mode_switches",
         "mode_off_switch",
-        "mode_away_extended_switch",
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "mode_away_extended_switch"
+            },
+            {
+              "key": "away_extended_trigger_seconds"
+            }
+          ]
+        },
         {
           "type": "div",
           "displayFlex": true,
