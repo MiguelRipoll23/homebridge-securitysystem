@@ -1103,11 +1103,11 @@ SecuritySystem.prototype.startServer = async function () {
       return;
     }
 
-    let sucess = true;
+    let result = true;
 
     if (this.getDelayParameter(req)) {
       // Delay
-      sucess = this.updateSiren(true, originTypes.EXTERNAL, false, null);
+      result = this.updateSiren(true, originTypes.EXTERNAL, false, null);
     }
     else {
       const isCurrentStateDisarmed = this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -1122,7 +1122,7 @@ SecuritySystem.prototype.startServer = async function () {
       this.setCurrentState(Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED, true);
     }
 
-    this.sendResultResponse(res, sucess);
+    this.sendResultResponse(res, result);
   });
 
   app.get('/home', (req, res) => {
@@ -1132,9 +1132,9 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.STAY_ARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
+    const result = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
-    this.sendResultResponse(res, sucess);
+    this.sendResultResponse(res, result);
   });
 
   app.get('/away', (req, res) => {
@@ -1144,9 +1144,9 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.AWAY_ARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
+    const result = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
-    this.sendResultResponse(res, sucess);
+    this.sendResultResponse(res, result);
   });
 
   app.get('/night', (req, res) => {
@@ -1156,9 +1156,9 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
+    const result = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
-    this.sendResultResponse(res, sucess);
+    this.sendResultResponse(res, result);
   });
 
   app.get('/off', (req, res) => {
@@ -1168,9 +1168,9 @@ SecuritySystem.prototype.startServer = async function () {
 
     const state = Characteristic.SecuritySystemTargetState.DISARM;
     const delay = this.getDelayParameter(req);
-    const sucess = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
+    const result = this.updateTargetState(state, originTypes.EXTERNAL, delay, null);
 
-    this.sendResultResponse(res, sucess);
+    this.sendResultResponse(res, result);
   });
 
   app.get('/arming-lock/:mode/:value', (req, res) => {
@@ -1803,19 +1803,19 @@ SecuritySystem.prototype.getModePauseSwitch = function (callback) {
 
 SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
   if (this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    this.log.warn('Pause (Alarm triggered)');
+    this.log.warn('Mode pause (Alarm is triggered)');
     callback(-70412, false);
     return;
   }
 
   if (value) {
     if (this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED) {
-      this.log.warn('Pause (Not armed)');
+      this.log.warn('Mode pause (Not armed)');
       callback(-70412, false);
       return;
     }
 
-    this.log.info('Pause (Started)');
+    this.log.info('Mode pause (Started)');
 
     this.pausedCurrentState = this.currentState;
     this.updateTargetState(Characteristic.SecuritySystemTargetState.DISARM, originTypes.INTERNAL, true, null);
@@ -1823,13 +1823,13 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     // Check if time is set to unlimited
     if (options.pauseMinutes !== 0) {
       this.pauseTimeout = setTimeout(() => {
-        this.log.info('Pause (Finished)');
+        this.log.info('Mode pause (Finished)');
         this.updateTargetState(this.pausedCurrentState, originTypes.INTERNAL, true, null);
       }, options.pauseMinutes * 60 * 1000);
     }
   }
   else {
-    this.log.info('Pause (Cancelled)');
+    this.log.info('Mode pause (Cancelled)');
 
     if (this.pauseTimeout !== null) {
       clearTimeout(this.pauseTimeout);
