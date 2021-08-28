@@ -29,6 +29,7 @@ const options = {
 
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
+    options.armingLockSwitches = config.arming_lock_switches;
 
     // Siren switches
     options.sirenSwitch = config.siren_switch;

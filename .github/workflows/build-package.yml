@@ -3,31 +3,28 @@ name: Build package
 on:
   push:
     branches:
-      - "beta"
-      - "hotfix/*"
+      - 'beta'
+      - 'hotfix/*'
 
   pull_request:
     branches:
-      - "beta"
-      - "hotfix/*"
+      - 'beta'
+      - 'hotfix/*'
 
 jobs:
   build-package:
     name: Build package
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [12.x, 14.x]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '14'
+          cache: 'npm'
 
       - name: Install package
         run: npm ci

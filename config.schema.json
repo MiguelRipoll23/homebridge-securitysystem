@@ -276,7 +276,14 @@
       },
       "arming_lock_switch": {
         "title": "Show Arming Lock Switch (beta)",
-        "description": "Adds a switch that will prevent arming the security system.",
+        "description": "Adds a global switch that will prevent arming the security system.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "arming_lock_switches": {
+        "title": "Show Arming Lock Mode Switches (beta)",
+        "description": "Adds switches that will prevent arming the security system when their mode is set.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -297,7 +304,7 @@
       },
       "siren_mode_switches": {
         "title": "Show Siren Mode Switches",
-        "description": "Adds switches for every mode that will trigger the security system.",
+        "description": "Adds switches that will trigger the security system when their mode is set.",
         "type": "boolean",
         "default": true,
         "required": false
@@ -596,6 +603,7 @@
           ]
         },
         "arming_lock_switch",
+        "arming_lock_switches",
         "siren_switch",
         "siren_override_switch",
         "siren_mode_switches"
