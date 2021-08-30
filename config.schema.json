@@ -116,7 +116,7 @@
         "minimum": 0
       },
       "away_extended_trigger_seconds": {
-        "title": "Extended Trigger Seconds",
+        "title": "Away Extended Trigger Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
@@ -255,7 +255,7 @@
       },
       "mode_away_extended_switch": {
         "title": "Show Mode Away Extended Switch",
-        "description": "Adds a switch that sets the Away mode and can be used as a condition in automations to enhance the security.",
+        "description": "Adds a switch that sets the Away mode and can be used as a condition in automations.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -582,7 +582,7 @@
         {
           "type": "div",
           "displayFlex": true,
-          "flex-flow": "row wrap",
+          "flex-flow": "row",
           "flex-direction": "row",
           "items": [
             "mode_away_extended_switch",
