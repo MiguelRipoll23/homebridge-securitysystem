@@ -116,7 +116,7 @@
         "minimum": 0
       },
       "away_extended_trigger_seconds": {
-        "title": "Trigger Seconds",
+        "title": "Extended Trigger Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
@@ -144,7 +144,7 @@
         "required": false
       },
       "double_knock_seconds": {
-        "title": "Seconds",
+        "title": "Time Window Seconds",
         "type": "integer",
         "default": 90,
         "required": false,
@@ -268,7 +268,7 @@
         "required": false
       },
       "pause_minutes": {
-        "title": "Minutes",
+        "title": "Pause Minutes",
         "type": "integer",
         "default": 0,
         "required": false,
@@ -500,8 +500,10 @@
     "name",
     "default_mode",
     {
-      "type": "flex",
+      "type": "div",
+      "displayFlex": true,
       "flex-flow": "row wrap",
+      "flex-direction": "row",
       "items": [
         "arm_seconds",
         "trigger_seconds",
@@ -519,8 +521,10 @@
       "items": [
         "log_directory",
         {
-          "type": "flex",
+          "type": "div",
+          "displayFlex": true,
           "flex-flow": "row wrap",
+          "flex-direction": "row",
           "items": [
             "home_arm_seconds",
             "away_arm_seconds",
@@ -528,8 +532,10 @@
           ]
         },
         {
-          "type": "flex",
+          "type": "div",
+          "displayFlex": true,
           "flex-flow": "row wrap",
+          "flex-direction": "row",
           "items": [
             "home_trigger_seconds",
             "away_trigger_seconds",
@@ -542,21 +548,18 @@
         {
           "type": "div",
           "displayFlex": true,
+          "flex-flow": "row wrap",
           "flex-direction": "row",
           "items": [
-            {
-              "key": "double_knock",
-              "flex": "2"
-            },
-            {
-              "key": "double_knock_seconds",
-              "flex": "50px"
-            }
+            "double_knock",
+            "double_knock_seconds"
           ]
         },
         {
-          "type": "flex",
+          "type": "div",
+          "displayFlex": true,
           "flex-flow": "row wrap",
+          "flex-direction": "row",
           "items": [
             "home_double_knock_seconds",
             "away_double_knock_seconds",
@@ -579,27 +582,21 @@
         {
           "type": "div",
           "displayFlex": true,
+          "flex-flow": "row wrap",
           "flex-direction": "row",
           "items": [
-            {
-              "key": "mode_away_extended_switch"
-            },
-            {
-              "key": "away_extended_trigger_seconds"
-            }
+            "mode_away_extended_switch",
+            "away_extended_trigger_seconds"
           ]
         },
         {
           "type": "div",
           "displayFlex": true,
+          "flex-flow": "row",
           "flex-direction": "row",
           "items": [
-            {
-              "key": "mode_pause_switch"
-            },
-            {
-              "key": "pause_minutes"
-            }
+            "mode_pause_switch",
+            "pause_minutes"
           ]
         },
         "arming_lock_switch",
@@ -620,15 +617,12 @@
         "siren_sensor",
         {
           "type": "div",
-          "display": "flex",
+          "displayFlex": true,
+          "flex-flow": "row wrap",
           "flex-direction": "row",
           "items": [
-            {
-              "key": "tripped_sensor_seconds"
-            },
-            {
-              "key": "siren_sensor_seconds"
-            }
+            "tripped_sensor_seconds",
+            "siren_sensor_seconds"
           ]
         },
         "reset_sensor"
@@ -643,22 +637,19 @@
       "items": [
         {
           "type": "div",
-          "display": "flex",
+          "displayFlex": true,
+          "flex-flow": "row wrap",
           "flex-direction": "row",
           "items": [
-            {
-              "key": "audio",
-              "flex": "1"
-            },
-            {
-              "key": "audio_language",
-              "flex": "200px"
-            }
+            "audio",
+            "audio_language"
           ]
         },
         {
-          "type": "flex",
+          "type": "div",
+          "displayFlex": true,
           "flex-flow": "row wrap",
+          "flex-direction": "row",
           "items": [
             "audio_path",
             "audio_volume"
