@@ -3,33 +3,37 @@ name: Publish package
 on:
   release:
     types: [published]
-      
+
 jobs:
   publish-npm:
     name: Publish package
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Get version
+        run: |
+          echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
 
-    - name: Setup node
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-        cache: 'npm'
-        registry-url: https://registry.npmjs.org/
+      - name: Check unstable
+        if: ${{ github.event.release.target_commitish == 'beta' }}
+        run: if [[ $NPM_VERSION != *-* ]]; then exit 1; else exit 0; fi
 
-    - name: Get version
-      run: |
-        echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+      - name: Check stable
+        if: ${{ github.event.release.target_commitish == 'stable' }}
+        run: if [[ $NPM_VERSION == *-* ]]; then exit 1; else exit 0; fi
 
-    - name: Check version
-      if: ${{ github.event.release.target_commitish == 'release' }}
-      run: if [[ $NPM_VERSION == *-* ]]; then exit 1; else exit 0; fi
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Publish package
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      run: |
-        npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: "npm"
+          registry-url: https://registry.npmjs.org/
+
+      - name: Publish package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
