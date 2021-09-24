@@ -5,7 +5,6 @@
   "description": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit sensors.",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
     "test": "npm install -g && homebridge -I -D"
   },
   "keywords": [
