@@ -1525,7 +1525,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
       this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
     }
     else {
-      this.log.warn('Siren (Mode not set)');
+      this.log.debug('Siren (Mode switch not set)');
       callback(-70412, false);
     }
   }
