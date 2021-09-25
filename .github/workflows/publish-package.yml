@@ -14,14 +14,6 @@ jobs:
         run: |
           echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
 
-      - name: Check unstable
-        if: ${{ github.event.release.target_commitish == 'beta' }}
-        run: if [[ $NPM_VERSION != *-* ]]; then exit 1; else exit 0; fi
-
-      - name: Check stable
-        if: ${{ github.event.release.target_commitish == 'stable' }}
-        run: if [[ $NPM_VERSION == *-* ]]; then exit 1; else exit 0; fi
-
       - name: Checkout repository
         uses: actions/checkout@v2
 

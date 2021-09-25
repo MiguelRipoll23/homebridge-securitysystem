@@ -485,6 +485,7 @@ SecuritySystem.prototype.state2Mode = function (state) {
 
     // Custom
     case 'lock':
+      // Audio sound
       return state;
 
     case 'warning':
@@ -679,6 +680,7 @@ SecuritySystem.prototype.handleStateUpdate = function (alarmTriggered) {
 SecuritySystem.prototype.updateTargetState = function (state, origin, delay, callback) {
   const isTargetStateAlreadySet = this.targetState === state;
   const isCurrentStateAlarmTriggered = this.currentState === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isTargetStateDisarm = state === Characteristic.SecuritySystemTargetState.DISARM;
 
   // Check if target state is already set
   if (isTargetStateAlreadySet && isCurrentStateAlarmTriggered === false) {
@@ -704,7 +706,9 @@ SecuritySystem.prototype.updateTargetState = function (state, origin, delay, cal
   }
 
   // Check arming lock switches
-  if (this.isArmingLocked(state)) {
+  const isArmingLockEnabled = options.isValueSet(options.armingLockSwitch) || options.isValueSet(options.armingLockSwitches);
+
+  if (isTargetStateDisarm === false && isArmingLockEnabled && this.isArmingLocked(state)) {
     this.log.warn('Arming lock (Not allowed)');
 
     if (callback !== null) {
@@ -722,7 +726,6 @@ SecuritySystem.prototype.updateTargetState = function (state, origin, delay, cal
   const isTargetStateHome = this.targetState === Characteristic.SecuritySystemTargetState.STAY_ARM;
   const isTargetStateAway = this.targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM;
   const isTargetStateNight = this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
-  const isTargetStateDisarm = this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
 
   // Update characteristic
   if (origin === originTypes.INTERNAL || origin === originTypes.EXTERNAL) {
@@ -1362,7 +1365,7 @@ SecuritySystem.prototype.executeCommand = function (type, state, origin) {
       break;
 
     default:
-      this.log.error(`Unknown ${type} state (${state})`);
+      this.log.error(`Unknown command ${type} state (${state})`);
   }
 
   if (command === undefined || command === null) {
@@ -1446,7 +1449,7 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, origin) {
       break;
 
     default:
-      this.log.error(`Unknown ${type} state (${state})`);
+      this.log.error(`Unknown webhook ${type} state (${state})`);
       return;
   }
 
@@ -1525,7 +1528,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (switchRequiredState, value
       this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
     }
     else {
-      this.log.warn('Siren (Mode not set)');
+      this.log.debug('Siren (Mode switch not set)');
       callback(-70412, false);
     }
   }
@@ -1598,6 +1601,7 @@ SecuritySystem.prototype.isArmingLocked = function (state) {
   // Check mode switches
   switch (state) {
     case 'global':
+      // Server status endpoint
       return false;
 
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
@@ -1613,7 +1617,7 @@ SecuritySystem.prototype.isArmingLocked = function (state) {
       break;
 
     default:
-      this.log.error(`Unknown state (${state})`);
+      this.log.debug(`Unknown arming lock state (${state})`);
   }
 
   return armingLockSwitchService.getCharacteristic(Characteristic.On).value;
@@ -1640,7 +1644,7 @@ SecuritySystem.prototype.updateArmingLock = function (mode, value) {
       break;
 
     default:
-      this.log.warn(`Unknown arming lock type (${mode})`);
+      this.log.debug(`Unknown arming lock mode (${mode})`);
       return false;
   }
 
