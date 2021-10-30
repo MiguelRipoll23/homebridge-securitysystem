@@ -1,0 +1,5 @@
+{
+  "javascript.inlayHints.parameterNames.enabled": "all",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true
+}

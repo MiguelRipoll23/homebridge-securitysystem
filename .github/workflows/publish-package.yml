@@ -5,27 +5,12 @@ on:
     types: [published]
 
 jobs:
-  publish-npm:
+  publish-package:
     name: Publish package
-    runs-on: ubuntu-latest
+    uses: MiguelRipoll23/workflows-global/.github/workflows/publish-package.yml@main
 
-    steps:
-      - name: Get version
-        run: |
-          echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+    with:
+      node-version: 16
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-          cache: "npm"
-          registry-url: https://registry.npmjs.org/
-
-      - name: Publish package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
+    secrets:
+      npm-token: ${{ secrets.NPM_TOKEN }}
