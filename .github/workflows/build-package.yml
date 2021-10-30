@@ -2,29 +2,13 @@ name: Build package
 
 on:
   push:
-    branches:
-      - 'beta'
-      - 'hotfix/*'
-
-  pull_request:
-    branches:
-      - 'beta'
-      - 'hotfix/*'
+    branches-ignore:
+      - stable
 
 jobs:
   build-package:
     name: Build package
-    runs-on: ubuntu-latest
+    uses: MiguelRipoll23/workflows-global/.github/workflows/build-package.yml@main
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-          cache: 'npm'
-
-      - name: Install package
-        run: npm ci
+    with:
+      node-version: 16

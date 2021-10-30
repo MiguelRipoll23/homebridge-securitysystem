@@ -1,0 +1,10 @@
+name: Clean issues
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+
+jobs:
+  clean-issues:
+    name: Clean issues
+    uses: MiguelRipoll23/workflows-global/.github/workflows/clean-issues.yml@main
