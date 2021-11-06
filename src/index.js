@@ -252,6 +252,16 @@ function SecuritySystem(log, config) {
     .on('get', this.getModePauseSwitch.bind(this))
     .on('set', this.setModePauseSwitch.bind(this));
 
+  // Audio switch
+  this.audioSwitchService = new Service.Switch('Audio', 'kx82r64zN3txDXKFiX9JDi');
+
+  this.audioSwitchService
+    .getCharacteristic(Characteristic.On)
+    .on('get', this.getAudioSwitch.bind(this))
+    .on('set', this.setAudioSwitch.bind(this))
+
+  this.audioSwitchService.getCharacteristic(Characteristic.On).value = true;
+
   // Siren sensors
   this.sirenTrippedMotionSensorService = new Service.MotionSensor('Siren Tripped', 'siren-tripped');
 
@@ -357,6 +367,10 @@ function SecuritySystem(log, config) {
 
   if (options.modePauseSwitch) {
     this.services.push(this.modePauseSwitchService);
+  }
+
+  if (options.audio && options.audioSwitch) {
+    this.services.push(this.audioSwitchService);
   }
 
   // Storage
@@ -1214,6 +1228,9 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
 
   const mode = this.state2Mode(state);
 
+  // Close previous player
+  this.stopAudio();
+
   // Ignore 'Current Off' event
   if (mode === 'off') {
     if (type === 'target') {
@@ -1221,8 +1238,13 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
     }
   }
 
-  // Close previous player
-  this.stopAudio();
+  // Check audio switch except for triggered
+  const audioSwitchOnCharacteristic = this.audioSwitchService.getCharacteristic(Characteristic.On);
+  const isAudioDisabledBySwitch = audioSwitchOnCharacteristic.value === false;
+
+  if (mode !== 'triggered' && isAudioDisabledBySwitch) {
+    return;
+  }
 
   // Directory
   let directory = `${__dirname}/../sounds`;
@@ -1843,6 +1865,16 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     this.updateTargetState(this.pausedCurrentState, originTypes.INTERNAL, true, null);
   }
 
+  callback(null);
+};
+
+SecuritySystem.prototype.getAudioSwitch = function (callback) {
+  const value = this.audioSwitchService.getCharacteristic(Characteristic.On).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setAudioSwitch = function (value, callback) {
+  this.log.info(`Audio (${value ? 'Enabled' : 'Disabled'})`);
   callback(null);
 };
 

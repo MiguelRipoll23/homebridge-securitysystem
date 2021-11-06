@@ -309,6 +309,13 @@
         "default": true,
         "required": false
       },
+      "audio_switch": {
+        "title": "Show Audio Switch",
+        "description": "Adds a global switch to enable or disable audio except for alarm triggered.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "audio": {
         "title": "Play Sounds (local-only, ffmpeg required)",
         "description": "Warns of pending or current events by playing sounds.",
@@ -603,7 +610,8 @@
         "arming_lock_switches",
         "siren_switch",
         "siren_override_switch",
-        "siren_mode_switches"
+        "siren_mode_switches",
+        "audio_switch"
       ]
     },
     {
