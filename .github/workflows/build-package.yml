@@ -11,4 +11,4 @@ jobs:
     uses: MiguelRipoll23/github-global/.github/workflows/build-package.yml@main
 
     with:
-      node-version: 16
+      node_version: 16
