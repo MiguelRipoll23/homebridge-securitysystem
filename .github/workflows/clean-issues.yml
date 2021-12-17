@@ -7,4 +7,4 @@ on:
 jobs:
   clean-issues:
     name: Clean issues
-    uses: MiguelRipoll23/workflows-global/.github/workflows/clean-issues.yml@main
+    uses: MiguelRipoll23/github-global/.github/workflows/clean-issues.yml@main
