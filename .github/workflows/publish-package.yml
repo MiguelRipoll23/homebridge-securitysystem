@@ -7,7 +7,7 @@ on:
 jobs:
   publish-package:
     name: Publish package
-    uses: MiguelRipoll23/github-global/.github/workflows/publish-package.yml@main
+    uses: MiguelRipoll23/global/.github/workflows/publish-package.yml@main
 
     with:
       node_version: 16

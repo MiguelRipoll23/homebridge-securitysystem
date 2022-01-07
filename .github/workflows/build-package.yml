@@ -8,7 +8,7 @@ on:
 jobs:
   build-package:
     name: Build package
-    uses: MiguelRipoll23/github-global/.github/workflows/build-package.yml@main
+    uses: MiguelRipoll23/global/.github/workflows/build-package.yml@main
 
     with:
       node_version: 16
