@@ -10,7 +10,7 @@ jobs:
     uses: MiguelRipoll23/global/.github/workflows/publish-package.yml@main
 
     with:
-      node_version: 16
+      node-version: 16
 
     secrets:
-      npm_token: ${{ secrets.NPM_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -13,4 +13,4 @@ jobs:
     uses: MiguelRipoll23/global/.github/workflows/analyze-package.yml@main
 
     with:
-      node_version: 16
+      node-version: 16
