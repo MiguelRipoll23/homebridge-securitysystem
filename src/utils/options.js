@@ -70,6 +70,7 @@ const options = {
 
     // Audio
     options.audio = config.audio;
+    options.audioConfiguration = config.audio_configuration;
     options.audioPath = config.audio_path;
     options.audioLanguage = config.audio_language;
     options.audioVolume = config.audio_volume;
