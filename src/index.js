@@ -4,6 +4,7 @@ const storage = require('node-persist');
 const { spawn } = require('child_process');
 const fetch = require('node-fetch');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 
 const packageJson = require('../package.json');
 const options = require('./utils/options.js');
@@ -1095,6 +1096,15 @@ SecuritySystem.prototype.sendResultResponse = function (res, sucess) {
 };
 
 SecuritySystem.prototype.startServer = async function () {
+  const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+
+  app.use(apiLimiter);
+
   app.get('/', (req, res) => {
     res.redirect('https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki/Server');
   });
