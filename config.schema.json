@@ -333,6 +333,13 @@
           "de-DE"
         ]
       },
+      "audio_configuration": {
+        "title": "Audio Configuration",
+        "type": "string",
+        "required": false,
+        "default": "SDL_AUDIODRIVER=\"alsa\" AUDIODEV=\"hw:0,0\"",
+        "placeholder": "SDL_AUDIODRIVER=\"alsa\" AUDIODEV=\"hw:0,0\""
+      },
       "audio_path": {
         "title": "Custom Audio Path",
         "description": "Instructions will be created in this path.",
@@ -653,6 +660,7 @@
             "audio_language"
           ]
         },
+        "audio_configuration",
         {
           "type": "div",
           "displayFlex": true,
