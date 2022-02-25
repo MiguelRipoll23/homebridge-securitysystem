@@ -42,7 +42,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "express-rate-limit": "^6.2.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "node-persist": "^3.0.5"
   },
   "devDependencies": {
