@@ -4,6 +4,7 @@ const storage = require('node-persist');
 const { spawn } = require('child_process');
 const fetch = require('node-fetch');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 
 const packageJson = require('../package.json');
 const options = require('./utils/options.js');
@@ -834,7 +835,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
   const isNotSpecialSwitch = origin !== originTypes.SPECIAL_SWITCH;
 
   if (isCurrentStateDisarmed && isNotOverridingOff && isNotSpecialSwitch) {
-    this.log.warn('Siren (Not armed)');
+    this.log.warn('Siren Switch (Not armed)');
 
     if (callback !== null) {
       callback(-70412, false);
@@ -845,7 +846,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
 
   // Check if arming
   if (this.isArming) {
-    this.log.warn('Siren (Still arming)');
+    this.log.warn('Siren Switch (Still arming)');
 
     if (callback !== null) {
       callback(-70412, false);
@@ -865,7 +866,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
     const isStateKnockable = doubleKnockStates.includes(this.currentState);
 
     if (value && isStateKnockable && isFirstKnock && isSpecialSwitch === false) {
-      this.log.warn('Siren (Knock)');
+      this.log.warn('Siren Switch (Knock)');
       this.isKnocked = true;
 
       // Custom mode seconds
@@ -885,7 +886,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
         this.doubleKnockTimeout = null;
         this.isKnocked = false;
 
-        this.log.info('Siren (Reset)');
+        this.log.info('Siren Switch (Reset)');
       }, doubleKnockSeconds * 1000);
 
       if (callback !== null) {
@@ -911,7 +912,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
   if (value) {
     // Already triggered
     if (isCurrentStateAlarmTriggered) {
-      this.log.warn('Siren (Already triggered)');
+      this.log.warn('Siren Switch (Already triggered)');
 
       if (callback !== null) {
         callback(-70412, false);
@@ -922,7 +923,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
 
     // Already about to trigger
     if (this.triggerTimeout !== null) {
-      this.log.warn('Siren (Already on)');
+      this.log.warn('Siren Switch (Already on)');
 
       if (callback !== null) {
         callback(-70412, false);
@@ -931,7 +932,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
       return false;
     }
 
-    this.log.info('Siren (On)');
+    this.log.info('Siren Switch (On)');
 
     // Update siren tripped sensor
     if (options.trippedSensor) {
@@ -988,7 +989,7 @@ SecuritySystem.prototype.updateSiren = function (value, origin, stateChanged, ca
   }
   else {
     // Off
-    this.log.info('Siren (Off)');
+    this.log.info('Siren Switch (Off)');
     this.stopAudio();
 
     if (isCurrentStateAlarmTriggered) {
@@ -1095,6 +1096,15 @@ SecuritySystem.prototype.sendResultResponse = function (res, sucess) {
 };
 
 SecuritySystem.prototype.startServer = async function () {
+  const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+
+  app.use(apiLimiter);
+
   app.get('/', (req, res) => {
     res.redirect('https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki/Server');
   });
@@ -1294,11 +1304,19 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
   }
 
   // Process
-  this.audioProcess = spawn('ffplay', commandArguments);
-  this.log.debug(`ffplay ${commandArguments.join(' ')}`);
+  let command = '';
+
+  if (options.isValueSet(options.audioConfiguration)) {
+    command += `${options.audioConfiguration} `;
+  }
+
+  command += `ffplay ${commandArguments.join(' ')}`;
+
+  this.audioProcess = spawn(command, { shell: true });
+  this.log.debug(command);
 
   this.audioProcess.on('error', data => {
-    // Check if command is missing
+    // Check if ffmpeg is installed
     if (data !== null && data.toString().indexOf('ENOENT') > -1) {
       this.log.error('Unable to play sound, ffmpeg is not installed.');
       return;
@@ -1518,26 +1536,30 @@ SecuritySystem.prototype.setSirenOverrideSwitch = function (value, callback) {
 };
 
 SecuritySystem.prototype.resetSirenSwitches = function () {
-  const sirenOverrideOnCharacteristic = this.sirenOverrideSwitchService.getCharacteristic(Characteristic.On);
-
   const sirenHomeOnCharacteristic = this.sirenHomeSwitchService.getCharacteristic(Characteristic.On);
   const sirenAwayOnCharacteristic = this.sirenAwaySwitchService.getCharacteristic(Characteristic.On);
   const sirenNightOnCharacteristic = this.sirenNightSwitchService.getCharacteristic(Characteristic.On);
 
-  if (sirenOverrideOnCharacteristic.value) {
-    sirenOverrideOnCharacteristic.updateValue(false);
-  }
+  const sirenOverrideOnCharacteristic = this.sirenOverrideSwitchService.getCharacteristic(Characteristic.On);
 
   if (sirenHomeOnCharacteristic.value) {
     sirenHomeOnCharacteristic.updateValue(false);
+    this.log.debug('Siren Home Switch (Off)');
   }
 
   if (sirenAwayOnCharacteristic.value) {
     sirenAwayOnCharacteristic.updateValue(false);
+    this.log.debug('Siren Away Switch (Off)');
   }
 
   if (sirenNightOnCharacteristic.value) {
     sirenNightOnCharacteristic.updateValue(false);
+    this.log.debug('Siren Night Switch (Off)');
+  }
+
+  if (sirenOverrideOnCharacteristic.value) {
+    sirenOverrideOnCharacteristic.updateValue(false);
+    this.log.debug('Siren Override Switch (Off)');
   }
 };
 
@@ -1565,6 +1587,7 @@ SecuritySystem.prototype.getSirenHomeSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setSirenHomeSwitch = function (value, callback) {
+  this.log.debug('Siren Home Switch (On)');
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.STAY_ARM, value, callback);
 };
 
@@ -1574,6 +1597,7 @@ SecuritySystem.prototype.getSirenAwaySwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setSirenAwaySwitch = function (value, callback) {
+  this.log.debug('Siren Away Switch (On)');
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.AWAY_ARM, value, callback);
 };
 
@@ -1583,6 +1607,7 @@ SecuritySystem.prototype.getSirenNightSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setSirenNightSwitch = function (value, callback) {
+  this.log.debug('Siren Night Switch (On)');
   this.triggerIfModeSet(Characteristic.SecuritySystemCurrentState.NIGHT_ARM, value, callback);
 };
 
@@ -1704,26 +1729,32 @@ SecuritySystem.prototype.resetModeSwitches = function () {
 
   if (modeHomeSwitchCharacteristicOn.value) {
     modeHomeSwitchCharacteristicOn.updateValue(false);
+    this.log.debug('Mode Home Switch (Off)');
   }
 
   if (modeAwaySwitchCharacteristicOn.value) {
     modeAwaySwitchCharacteristicOn.updateValue(false);
+    this.log.debug('Mode Away Switch (Off)');
   }
 
   if (modeNightSwitchCharacteristicOn.value) {
     modeNightSwitchCharacteristicOn.updateValue(false);
+    this.log.debug('Mode Night Switch (Off)');
   }
 
   if (modeOffSwitchCharacteristicOn.value) {
     modeOffSwitchCharacteristicOn.updateValue(false);
+    this.log.debug('Mode Off Switch (Off)');
   }
 
   if (modeAwayExtendedSwitchCharacteristicOn.value) {
     modeAwayExtendedSwitchCharacteristicOn.updateValue(false);
+    this.log.debug('Mode Away Extended Switch (Off)');
   }
 
   if (modePauseSwitchCharacteristicOn.value) {
     modePauseSwitchCharacteristicOn.updateValue(false);
+    this.log.debug('Mode Pause Switch (Off)');
   }
 };
 
@@ -1731,18 +1762,22 @@ SecuritySystem.prototype.updateModeSwitches = function () {
   switch (this.targetState) {
     case Characteristic.SecuritySystemTargetState.STAY_ARM:
       this.modeHomeSwitchService.updateCharacteristic(Characteristic.On, true);
+      this.log.debug('Mode Home Switch (On)');
       break;
 
     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
       this.modeAwaySwitchService.updateCharacteristic(Characteristic.On, true);
+      this.log.debug('Mode Away Switch (On)');
       break;
 
     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
       this.modeNightSwitchService.updateCharacteristic(Characteristic.On, true);
+      this.log.debug('Mode Night Switch (On)');
       break;
 
     case Characteristic.SecuritySystemTargetState.DISARM:
       this.modeOffSwitchService.updateCharacteristic(Characteristic.On, true);
+      this.log.debug('Mode Off Switch (On)');
       break;
   }
 };
