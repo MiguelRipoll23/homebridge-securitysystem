@@ -260,10 +260,6 @@ const options = {
       options.audio = false;
     }
 
-    if (options.isValueSet(options.audioConfiguration) === false) {
-      options.audioConfiguration = 'SDL_AUDIODRIVER="alsa" AUDIODEV="hw:0,0"';
-    }
-
     if (options.isValueSet(options.audioLanguage) === false) {
       options.audioLanguage = 'en-US';
     }
