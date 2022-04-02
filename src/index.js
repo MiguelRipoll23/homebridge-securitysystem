@@ -1304,19 +1304,11 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
   }
 
   // Process
-  let command = '';
-
-  if (options.isValueSet(options.audioConfiguration)) {
-    command += `${options.audioConfiguration} `;
-  }
-
-  command += `ffplay ${commandArguments.join(' ')}`;
-
-  this.audioProcess = spawn(command, { shell: true });
-  this.log.debug(command);
+  this.audioProcess = spawn('ffplay', commandArguments);
+  this.log.debug(`ffplay ${commandArguments.join(' ')}`);
 
   this.audioProcess.on('error', data => {
-    // Check if ffmpeg is installed
+    // Check if command is missing
     if (data !== null && data.toString().indexOf('ENOENT') > -1) {
       this.log.error('Unable to play sound, ffmpeg is not installed.');
       return;
