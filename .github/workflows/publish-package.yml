@@ -32,6 +32,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Setup node
+        uses: actions/setup-node@v3
+
+        with:
+          registry-url: https://registry.npmjs.org/
+
       - name: Get version
         run: |
           echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
@@ -39,7 +45,7 @@ jobs:
       - name: Publish package
 
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
         run: |
           npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
