@@ -1,0 +1,25 @@
+name: Install package
+
+on:
+  push:
+    branches-ignore:
+      - stable
+
+jobs:
+  install-package:
+    name: Install package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+
+        with:
+          cache: "npm"
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install package
+        run: npm ci
