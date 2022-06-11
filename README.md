@@ -1,5 +1,6 @@
 # homebridge-securitysystem
-[![npm version](https://badgen.net/npm/v/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem) 
+
+[![npm version](https://badgen.net/npm/v/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem)
 [![npm downloads](https://badgen.net/npm/dt/homebridge-securitysystem)](https://www.npmjs.com/package/homebridge-securitysystem)
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
@@ -8,11 +9,13 @@ Homebridge plugin that creates a security system accessory that can be triggered
 [❤️ One-time donation](https://paypal.me/miguelripoll23)
 
 ## Installation
+
 If you already have [Homebridge](https://github.com/homebridge/homebridge) installed, execute the following command:
 
 `npm i -g --unsafe-perm homebridge-securitysystem`
 
 ## Demo
+
 <div align="left">
   <img align="right" width="206" height="445" src="https://media4.giphy.com/media/wDhRHFfrLRDeC1sXG5/giphy.gif">
   <p>Want to know how it looks like? It's pretty customizable, you can configure it to show as many switches as you like.</p>
@@ -23,22 +26,25 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 </div>
 
 ## Automations
-Using the `Home` app is recommended for regular users, for more advanced users the `Eve` or a similar app  will let you make use of the custom options that the security system itself exposes.
+
+Using the `Home` app is recommended for regular users, for more advanced users the `Eve` or a similar app will let you make use of the custom options that the security system itself exposes.
 
 Here are some examples of automations that can be created:
 
-| Trigger                       | Actions                           |
-|-------------------------------|-----------------------------------|
-| Motion is Detected            | Turn on `Siren Night`             |
-| Door is Opened                | Turn on `Siren Away`              |
-| NFC Tag is Detected (1)       | Set Security system to `Home`     |
-| Security System Triggers      | Play Audio (2)                    |
+| Trigger                  | Actions                       |
+| ------------------------ | ----------------------------- |
+| Motion is Detected       | Turn on `Siren Night`         |
+| Door is Opened           | Turn on `Siren Away`          |
+| NFC Tag is Detected (1)  | Set Security system to `Home` |
+| Security System Triggers | Play Audio (2)                |
 
 (1) Shortcuts app is required to create this automation.
 
 (2) AirPlay 2 speaker and Apple Music subscription are required.
 
-**IMPORTANT:** Use an NFC tag to arm/disarm the security system easily and securely without using the `Home` app.
+> **Warning**
+> Use an NFC tag to arm/disarm the security system easily and securely without using the `Home` app.
 
 ## Contributions
+
 Pull requests are welcome.
