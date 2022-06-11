@@ -29,6 +29,9 @@ jobs:
     needs: [install-package]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@3
+
       - name: Get version
         run: |
           echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
