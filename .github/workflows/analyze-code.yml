@@ -10,7 +10,7 @@ on:
 jobs:
   analyze-package:
     name: Analyze package
-    uses: MiguelRipoll23/global/.github/workflows/analyze-package.yml@main
+    uses: MiguelRipoll23/global/.github/workflows/analyze-code.yml@main
 
     with:
       node-version: 16
