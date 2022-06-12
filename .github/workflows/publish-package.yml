@@ -32,6 +32,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Setup node
+        uses: actions/setup-node@v3
+
+        with:
+          registry-url: https://registry.npmjs.org/
+
       - name: Get version
         run: |
           echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
