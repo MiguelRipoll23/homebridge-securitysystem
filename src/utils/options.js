@@ -75,6 +75,8 @@ const options = {
     options.audioVolume = config.audio_volume;
     options.audioArmingLooped = config.audio_arming_looped;
     options.audioAlertLooped = config.audio_alert_looped;
+    options.audioExtraVariables = {};
+    config.audio_extra_variables.forEach(x => options.audioExtraVariables[x.key] =  x.value );
 
     // Commands
     options.commandTargetHome = config.command_target_home;

@@ -333,6 +333,28 @@
           "de-DE"
         ]
       },
+      "audio_extra_variables": {
+        "title": "Audio Extra Variables",
+        "type": "array",
+        "items": {
+          "title": "Environment Variable",
+          "type": "object",
+          "properties": {
+            "key": {
+              "title": "Var Name",
+              "type": "string",
+              "required": true
+            },
+            "value": {
+              "title": "Var Value",
+              "type": "string",
+              "required": true
+            }
+          }
+	},
+	"required": true,
+	"description": "Add extra environment variables to ffplay command"
+      },
       "audio_path": {
         "title": "Custom Audio Path",
         "description": "Instructions will be created in this path.",
@@ -664,7 +686,16 @@
           ]
         },
         "audio_arming_looped",
-        "audio_alert_looped"
+        "audio_alert_looped",
+        {
+          "key": "audio_extra_variables",
+          "type": "tabarray",
+          "title": "{{ value.key || 'new Var' }}",
+          "items": [
+            "audio_extra_variables[].key",
+            "audio_extra_variables[].value"
+          ]
+        }
       ]
     },
     {

@@ -1296,15 +1296,17 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
   }
   else {
     commandArguments.push('-autoexit');
+  }
 
-    if (options.isValueSet(options.audioVolume)) {
-      commandArguments.push('-volume');
-      commandArguments.push(options.audioVolume);
-    }
+  if (options.isValueSet(options.audioVolume)) {
+    commandArguments.push('-volume');
+    commandArguments.push(options.audioVolume);
+    
   }
 
   // Process
-  this.audioProcess = spawn('ffplay', commandArguments);
+  var ffplayEnv = { ...process.env, ...options.audioExtraVariables }
+  this.audioProcess = spawn('ffplay', commandArguments, { env: ffplayEnv });
   this.log.debug(`ffplay ${commandArguments.join(' ')}`);
 
   this.audioProcess.on('error', data => {
