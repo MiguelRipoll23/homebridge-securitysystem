@@ -341,19 +341,19 @@
           "type": "object",
           "properties": {
             "key": {
-              "title": "Var Name",
+              "title": "Name",
               "type": "string",
               "required": true
             },
             "value": {
-              "title": "Var Value",
+              "title": "Value",
               "type": "string",
               "required": true
             }
           }
-	},
-	"required": true,
-	"description": "Add extra environment variables to ffplay command"
+        },
+        "required": true,
+        "description": "Add extra environment variables to the ffplay command that will be executed"
       },
       "audio_path": {
         "title": "Custom Audio Path",
@@ -690,7 +690,7 @@
         {
           "key": "audio_extra_variables",
           "type": "tabarray",
-          "title": "{{ value.key || 'new Var' }}",
+          "title": "{{ value.key || 'Environment Variable' }}",
           "items": [
             "audio_extra_variables[].key",
             "audio_extra_variables[].value"

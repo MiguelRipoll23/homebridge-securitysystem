@@ -1301,11 +1301,24 @@ SecuritySystem.prototype.playAudio = async function (type, state) {
   if (options.isValueSet(options.audioVolume)) {
     commandArguments.push('-volume');
     commandArguments.push(options.audioVolume);
-    
   }
 
   // Process
-  var ffplayEnv = { ...process.env, ...options.audioExtraVariables }
+  const environmentVariables = [process.env];
+
+  options.audioExtraVariables.forEach(variable => {
+    const key = variable.key;
+    const value = variable.value;
+    environmentVariables[key] = value;
+  });
+
+  this.log.debug('Environment Variables (Audio)', environmentVariables);
+
+  const ffplayEnv = {
+    ...process.env,
+    ...environmentVariables
+  };
+
   this.audioProcess = spawn('ffplay', commandArguments, { env: ffplayEnv });
   this.log.debug(`ffplay ${commandArguments.join(' ')}`);
 

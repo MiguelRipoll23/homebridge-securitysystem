@@ -75,8 +75,7 @@ const options = {
     options.audioVolume = config.audio_volume;
     options.audioArmingLooped = config.audio_arming_looped;
     options.audioAlertLooped = config.audio_alert_looped;
-    options.audioExtraVariables = {};
-    config.audio_extra_variables.forEach(x => options.audioExtraVariables[x.key] =  x.value );
+    options.audioExtraVariables = config.audio_extra_variables;
 
     // Commands
     options.commandTargetHome = config.command_target_home;
@@ -114,7 +113,7 @@ const options = {
   isValueSet: (value) => {
     if (value === undefined || value === null) {
       // Check empty strings
-      if (typeof value === 'string' && value.trim() === '') {
+      if (typeof value === "string" && value.trim() === "") {
         return false;
       }
 
@@ -130,11 +129,11 @@ const options = {
 
   setDefaultValues: () => {
     if (options.isValueSet(options.name) === false) {
-      options.name = 'Security System';
+      options.name = "Security System";
     }
 
     if (options.isValueSet(options.defaultMode) === false) {
-      options.defaultMode = 'off';
+      options.defaultMode = "off";
     }
 
     if (options.isValueSet(options.disabledModes) === false) {
@@ -253,7 +252,7 @@ const options = {
     }
 
     if (options.isValueSet(options.doubleKnockModes) === false) {
-      options.doubleKnockModes = ['Away'];
+      options.doubleKnockModes = ["Away"];
     }
 
     // Audio
@@ -262,7 +261,7 @@ const options = {
     }
 
     if (options.isValueSet(options.audioLanguage) === false) {
-      options.audioLanguage = 'en-US';
+      options.audioLanguage = "en-US";
     }
 
     if (options.isValueSet(options.audioArmingLooped) === false) {
@@ -281,12 +280,12 @@ const options = {
 
   validateValues: (log) => {
     if (options.resetMinutes === 0) {
-      log.error('Value of setting \'Reset Delay Seconds\' should be at least 1.');
+      log.error("Value of setting 'Reset Delay Seconds' should be at least 1.");
       options.resetMinutes = 1;
     }
 
     if (options.serverPort < 0 || options.serverPort > 65535) {
-      log.error('Value of setting \'Server Port\' not between 0 and 65535.');
+      log.error("Value of setting 'Server Port' not between 0 and 65535.");
     }
   },
 
@@ -297,7 +296,7 @@ const options = {
       options.webhookTriggered = null;
       options.commandTriggered = null;
     }
-  }
+  },
 };
 
 module.exports = options;
