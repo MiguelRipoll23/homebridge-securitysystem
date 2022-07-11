@@ -123,6 +123,7 @@ const options = {
     return true;
   },
 
+  // eslint-disable-next-line no-unused-vars
   checkDeprecated: (log, config) => {
     // ...
   },
