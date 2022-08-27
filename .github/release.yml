@@ -4,17 +4,17 @@ changelog:
       - ignore-for-release
 
   categories:
-    - title: Breaking Changes ⚠️
+    - title: 💥 Breaking Changes
       labels:
         - breaking-change
 
-    - title: New Features 🎉
+    - title: 🎉 New Features
       labels:
         - enhancement
 
-    - title: Bug Fixes
+    - title: 🐛 Bug Fixes
       labels:
-        - bug
+        - bugfix
 
     - title: Other Changes
       labels:
