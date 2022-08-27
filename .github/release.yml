@@ -6,7 +6,7 @@ changelog:
   categories:
     - title: ☢️ Security
       labels:
-        - bugfix
+        - security
 
     - title: 💥 Breaking Changes
       labels:
@@ -15,12 +15,13 @@ changelog:
     - title: 🎉 New Features
       labels:
         - enhancement
+        - feature
 
     - title: 🐛 Bug Fixes
       labels:
         - bugfix
 
-    - title: 🧩 Dependencies
+    - title: 📦 Dependencies
       labels:
         - dependencies
 
