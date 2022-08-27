@@ -4,6 +4,10 @@ changelog:
       - ignore-for-release
 
   categories:
+    - title: ☢️ Security
+      labels:
+        - security
+
     - title: 💥 Breaking Changes
       labels:
         - breaking-change
@@ -11,10 +15,15 @@ changelog:
     - title: 🎉 New Features
       labels:
         - enhancement
+        - feature
 
     - title: 🐛 Bug Fixes
       labels:
         - bugfix
+
+    - title: 📦 Dependencies
+      labels:
+        - dependencies
 
     - title: Other Changes
       labels:
