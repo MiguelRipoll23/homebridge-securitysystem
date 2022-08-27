@@ -7,4 +7,3 @@ updates:
     time: '18:00'
     timezone: Europe/Madrid
   open-pull-requests-limit: 10
-  target-branch: beta
