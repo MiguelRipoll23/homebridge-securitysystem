@@ -11,6 +11,7 @@ changelog:
     - title: 💥 Breaking Changes
       labels:
         - breaking-change
+        - breaking
 
     - title: 🎉 New Features
       labels:
@@ -25,6 +26,6 @@ changelog:
       labels:
         - dependencies
 
-    - title: Other Changes
+    - title: ✨ Miscellaneous Changes
       labels:
         - "*"
