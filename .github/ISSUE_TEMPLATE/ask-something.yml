@@ -1,4 +1,4 @@
-name: Ask Something
+name: Questions & Answers
 description: Get an answer
 labels: [question]
 assignees:
@@ -36,6 +36,5 @@ body:
     attributes:
       label: What's your question?
       description: A description of the question using your use case and expected behavior
-      placeholder:
     validations:
       required: true
