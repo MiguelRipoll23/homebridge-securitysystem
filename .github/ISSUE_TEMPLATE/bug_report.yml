@@ -36,12 +36,11 @@ body:
     attributes:
       label: What happened?
       description: A description of the bug found plus the steps to reproduce the issue
-      placeholder:
     validations:
       required: true
   - type: textarea
-    id: logs
+    id: log
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
+      render: bash
