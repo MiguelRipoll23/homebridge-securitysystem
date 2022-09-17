@@ -272,6 +272,10 @@ const options = {
       options.audioAlertLooped = false;
     }
 
+    if (options.isValueSet(options.audioExtraVariables) === false) {
+      options.audioExtraVariables = [];
+    }
+
     // Server
     if (options.isValueSet(options.serverCode) === false) {
       options.serverCode = null;
