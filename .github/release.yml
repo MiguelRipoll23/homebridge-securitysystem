@@ -7,19 +7,23 @@ changelog:
     - title: ☢️ Security
       labels:
         - security
+        - vulnerability
 
     - title: 💥 Breaking Changes
       labels:
-        - breaking-change
         - breaking
+        - breaking-change
 
     - title: 🎉 New Features
       labels:
-        - enhancement
         - feature
+
+    - title: 💅 Enhancements
+        - enhancement
 
     - title: 🐛 Bug Fixes
       labels:
+        - bug
         - bugfix
 
     - title: 📦 Dependencies
