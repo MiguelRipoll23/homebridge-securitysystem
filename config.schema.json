@@ -13,6 +13,12 @@
         "default": "Security System",
         "required": true
       },
+      "serial_number": {
+        "title": "Serial Number",
+        "type": "string",
+        "default": "S3CUR1TYSYST3M",
+        "required": true
+      },
       "default_mode": {
         "title": "Default Mode",
         "type": "string",
@@ -527,6 +533,7 @@
   },
   "layout": [
     "name",
+    "serial_number",
     "default_mode",
     {
       "type": "div",
