@@ -344,7 +344,7 @@ function SecuritySystem(log, config) {
   );
   this.accessoryInformationService.setCharacteristic(
     Characteristic.SerialNumber,
-    "S3CUR1TYSYST3M"
+    options.serialNumber
   );
   this.accessoryInformationService.setCharacteristic(
     Characteristic.FirmwareRevision,

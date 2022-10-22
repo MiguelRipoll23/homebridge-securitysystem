@@ -3,6 +3,7 @@ const options = {
     options.checkDeprecated(log, config);
 
     options.name = config.name;
+    options.serialNumber = config.serial_number;
     options.defaultMode = config.default_mode;
     options.armSeconds = config.arm_seconds;
     options.triggerSeconds = config.trigger_seconds;
@@ -130,6 +131,10 @@ const options = {
   setDefaultValues: () => {
     if (options.isValueSet(options.name) === false) {
       options.name = "Security System";
+    }
+
+    if (options.isValueSet(options.serialNumber) === false) {
+      options.name = "S3CUR1TYSYST3M";
     }
 
     if (options.isValueSet(options.defaultMode) === false) {
