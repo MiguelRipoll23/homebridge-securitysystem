@@ -134,7 +134,7 @@ const options = {
     }
 
     if (options.isValueSet(options.serialNumber) === false) {
-      options.name = "S3CUR1TYSYST3M";
+      options.serialNumber = "S3CUR1TYSYST3M";
     }
 
     if (options.isValueSet(options.defaultMode) === false) {
