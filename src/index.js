@@ -9,6 +9,9 @@ const rateLimit = require("express-rate-limit");
 const packageJson = require("../package.json");
 const options = require("./utils/options.js");
 
+// HomeKit error
+const HK_NOT_ALLOWED_IN_CURRENT_STATE = -70412;
+
 const originTypes = {
   REGULAR_SWITCH: 0,
   SPECIAL_SWITCH: 1,
@@ -828,6 +831,7 @@ SecuritySystem.prototype.updateTargetState = function (
 
     if (callback !== null) {
       // Tip: this will revert the original state
+      // HomeKit error
       callback(Characteristic.SecuritySystemTargetState.DISARM);
     }
 
@@ -848,6 +852,7 @@ SecuritySystem.prototype.updateTargetState = function (
 
     if (callback !== null) {
       // Tip: this will revert the original state
+      // HomeKit error
       callback(Characteristic.SecuritySystemTargetState.DISARM);
     }
 
@@ -979,7 +984,7 @@ SecuritySystem.prototype.updateSiren = function (
     this.log.warn("Siren Switch (Not armed)");
 
     if (callback !== null) {
-      callback(-70412, false);
+      callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     }
 
     return false;
@@ -990,7 +995,7 @@ SecuritySystem.prototype.updateSiren = function (
     this.log.warn("Siren Switch (Still arming)");
 
     if (callback !== null) {
-      callback(-70412, false);
+      callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     }
 
     return false;
@@ -1043,7 +1048,8 @@ SecuritySystem.prototype.updateSiren = function (
       }, doubleKnockSeconds * 1000);
 
       if (callback !== null) {
-        callback(-70412, false);
+
+        callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
       }
 
       return false;
@@ -1068,7 +1074,7 @@ SecuritySystem.prototype.updateSiren = function (
       this.log.warn("Siren Switch (Already triggered)");
 
       if (callback !== null) {
-        callback(-70412, false);
+        callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
       }
 
       return false;
@@ -1079,7 +1085,7 @@ SecuritySystem.prototype.updateSiren = function (
       this.log.warn("Siren Switch (Already on)");
 
       if (callback !== null) {
-        callback(-70412, false);
+        callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
       }
 
       return false;
@@ -1802,7 +1808,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (
       this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
     } else {
       this.log.debug("Siren (Mode switch not set)");
-      callback(-70412, false);
+      callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     }
   } else {
     this.updateSiren(value, originTypes.REGULAR_SWITCH, false, callback);
@@ -2059,7 +2065,7 @@ SecuritySystem.prototype.getModeHomeSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeHomeSwitch = function (value, callback) {
   if (value === false) {
-    callback(-70412, false);
+    callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     return;
   }
 
@@ -2081,7 +2087,7 @@ SecuritySystem.prototype.getModeAwaySwitch = function (callback) {
 
 SecuritySystem.prototype.setModeAwaySwitch = function (value, callback) {
   if (value === false) {
-    callback(-70412, false);
+    callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     return;
   }
 
@@ -2103,7 +2109,7 @@ SecuritySystem.prototype.getModeNightSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeNightSwitch = function (value, callback) {
   if (value === false) {
-    callback(-70412, false);
+    callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     return;
   }
 
@@ -2125,7 +2131,7 @@ SecuritySystem.prototype.getModeOffSwitch = function (callback) {
 
 SecuritySystem.prototype.setModeOffSwitch = function (value, callback) {
   if (value === false) {
-    callback(-70412, false);
+    callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     return;
   }
 
@@ -2150,7 +2156,7 @@ SecuritySystem.prototype.setModeAwayExtendedSwitch = function (
   callback
 ) {
   if (value === false) {
-    callback(-70412, false);
+    callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     return;
   }
 
@@ -2176,7 +2182,7 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
   ) {
     this.log.warn("Mode pause (Alarm is triggered)");
-    callback(-70412, false);
+    callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     return;
   }
 
@@ -2185,7 +2191,7 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
       this.currentState === Characteristic.SecuritySystemCurrentState.DISARMED
     ) {
       this.log.warn("Mode pause (Not armed)");
-      callback(-70412, false);
+      callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
       return;
     }
 
