@@ -281,14 +281,14 @@
         "minimum": 0
       },
       "arming_lock_switch": {
-        "title": "Show Arming Lock Switch (beta)",
+        "title": "Show Arming Lock Switch (experimental)",
         "description": "Adds a global switch that will prevent arming the security system.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "arming_lock_switches": {
-        "title": "Show Arming Lock Mode Switches (beta)",
+        "title": "Show Arming Lock Mode Switches (experimental)",
         "description": "Adds switches that will prevent arming the security system when their mode is set.",
         "type": "boolean",
         "default": false,
