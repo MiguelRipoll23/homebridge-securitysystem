@@ -32,20 +32,20 @@ const options = {
     options.armingLockSwitch = config.arming_lock_switch;
     options.armingLockSwitches = config.arming_lock_switches;
 
-    // Siren switches
-    options.sirenSwitch = config.siren_switch;
-    options.sirenOverrideSwitch = config.siren_override_switch;
-    options.sirenModeSwitches = config.siren_mode_switches;
+    // Trip switches
+    options.tripSwitch = config.siren_switch;
+    options.tripOverrideSwitch = config.siren_override_switch;
+    options.tripModeSwitches = config.siren_mode_switches;
 
-    // Tripped sensor
-    options.trippedSensor = config.tripped_sensor;
-    options.trippedSensorSeconds = config.tripped_sensor_seconds;
+    // Tripped motion sensor
+    options.trippedMotionSensor = config.tripped_sensor;
+    options.trippedMotionSensorSeconds = config.tripped_sensor_seconds;
 
-    // Siren sensor
-    options.sirenSensor = config.siren_sensor;
-    options.sirenSensorSeconds = config.siren_sensor_seconds;
+    // Triggered motion sensor
+    options.triggeredMotionSensor = config.siren_sensor;
+    options.triggeredMotionSensorSeconds = config.siren_sensor_seconds;
 
-    // Reset sensor
+    // Reset motion sensor
     options.resetSensor = config.reset_sensor;
 
     // Mode switches
@@ -194,13 +194,13 @@ const options = {
       options.trippedSensorSeconds = 5;
     }
 
-    // Siren sensor
-    if (options.isValueSet(options.sirenSensor) === false) {
-      options.sirenSensor = false;
+    // Tripped sensor
+    if (options.isValueSet(options.trippedMotionSensor) === false) {
+      options.trippedMotionSensor = false;
     }
 
-    if (options.isValueSet(options.sirenSensorSeconds) === false) {
-      options.sirenSensorSeconds = 5;
+    if (options.isValueSet(options.triggeredMotionSensorSeconds) === false) {
+      options.triggeredMotionSensorSeconds = 5;
     }
 
     // Arming lock switch
@@ -208,17 +208,17 @@ const options = {
       options.armingLockSwitch = false;
     }
 
-    // Siren switches
-    if (options.isValueSet(options.sirenSwitch) === false) {
-      options.sirenSwitch = false;
+    // Trip switches
+    if (options.isValueSet(options.tripSwitch) === false) {
+      options.tripSwitch = false;
     }
 
-    if (options.isValueSet(options.sirenOverrideSwitch) === false) {
-      options.sirenOverrideSwitch = false;
+    if (options.isValueSet(options.tripOverrideSwitch) === false) {
+      options.tripOverrideSwitch = false;
     }
 
-    if (options.isValueSet(options.sirenModeSwitches) === false) {
-      options.sirenModeSwitches = true;
+    if (options.isValueSet(options.tripModeSwitches) === false) {
+      options.tripModeSwitches = true;
     }
 
     // Reset sensor

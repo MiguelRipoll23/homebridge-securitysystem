@@ -80,49 +80,49 @@
         "placeholder": "/home/user/logs"
       },
       "home_arm_seconds": {
-        "title": "Home Arming Seconds",
+        "title": "Home Arming Delay Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
         "minimum": 0
       },
       "night_arm_seconds": {
-        "title": "Night Arming Seconds",
+        "title": "Night Arming Delay Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
         "minimum": 0
       },
       "away_arm_seconds": {
-        "title": "Away Arming Seconds",
+        "title": "Away Arming Delay Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
         "minimum": 0
       },
       "home_trigger_seconds": {
-        "title": "Home Trigger Seconds",
+        "title": "Home Trigger Delay Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
         "minimum": 0
       },
       "night_trigger_seconds": {
-        "title": "Night Trigger Seconds",
+        "title": "Night Trigger Delay Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
         "minimum": 0
       },
       "away_trigger_seconds": {
-        "title": "Away Trigger Seconds",
+        "title": "Away Trigger Delay Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
         "minimum": 0
       },
       "away_extended_trigger_seconds": {
-        "title": "Away Extended Trigger Seconds",
+        "title": "Away Extended Delay Trigger Seconds",
         "type": ["null", "integer"],
         "default": "null",
         "required": false,
@@ -144,7 +144,7 @@
       },
       "double_knock": {
         "title": "Use Double-Knock",
-        "description": "Needs the Siren switch to be turn on twice within a time window.",
+        "description": "Needs the Trip switch to be turn on twice within a time window.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -211,36 +211,36 @@
         }
       },
       "tripped_sensor": {
-        "title": "Show Siren Tripped Sensor",
-        "description": "Adds a sensor that triggers multiple times when any of the siren switches have been turned on.",
+        "title": "Show Tripped Sensor",
+        "description": "Adds a sensor that triggers multiple times when any of the Trip switches have been turned on.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "tripped_sensor_seconds": {
-        "title": "Siren Tripped Seconds",
+        "title": "Tripped Sensor Seconds",
         "type": "integer",
         "default": 5,
         "required": false,
         "minimum": 0
       },
       "siren_sensor": {
-        "title": "Show Siren Triggered Sensor",
+        "title": "Show Triggered Sensor",
         "description": "Adds a sensor that triggers multiple times when the security system has been triggered.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "siren_sensor_seconds": {
-        "title": "Siren Triggered Seconds",
+        "title": "Triggered Sensor Seconds",
         "type": "integer",
         "default": 5,
         "required": false,
         "minimum": 0
       },
       "reset_sensor": {
-        "title": "Show Siren Reset Sensor",
-        "description": "Adds a sensor that triggers when the security system has reset after triggering.",
+        "title": "Show Triggered Reset Sensor",
+        "description": "Adds a sensor that triggers when the security system has reset after being triggered.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -295,21 +295,21 @@
         "required": false
       },
       "siren_switch": {
-        "title": "Show Siren Switch",
-        "description": "Adds a global switch that will trigger the security system.",
+        "title": "Show Trip Switch",
+        "description": "Adds a global switch that will trip the security system.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "siren_override_switch": {
-        "title": "Show Siren Override Switch",
+        "title": "Show Trip Override Switch",
         "description": "Adds a special switch that will trigger the security system bypassing the conditions set.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "siren_mode_switches": {
-        "title": "Show Siren Mode Switches",
+        "title": "Show Trip Mode Switches",
         "description": "Adds switches that will trigger the security system when their mode is set.",
         "type": "boolean",
         "default": true,
