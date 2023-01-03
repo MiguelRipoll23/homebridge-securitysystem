@@ -1298,7 +1298,6 @@ SecuritySystem.prototype.startServer = async function () {
       current_mode: this.state2Mode(this.currentState),
       target_mode: this.state2Mode(this.targetState),
       tripped: this.triggerTimeout !== null,
-      arming_locked: this.isArmingLocked("global"),
     };
 
     res.json(response);
@@ -1907,10 +1906,6 @@ SecuritySystem.prototype.isArmingLocked = function (state) {
 
   // Check mode switches
   switch (state) {
-    case "global":
-      // Server status endpoint
-      return false;
-
     case Characteristic.SecuritySystemCurrentState.STAY_ARM:
       armingLockSwitchService = this.armingLockHomeSwitchService;
       break;
