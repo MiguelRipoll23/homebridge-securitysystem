@@ -17,7 +17,7 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 ## Demo
 
 <div align="left">
-  <img align="right" width="206" height="445" src="./.github/demo.jpg">
+  <img align="right" width="205" height="445" src="./.github/demo.jpg">
   <p>Want to know how it looks like? It's pretty customizable, you can configure it to show as many switches as you like.</p>
   <p>What you are seeing at your right is <b>the friendliest</b> configuration that you can start with, each <code>Trip</code> switch that you see can only trip the security system if the mode is set on the security system. This allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
   <p>There are also <code>Mode</code> switches which let you run automations that interact with your accessories when a mode is changed or set modes bypassing HomeKit confirmation dialogs.</p>
@@ -41,9 +41,6 @@ Here are some examples of automations that can be created:
 (1) Shortcuts app is required to create this automation.
 
 (2) AirPlay 2 speaker and Apple Music subscription are required.
-
-> **Warning**
-> Use an NFC tag to arm/disarm the security system easily and securely without using the `Home` app.
 
 ## Contributions
 
