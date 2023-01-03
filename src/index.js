@@ -1297,8 +1297,8 @@ SecuritySystem.prototype.startServer = async function () {
       arming: this.isArming,
       current_mode: this.state2Mode(this.currentState),
       target_mode: this.state2Mode(this.targetState),
-      sensor_triggered: this.triggerTimeout !== null,
-      arming_lock: this.isArmingLocked("global"),
+      tripped: this.triggerTimeout !== null,
+      arming_locked: this.isArmingLocked("global"),
     };
 
     res.json(response);
