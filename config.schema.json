@@ -24,12 +24,7 @@
         "type": "string",
         "default": "Off",
         "required": true,
-        "enum": [
-          "Off",
-          "Home",
-          "Night",
-          "Away"
-        ]
+        "enum": ["Off", "Home", "Night", "Away"]
       },
       "arm_seconds": {
         "title": "Arming Delay Seconds",
@@ -81,50 +76,43 @@
       },
       "home_arm_seconds": {
         "title": "Home Arming Delay Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "night_arm_seconds": {
         "title": "Night Arming Delay Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_arm_seconds": {
         "title": "Away Arming Delay Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "home_trigger_seconds": {
         "title": "Home Trigger Delay Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "night_trigger_seconds": {
         "title": "Night Trigger Delay Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_trigger_seconds": {
         "title": "Away Trigger Delay Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_extended_trigger_seconds": {
         "title": "Away Extended Delay Trigger Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
@@ -158,40 +146,31 @@
       },
       "home_double_knock_seconds": {
         "title": "Home Double-Knock Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_double_knock_seconds": {
         "title": "Away Double-Knock Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "night_double_knock_seconds": {
         "title": "Night Double-Knock Seconds",
-        "type": ["null", "integer"],
-        "default": "null",
+        "type": "integer",
         "required": false,
         "minimum": 0
       },
       "double_knock_modes": {
         "title": "Double-Knock Modes",
         "type": "array",
-        "default": [
-          "Away"
-        ],
+        "default": ["Away"],
         "required": false,
         "items": {
           "title": "Mode",
           "type": "string",
-          "enum": [
-            "Home",
-            "Night",
-            "Away"
-          ],
+          "enum": ["Home", "Night", "Away"],
           "uniqueItems": true
         }
       },
@@ -202,11 +181,7 @@
         "items": {
           "title": "Mode",
           "type": "string",
-          "enum": [
-            "Home",
-            "Night",
-            "Away"
-          ],
+          "enum": ["Home", "Night", "Away"],
           "uniqueItems": true
         }
       },
@@ -334,10 +309,7 @@
         "type": "string",
         "default": "en-US",
         "required": false,
-        "enum": [
-          "en-US",
-          "de-DE"
-        ]
+        "enum": ["en-US", "de-DE"]
       },
       "audio_extra_variables": {
         "title": "Audio Extra Variables",
@@ -540,11 +512,7 @@
       "displayFlex": true,
       "flex-flow": "row wrap",
       "flex-direction": "row",
-      "items": [
-        "arm_seconds",
-        "trigger_seconds",
-        "reset_minutes"
-      ]
+      "items": ["arm_seconds", "trigger_seconds", "reset_minutes"]
     },
     "save_state",
     "test_mode",
@@ -561,11 +529,7 @@
           "displayFlex": true,
           "flex-flow": "row wrap",
           "flex-direction": "row",
-          "items": [
-            "home_arm_seconds",
-            "away_arm_seconds",
-            "night_arm_seconds"
-          ]
+          "items": ["home_arm_seconds", "away_arm_seconds", "night_arm_seconds"]
         },
         {
           "type": "div",
@@ -586,10 +550,7 @@
           "displayFlex": true,
           "flex-flow": "row wrap",
           "flex-direction": "row",
-          "items": [
-            "double_knock",
-            "double_knock_seconds"
-          ]
+          "items": ["double_knock", "double_knock_seconds"]
         },
         {
           "type": "div",
@@ -630,10 +591,7 @@
           "displayFlex": true,
           "flex-flow": "row",
           "flex-direction": "row",
-          "items": [
-            "mode_pause_switch",
-            "pause_minutes"
-          ]
+          "items": ["mode_pause_switch", "pause_minutes"]
         },
         "arming_lock_switch",
         "arming_lock_switches",
@@ -657,10 +615,7 @@
           "displayFlex": true,
           "flex-flow": "row wrap",
           "flex-direction": "row",
-          "items": [
-            "tripped_sensor_seconds",
-            "siren_sensor_seconds"
-          ]
+          "items": ["tripped_sensor_seconds", "siren_sensor_seconds"]
         },
         "reset_sensor"
       ]
@@ -677,20 +632,14 @@
           "displayFlex": true,
           "flex-flow": "row wrap",
           "flex-direction": "row",
-          "items": [
-            "audio",
-            "audio_language"
-          ]
+          "items": ["audio", "audio_language"]
         },
         {
           "type": "div",
           "displayFlex": true,
           "flex-flow": "row wrap",
           "flex-direction": "row",
-          "items": [
-            "audio_path",
-            "audio_volume"
-          ]
+          "items": ["audio_path", "audio_volume"]
         },
         "audio_arming_looped",
         "audio_alert_looped",
@@ -711,10 +660,7 @@
       "description": "Expose a server to interact with the security system remotely.",
       "expandable": true,
       "expanded": false,
-      "items": [
-        "server_port",
-        "server_code"
-      ]
+      "items": ["server_port", "server_code"]
     },
     {
       "type": "fieldset",
