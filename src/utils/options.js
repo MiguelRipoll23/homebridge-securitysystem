@@ -121,6 +121,10 @@ const options = {
       return false;
     }
 
+    if (value === "null") {
+      return false;
+    }
+
     return true;
   },
 
