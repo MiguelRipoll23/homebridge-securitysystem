@@ -19,6 +19,7 @@ changelog:
         - feature
 
     - title: 💅 Enhancements
+      labels:
         - enhancement
 
     - title: 🐛 Bug Fixes
