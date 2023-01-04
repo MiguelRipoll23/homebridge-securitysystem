@@ -188,10 +188,7 @@ function SecuritySystem(log, config) {
     .on("get", this.getTripAwaySwitch.bind(this))
     .on("set", this.setTripAwaySwitch.bind(this));
 
-  this.tripNightSwitchService = new Service.Switch(
-    "Trip Night",
-    "siren-night"
-  );
+  this.tripNightSwitchService = new Service.Switch("Trip Night", "siren-night");
 
   this.tripNightSwitchService
     .getCharacteristic(Characteristic.On)
@@ -1048,7 +1045,6 @@ SecuritySystem.prototype.updateTripSwitch = function (
       }, doubleKnockSeconds * 1000);
 
       if (callback !== null) {
-
         callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
       }
 
@@ -1759,10 +1755,12 @@ SecuritySystem.prototype.setTripOverrideSwitch = function (value, callback) {
 };
 
 SecuritySystem.prototype.resetTripSwitches = function () {
-  const tripHomeOnCharacteristic =
-    this.tripHomeSwitchService.getCharacteristic(Characteristic.On);
-  const tripAwayOnCharacteristic =
-    this.tripAwaySwitchService.getCharacteristic(Characteristic.On);
+  const tripHomeOnCharacteristic = this.tripHomeSwitchService.getCharacteristic(
+    Characteristic.On
+  );
+  const tripAwayOnCharacteristic = this.tripAwaySwitchService.getCharacteristic(
+    Characteristic.On
+  );
   const tripNightOnCharacteristic =
     this.tripNightSwitchService.getCharacteristic(Characteristic.On);
 
