@@ -14,6 +14,8 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 
 `npm i -g --unsafe-perm homebridge-securitysystem`
 
+During accessory setup, when asked the name of the accessories tap the close button on the upper right to exit setup and use the accessory names provided by the plugin.
+
 ## Demo
 
 <div align="left">
