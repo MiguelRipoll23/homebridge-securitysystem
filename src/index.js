@@ -159,6 +159,11 @@ function SecuritySystem(log, config) {
   // Trip switches
   this.tripSwitchService = new Service.Switch("Trip", "siren-switch");
 
+  this.tripSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Trip"
+  );
+
   this.tripSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getTripSwitch.bind(this))
@@ -169,12 +174,22 @@ function SecuritySystem(log, config) {
     "BdW9ce0mUYatqiRqEjT4iA"
   );
 
+  this.tripOverrideSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Trip Override"
+  );
+
   this.tripOverrideSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getTripOverrideSwitch.bind(this))
     .on("set", this.setTripOverrideSwitch.bind(this));
 
   this.tripHomeSwitchService = new Service.Switch("Trip Home", "siren-home");
+
+  this.tripHomeSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Trip Home"
+  );
 
   this.tripHomeSwitchService
     .getCharacteristic(Characteristic.On)
@@ -183,12 +198,22 @@ function SecuritySystem(log, config) {
 
   this.tripAwaySwitchService = new Service.Switch("Trip Away", "siren-away");
 
+  this.tripAwaySwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Trip Away"
+  );
+
   this.tripAwaySwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getTripAwaySwitch.bind(this))
     .on("set", this.setTripAwaySwitch.bind(this));
 
   this.tripNightSwitchService = new Service.Switch("Trip Night", "siren-night");
+
+  this.tripNightSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Trip Night"
+  );
 
   this.tripNightSwitchService
     .getCharacteristic(Characteristic.On)
@@ -201,6 +226,11 @@ function SecuritySystem(log, config) {
     "arming-lock"
   );
 
+  this.armingLockSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Arming Lock"
+  );
+
   this.armingLockSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getArmingLockSwitch.bind(this))
@@ -209,6 +239,11 @@ function SecuritySystem(log, config) {
   this.armingLockHomeSwitchService = new Service.Switch(
     "Arming Lock Home",
     "arming-lock-home"
+  );
+
+  this.armingLockHomeSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Arming Lock Home"
   );
 
   this.armingLockHomeSwitchService
@@ -221,6 +256,11 @@ function SecuritySystem(log, config) {
     "arming-lock-away"
   );
 
+  this.armingLockAwaySwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Arming Lock Away"
+  );
+
   this.armingLockAwaySwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getArmingLockAwaySwitch.bind(this))
@@ -231,6 +271,11 @@ function SecuritySystem(log, config) {
     "arming-lock-night"
   );
 
+  this.armingLockNightSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Arming Lock Night"
+  );
+
   this.armingLockNightSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getArmingLockNightSwitch.bind(this))
@@ -239,12 +284,22 @@ function SecuritySystem(log, config) {
   // Mode switches
   this.modeHomeSwitchService = new Service.Switch("Mode Home", "mode-home");
 
+  this.modeHomeSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Mode Home"
+  );
+
   this.modeHomeSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeHomeSwitch.bind(this))
     .on("set", this.setModeHomeSwitch.bind(this));
 
   this.modeAwaySwitchService = new Service.Switch("Mode Away", "mode-away");
+
+  this.modeAwaySwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Mode Away"
+  );
 
   this.modeAwaySwitchService
     .getCharacteristic(Characteristic.On)
@@ -253,12 +308,22 @@ function SecuritySystem(log, config) {
 
   this.modeNightSwitchService = new Service.Switch("Mode Night", "mode-night");
 
+  this.modeNightSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Mode Night"
+  );
+
   this.modeNightSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeNightSwitch.bind(this))
     .on("set", this.setModeNightSwitch.bind(this));
 
   this.modeOffSwitchService = new Service.Switch("Mode Off", "mode-off");
+
+  this.modeOffSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Mode Off"
+  );
 
   this.modeOffSwitchService
     .getCharacteristic(Characteristic.On)
@@ -270,12 +335,22 @@ function SecuritySystem(log, config) {
     "mode-away-extended"
   );
 
+  this.modeAwayExtendedSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Mode Away Extended"
+  );
+
   this.modeAwayExtendedSwitchService
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeAwayExtendedSwitch.bind(this))
     .on("set", this.setModeAwayExtendedSwitch.bind(this));
 
   this.modePauseSwitchService = new Service.Switch("Mode Pause", "mode-pause");
+
+  this.modePauseSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Mode Pause"
+  );
 
   this.modePauseSwitchService
     .getCharacteristic(Characteristic.On)
@@ -286,6 +361,11 @@ function SecuritySystem(log, config) {
   this.audioSwitchService = new Service.Switch(
     "Audio",
     "kx82r64zN3txDXKFiX9JDi"
+  );
+
+  this.audioSwitchService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Audio"
   );
 
   this.audioSwitchService
@@ -301,6 +381,11 @@ function SecuritySystem(log, config) {
     "siren-tripped"
   );
 
+  this.trippedMotionSensorService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Tripped"
+  );
+
   this.trippedMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
     .on("get", this.getTrippedMotionDetected.bind(this));
@@ -310,6 +395,11 @@ function SecuritySystem(log, config) {
     "siren-triggered"
   );
 
+  this.triggeredMotionSensorService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Triggered"
+  );
+
   this.triggeredMotionSensorService
     .getCharacteristic(Characteristic.MotionDetected)
     .on("get", this.getTriggeredMotionDetected.bind(this));
@@ -317,6 +407,11 @@ function SecuritySystem(log, config) {
   this.triggeredResetMotionSensorService = new Service.MotionSensor(
     "Triggered Reset",
     "reset-event"
+  );
+
+  this.triggeredResetMotionSensorService.setCharacteristic(
+    Characteristic.ConfiguredName,
+    "Triggered Reset"
   );
 
   this.triggeredResetMotionSensorService
