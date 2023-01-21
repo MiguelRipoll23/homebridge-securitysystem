@@ -194,6 +194,7 @@ function SecuritySystem(log, config) {
   this.tripAwaySwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.tripAwaySwitchService
+    .setCharacteristic(Characteristic.ConfiguredName, "Trip Away")
     .getCharacteristic(Characteristic.On)
     .on("get", this.getTripAwaySwitch.bind(this))
     .on("set", this.setTripAwaySwitch.bind(this));
