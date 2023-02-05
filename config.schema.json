@@ -68,6 +68,42 @@
         "default": false,
         "required": false
       },
+      "security_system_name": {
+        "title": "Security System Name",
+        "type": "string",
+        "default": "Security System",
+        "required": false
+      },
+      "trip_switch_name": {
+        "title": "Trip Switch Name",
+        "type": "string",
+        "default": "Trip",
+        "required": false
+      },
+      "trip_home_switch_name": {
+        "title": "Trip Home Switch Name",
+        "type": "string",
+        "default": "Trip Home",
+        "required": false
+      },
+      "trip_away_switch_name": {
+        "title": "Trip Away Switch Name",
+        "type": "string",
+        "default": "Trip Away",
+        "required": false
+      },
+      "trip_night_switch_name": {
+        "title": "Trip Night Switch Name",
+        "type": "string",
+        "default": "Trip Night",
+        "required": false
+      },
+      "trip_override_switch_name": {
+        "title": "Trip Override Switch Name",
+        "type": "string",
+        "default": "Trip Override",
+        "required": false
+      },
       "log_directory": {
         "title": "Log Directory Path",
         "type": "string",
@@ -516,6 +552,21 @@
     },
     "save_state",
     "test_mode",
+    {
+      "type": "fieldset",
+      "title": "Accessory Names",
+      "description": "Change the accessory names provided by your own.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "security_system_name",
+        "trip_switch_name",
+        "trip_home_switch_name",
+        "trip_away_switch_name",
+        "trip_night_switch_name",
+        "trip_override_switch_name"
+      ]
+    },
     {
       "type": "fieldset",
       "title": "Advanced Options",

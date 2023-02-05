@@ -12,8 +12,16 @@ const options = {
     options.saveState = config.save_state;
     options.proxyMode = config.proxy_mode;
     options.testMode = config.test_mode;
-    options.logDirectory = config.log_directory;
 
+    // Names
+    options.securitySystemName = config.security_system_name;
+    options.tripSwitchName = config.trip_switch_name;
+    options.tripHomeSwitchName = config.trip_home_switch_name;
+    options.tripAwaySwitchName = config.trip_away_switch_name;
+    options.tripNightSwitchName = config.trip_night_switch_name;
+    options.tripOverrideSwitchName = config.trip_override_switch_name;
+
+    options.logDirectory = config.log_directory;
     options.overrideOff = config.override_off;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
@@ -159,6 +167,30 @@ const options = {
 
     if (options.isValueSet(options.resetMinutes) === false) {
       options.resetMinutes = 10;
+    }
+
+    if (options.isValueSet(options.securitySystemName) === false) {
+      options.securitySystemName = "Security System";
+    }
+
+    if (options.isValueSet(options.tripSwitchName) === false) {
+      options.tripSwitchName = "Trip";
+    }
+
+    if (options.isValueSet(options.tripHomeSwitchName) === false) {
+      options.tripHomeSwitchName = "Trip Home";
+    }
+
+    if (options.isValueSet(options.tripAwaySwitchName) === false) {
+      options.tripAwaySwitchName = "Trip Away";
+    }
+
+    if (options.isValueSet(options.tripNightSwitchName) === false) {
+      options.tripNightSwitchName = "Trip Night";
+    }
+
+    if (options.isValueSet(options.tripOverrideSwitchName) === false) {
+      options.tripOverrideSwitchName = "Trip Override";
     }
 
     if (options.isValueSet(options.overrideOff) === false) {
