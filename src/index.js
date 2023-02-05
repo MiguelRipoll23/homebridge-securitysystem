@@ -135,14 +135,20 @@ function SecuritySystem(log, config) {
   }
 
   // Security system
-  this.service = new Service.SecuritySystem(options.name);
+  this.service = new Service.SecuritySystem(options.securitySystemName);
   this.availableTargetStates = this.getAvailableTargetStates();
 
   this.service.getCharacteristic(
     Characteristic.SecuritySystemTargetState
   ).value = this.targetState;
 
+  this.service.addCharacteristic(Characteristic.ConfiguredName);
+
   this.service
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.securitySystemName
+    )
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
     .setProps({ validValues: this.availableTargetStates })
     .on("get", this.getTargetState.bind(this))
@@ -157,17 +163,69 @@ function SecuritySystem(log, config) {
     .on("get", this.getCurrentState.bind(this));
 
   // Trip switches
-  this.tripSwitchService = new Service.Switch("Trip", "siren-switch");
+  this.tripSwitchService = new Service.Switch(
+    options.tripSwitchName,
+    "siren-switch"
+  );
+
   this.tripSwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.tripSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Trip")
+    .setCharacteristic(Characteristic.ConfiguredName, options.tripSwitchName)
     .getCharacteristic(Characteristic.On)
     .on("get", this.getTripSwitch.bind(this))
     .on("set", this.setTripSwitch.bind(this));
 
+  this.tripHomeSwitchService = new Service.Switch(
+    options.tripHomeSwitchName,
+    "siren-home"
+  );
+
+  this.tripHomeSwitchService.addCharacteristic(Characteristic.ConfiguredName);
+
+  this.tripHomeSwitchService
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.tripHomeSwitchName
+    )
+    .getCharacteristic(Characteristic.On)
+    .on("get", this.getTripHomeSwitch.bind(this))
+    .on("set", this.setTripHomeSwitch.bind(this));
+
+  this.tripAwaySwitchService = new Service.Switch(
+    options.tripAwaySwitchName,
+    "siren-away"
+  );
+
+  this.tripAwaySwitchService.addCharacteristic(Characteristic.ConfiguredName);
+
+  this.tripAwaySwitchService
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.tripAwaySwitchName
+    )
+    .getCharacteristic(Characteristic.On)
+    .on("get", this.getTripAwaySwitch.bind(this))
+    .on("set", this.setTripAwaySwitch.bind(this));
+
+  this.tripNightSwitchService = new Service.Switch(
+    options.tripNightSwitchName,
+    "siren-night"
+  );
+
+  this.tripNightSwitchService.addCharacteristic(Characteristic.ConfiguredName);
+
+  this.tripNightSwitchService
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.tripNightSwitchName
+    )
+    .getCharacteristic(Characteristic.On)
+    .on("get", this.getTripNightSwitch.bind(this))
+    .on("set", this.setTripNightSwitch.bind(this));
+
   this.tripOverrideSwitchService = new Service.Switch(
-    "Trip Override",
+    options.tripOverrideSwitchName,
     "BdW9ce0mUYatqiRqEjT4iA"
   );
 
@@ -176,38 +234,13 @@ function SecuritySystem(log, config) {
   );
 
   this.tripOverrideSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Trip Override")
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.tripOverrideSwitchName
+    )
     .getCharacteristic(Characteristic.On)
     .on("get", this.getTripOverrideSwitch.bind(this))
     .on("set", this.setTripOverrideSwitch.bind(this));
-
-  this.tripHomeSwitchService = new Service.Switch("Trip Home", "siren-home");
-  this.tripHomeSwitchService.addCharacteristic(Characteristic.ConfiguredName);
-
-  this.tripHomeSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Trip Home")
-    .getCharacteristic(Characteristic.On)
-    .on("get", this.getTripHomeSwitch.bind(this))
-    .on("set", this.setTripHomeSwitch.bind(this));
-
-  this.tripAwaySwitchService = new Service.Switch("Trip Away", "siren-away");
-  this.tripAwaySwitchService.addCharacteristic(Characteristic.ConfiguredName);
-
-  this.tripAwaySwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Trip Away")
-    .getCharacteristic(Characteristic.On)
-    .on("get", this.getTripAwaySwitch.bind(this))
-    .on("set", this.setTripAwaySwitch.bind(this));
-
-  this.tripNightSwitchService = new Service.Switch("Trip Night", "siren-night");
-
-  this.tripNightSwitchService.addCharacteristic(Characteristic.ConfiguredName);
-
-  this.tripNightSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Trip Night")
-    .getCharacteristic(Characteristic.On)
-    .on("get", this.getTripNightSwitch.bind(this))
-    .on("set", this.setTripNightSwitch.bind(this));
 
   // Arming lock switches
   this.armingLockSwitchService = new Service.Switch(
