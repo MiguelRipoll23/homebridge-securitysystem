@@ -1288,10 +1288,6 @@ SecuritySystem.prototype.updateTripSwitch = function (
   return true;
 };
 
-SecuritySystem.prototype.setTrip = function (value, callback) {
-  this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
-};
-
 // Server
 SecuritySystem.prototype.isAuthenticated = function (req, res) {
   // Check if authentication is disabled
