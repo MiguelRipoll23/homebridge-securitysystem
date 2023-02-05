@@ -1838,6 +1838,7 @@ SecuritySystem.prototype.getTripSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setTripSwitch = function (value, callback) {
+  this.log.debug(`Trip Switch (${value ? "On" : "Off"})`);
   this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
 };
 
@@ -1918,7 +1919,7 @@ SecuritySystem.prototype.getTripHomeSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setTripHomeSwitch = function (value, callback) {
-  this.log.debug("Trip Home Switch (On)");
+  this.log.debug(`Trip Home Switch (${value ? "On" : "Off"})`);
   this.triggerIfModeSet(
     Characteristic.SecuritySystemCurrentState.STAY_ARM,
     value,
@@ -1934,7 +1935,7 @@ SecuritySystem.prototype.getTripAwaySwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setTripAwaySwitch = function (value, callback) {
-  this.log.debug("Trip Away Switch (On)");
+  this.log.debug(`Trip Away Switch (${value ? "On" : "Off"})`);
   this.triggerIfModeSet(
     Characteristic.SecuritySystemCurrentState.AWAY_ARM,
     value,
@@ -1950,7 +1951,7 @@ SecuritySystem.prototype.getTripNightSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setTripNightSwitch = function (value, callback) {
-  this.log.debug("Trip Night Switch (On)");
+  this.log.debug(`Trip Night Switch (${value ? "On" : "Off"})`);
   this.triggerIfModeSet(
     Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
     value,
