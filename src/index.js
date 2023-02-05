@@ -1165,7 +1165,7 @@ SecuritySystem.prototype.updateTripSwitch = function (
   if (value) {
     // Already triggered
     if (isCurrentStateAlarmTriggered) {
-      this.log.warn("Trip Switch (Already triggered)");
+      this.log.warn("Security System (Already triggered)");
 
       if (callback !== null) {
         callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
@@ -1176,7 +1176,7 @@ SecuritySystem.prototype.updateTripSwitch = function (
 
     // Already about to trigger
     if (this.triggerTimeout !== null) {
-      this.log.warn("Trip Switch (Already on)");
+      this.log.warn("Security System (Already tripped)");
 
       if (callback !== null) {
         callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
@@ -1185,7 +1185,7 @@ SecuritySystem.prototype.updateTripSwitch = function (
       return false;
     }
 
-    this.log.info("Trip Switch (On)");
+    this.log.info("Security System (Tripped)");
 
     // Update tripped motion sensor
     if (options.trippedMotionSensor) {
@@ -1254,7 +1254,7 @@ SecuritySystem.prototype.updateTripSwitch = function (
     this.sendWebhookEvent("current", "warning", origin);
   } else {
     // Off
-    this.log.info("Trip Switch (Off)");
+    this.log.info("Security System (Cancelled)");
     this.stopAudio();
 
     if (isCurrentStateAlarmTriggered) {
@@ -1838,8 +1838,56 @@ SecuritySystem.prototype.getTripSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setTripSwitch = function (value, callback) {
-  this.log.debug(`Trip Switch (${value ? "On" : "Off"})`);
+  this.log.info(`Trip Switch (${value ? "On" : "Off"})`);
   this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
+};
+
+SecuritySystem.prototype.getTripHomeSwitch = function (callback) {
+  const value = this.tripHomeSwitchService.getCharacteristic(
+    Characteristic.On
+  ).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setTripHomeSwitch = function (value, callback) {
+  this.log.info(`Trip Home Switch (${value ? "On" : "Off"})`);
+  this.triggerIfModeSet(
+    Characteristic.SecuritySystemCurrentState.STAY_ARM,
+    value,
+    callback
+  );
+};
+
+SecuritySystem.prototype.getTripAwaySwitch = function (callback) {
+  const value = this.tripAwaySwitchService.getCharacteristic(
+    Characteristic.On
+  ).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setTripAwaySwitch = function (value, callback) {
+  this.log.info(`Trip Away Switch (${value ? "On" : "Off"})`);
+  this.triggerIfModeSet(
+    Characteristic.SecuritySystemCurrentState.AWAY_ARM,
+    value,
+    callback
+  );
+};
+
+SecuritySystem.prototype.getTripNightSwitch = function (callback) {
+  const value = this.tripNightSwitchService.getCharacteristic(
+    Characteristic.On
+  ).value;
+  callback(null, value);
+};
+
+SecuritySystem.prototype.setTripNightSwitch = function (value, callback) {
+  this.log.info(`Trip Night Switch (${value ? "On" : "Off"})`);
+  this.triggerIfModeSet(
+    Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+    value,
+    callback
+  );
 };
 
 SecuritySystem.prototype.getTripOverrideSwitch = function (callback) {
@@ -1850,7 +1898,32 @@ SecuritySystem.prototype.getTripOverrideSwitch = function (callback) {
 };
 
 SecuritySystem.prototype.setTripOverrideSwitch = function (value, callback) {
+  this.log.info(`Trip Override Switch (${value ? "On" : "Off"})`);
   this.updateTripSwitch(value, originTypes.SPECIAL_SWITCH, false, callback);
+};
+
+SecuritySystem.prototype.triggerIfModeSet = function (
+  switchRequiredState,
+  value,
+  callback
+) {
+  const isCurrentStateAlarmTriggered =
+    this.currentState ===
+    Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+
+  if (value) {
+    if (
+      this.currentState === switchRequiredState ||
+      (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)
+    ) {
+      this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
+    } else {
+      this.log.debug("Security System (Trip mode not set)");
+      callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
+    }
+  } else {
+    this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
+  }
 };
 
 SecuritySystem.prototype.resetTripSwitches = function () {
@@ -1885,78 +1958,6 @@ SecuritySystem.prototype.resetTripSwitches = function () {
     tripOverrideOnCharacteristic.updateValue(false);
     this.log.debug("Trip Override Switch (Off)");
   }
-};
-
-SecuritySystem.prototype.triggerIfModeSet = function (
-  switchRequiredState,
-  value,
-  callback
-) {
-  const isCurrentStateAlarmTriggered =
-    this.currentState ===
-    Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-
-  if (value) {
-    if (
-      this.currentState === switchRequiredState ||
-      (this.targetState === switchRequiredState && isCurrentStateAlarmTriggered)
-    ) {
-      this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
-    } else {
-      this.log.debug("Trip (Mode not set)");
-      callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
-    }
-  } else {
-    this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
-  }
-};
-
-SecuritySystem.prototype.getTripHomeSwitch = function (callback) {
-  const value = this.tripHomeSwitchService.getCharacteristic(
-    Characteristic.On
-  ).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.setTripHomeSwitch = function (value, callback) {
-  this.log.debug(`Trip Home Switch (${value ? "On" : "Off"})`);
-  this.triggerIfModeSet(
-    Characteristic.SecuritySystemCurrentState.STAY_ARM,
-    value,
-    callback
-  );
-};
-
-SecuritySystem.prototype.getTripAwaySwitch = function (callback) {
-  const value = this.tripAwaySwitchService.getCharacteristic(
-    Characteristic.On
-  ).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.setTripAwaySwitch = function (value, callback) {
-  this.log.debug(`Trip Away Switch (${value ? "On" : "Off"})`);
-  this.triggerIfModeSet(
-    Characteristic.SecuritySystemCurrentState.AWAY_ARM,
-    value,
-    callback
-  );
-};
-
-SecuritySystem.prototype.getTripNightSwitch = function (callback) {
-  const value = this.tripNightSwitchService.getCharacteristic(
-    Characteristic.On
-  ).value;
-  callback(null, value);
-};
-
-SecuritySystem.prototype.setTripNightSwitch = function (value, callback) {
-  this.log.debug(`Trip Night Switch (${value ? "On" : "Off"})`);
-  this.triggerIfModeSet(
-    Characteristic.SecuritySystemCurrentState.NIGHT_ARM,
-    value,
-    callback
-  );
 };
 
 // Arming lock switches
