@@ -1,4 +1,4 @@
-name: Create tag
+name: Create new tag
 
 on:
   pull_request:
@@ -8,24 +8,32 @@ on:
       - main
 
 jobs:
-  create-tag:
-    name: Create tag
+  get-tag-name:
+    name: Get tag name
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'new-release')
+    outputs:
+      tag-name: ${{ steps.get-tag-name.outputs.tag-name }}
     steps:
-      - name: Checkout branch
-        uses: actions/checkout@v3
-
       - name: Get tag name
         id: get-tag-name
-        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'new-release')
         run: |
           branch_name="${{ github.event.pull_request.head.ref }}"
           tag_name=$(echo $branch_name | sed 's/^refs\/heads\/version\///' | sed 's/\//v/')
           echo "::set-output name=tag-name::$tag_name"
 
+  create-tag:
+    name: Create new tag
+    needs: get-tag-name
+    runs-on: ubuntu-latest
+    if: needs.get-tag-name.outputs.tag-name != ''
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
       - name: Create tag name
         run: |
-          git tag ${{ steps.get-tag-name.outputs.tag-name }}
+          git tag ${{ needs.get-tag-name.outputs.tag-name }}
 
       - name: Push tag to origin
-        run: git push origin ${{ steps.get-tag-name.outputs.tag-name }}
+        run: git push origin ${{ needs.get-tag-name.outputs.tag-name }}
