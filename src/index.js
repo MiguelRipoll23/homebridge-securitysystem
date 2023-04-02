@@ -154,6 +154,8 @@ function SecuritySystem(log, config) {
     .on("get", this.getTargetState.bind(this))
     .on("set", this.setTargetState.bind(this));
 
+  this.log.info("Security system service (" + options.securitySystemName + ")");
+
   this.service.getCharacteristic(
     Characteristic.SecuritySystemCurrentState
   ).value = this.currentState;
@@ -1028,6 +1030,9 @@ SecuritySystem.prototype.updateTargetState = function (
 
       // Play sound
       this.playAudio("target", state);
+
+      // Log
+      this.log.info("Arm delay (" + armSeconds + " second/s)");
     }
   }
 
@@ -1233,6 +1238,9 @@ SecuritySystem.prototype.updateTripSwitch = function (
     ) {
       triggerSeconds = options.nightTriggerSeconds;
     }
+
+    // Log
+    this.log.debug("Trigger delay (" + triggerSeconds + " second/s)");
 
     this.triggerTimeout = setTimeout(() => {
       this.triggerTimeout = null;

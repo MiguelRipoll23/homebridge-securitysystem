@@ -1,5 +1,8 @@
 const options = {
   init: (log, config) => {
+    // Log
+    log.info("Config", JSON.stringify(config));
+
     options.checkDeprecated(log, config);
 
     options.name = config.name;
@@ -117,6 +120,8 @@ const options = {
     options.setDefaultValues();
     options.validateValues(log);
     options.normalizeValues();
+
+    log.info("Options", JSON.stringify(options));
   },
 
   isValueSet: (value) => {
