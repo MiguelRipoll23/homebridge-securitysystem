@@ -1,4 +1,4 @@
-name: Create new tag
+name: Created tag
 
 on:
   pull_request:
