@@ -1,0 +1,31 @@
+name: Create tag
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  create-tag:
+    name: Create tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Get tag name
+        id: get-tag-name
+        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'new-release')
+        run: |
+          branch_name="${{ github.event.pull_request.head.ref }}"
+          tag_name=$(echo $branch_name | sed 's/^refs\/heads\/version\///' | sed 's/\//v/')
+          echo "::set-output name=tag-name::$tag_name"
+
+      - name: Create tag name
+        run: |
+          git tag ${{ steps.get-tag-name.outputs.tag-name }}
+
+      - name: Push tag to origin
+        run: git push origin ${{ steps.get-tag-name.outputs.tag-name }}

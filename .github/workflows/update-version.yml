@@ -47,4 +47,5 @@ jobs:
           commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
           title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
           body: Automated pull request triggered by a new version update.
-          labels: ignore-for-release
+          labels: new-release,ignore-for-release
+          reviewers: MiguelRipoll23
