@@ -2,8 +2,12 @@ name: Install package
 
 on:
   push:
-    branches-ignore:
-      - stable
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    paths-ignore:
+      - "**.md"
 
 jobs:
   install-package:
