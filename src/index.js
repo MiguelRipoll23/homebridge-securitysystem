@@ -228,7 +228,7 @@ function SecuritySystem(log, config) {
 
   this.tripOverrideSwitchService = new Service.Switch(
     options.tripOverrideSwitchName,
-    "BdW9ce0mUYatqiRqEjT4iA"
+    "pink-sheep"
   );
 
   this.tripOverrideSwitchService.addCharacteristic(
