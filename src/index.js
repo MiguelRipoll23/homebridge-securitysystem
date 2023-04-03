@@ -154,8 +154,6 @@ function SecuritySystem(log, config) {
     .on("get", this.getTargetState.bind(this))
     .on("set", this.setTargetState.bind(this));
 
-  this.log.info("Security system service (" + options.securitySystemName + ")");
-
   this.service.getCharacteristic(
     Characteristic.SecuritySystemCurrentState
   ).value = this.currentState;
