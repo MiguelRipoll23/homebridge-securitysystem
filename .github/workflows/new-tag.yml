@@ -19,8 +19,8 @@ jobs:
         id: get-tag-name
         run: |
           branch_name="${{ github.event.pull_request.head.ref }}"
-          tag_name=$(echo $branch_name | sed 's/^refs\/heads\/version\///' | sed 's/\//v/')
-          echo "::set-output name=tag-name::$tag_name"
+          tag_name=$(echo $branch_name | sed 's/version\///')
+          echo "{tag-name}=$tag_name" >> $GITHUB_OUTPUT
 
   create-tag:
     name: Create new tag
