@@ -20,7 +20,7 @@ jobs:
         run: |
           branch_name="${{ github.event.pull_request.head.ref }}"
           tag_name=$(echo $branch_name | sed 's/version\///')
-          echo "{tag-name}=$tag_name" >> $GITHUB_OUTPUT
+          echo "tag-name=$tag_name" >> $GITHUB_OUTPUT
 
   create-tag:
     name: Create new tag
@@ -33,7 +33,7 @@ jobs:
 
       - name: Create tag name
         run: |
-          git tag ${{ needs.get-tag-name.outputs.tag-name }}
+          git tag "${{ needs.get-tag-name.outputs.tag-name }}"
 
       - name: Push tag to origin
-        run: git push origin ${{ needs.get-tag-name.outputs.tag-name }}
+        run: git push origin "${{ needs.get-tag-name.outputs.tag-name }}"
