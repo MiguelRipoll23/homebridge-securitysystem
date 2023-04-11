@@ -43,6 +43,8 @@ jobs:
     needs: [prepare-tag, create-tag]
     runs-on: ubuntu-latest
     if: needs.prepare-tag.outputs.tag-name != ''
+    permissions:
+      contents: write
     steps:
       - name: Create release
         uses: ncipollo/release-action@v1
