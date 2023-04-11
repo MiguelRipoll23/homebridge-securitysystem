@@ -8,15 +8,15 @@ on:
       - main
 
 jobs:
-  get-tag-name:
-    name: Get tag name
+  prepare-tag:
+    name: Obtain tag name
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'new-release')
     outputs:
-      tag-name: ${{ steps.get-tag-name.outputs.tag-name }}
+      tag-name: ${{ steps.prepare-tag.outputs.tag-name }}
     steps:
-      - name: Get tag name
-        id: get-tag-name
+      - name: Obtain tag name
+        id: prepare-tag
         run: |
           branch_name="${{ github.event.pull_request.head.ref }}"
           tag_name=$(echo $branch_name | sed 's/version\///')
@@ -24,16 +24,31 @@ jobs:
 
   create-tag:
     name: Create new tag
-    needs: get-tag-name
+    needs: prepare-tag
     runs-on: ubuntu-latest
-    if: needs.get-tag-name.outputs.tag-name != ''
+    if: needs.prepare-tag.outputs.tag-name != ''
     steps:
       - name: Checkout branch
         uses: actions/checkout@v3
 
       - name: Create tag name
         run: |
-          git tag "${{ needs.get-tag-name.outputs.tag-name }}"
+          git tag "${{ needs.prepare-tag.outputs.tag-name }}"
 
       - name: Push tag to origin
-        run: git push origin "${{ needs.get-tag-name.outputs.tag-name }}"
+        run: git push origin "${{ needs.prepare-tag.outputs.tag-name }}"
+
+  create-release:
+    name: Create new release
+    needs: [prepare-tag, create-tag]
+    runs-on: ubuntu-latest
+    if: needs.prepare-tag.outputs.tag-name != ''
+    steps:
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ needs.prepare-tag.outputs.tag-name }}"
+          prerelease: ${{ contains(needs.prepare-tag.outputs.tag-name, '-') }}
+          generateReleaseNotes: true
+          discussionCategory: "Updates"
+          allowUpdates: true
