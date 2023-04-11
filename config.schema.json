@@ -2,7 +2,7 @@
   "pluginAlias": "security-system",
   "pluginType": "accessory",
   "headerDisplay": "Create a security system accessory that can be triggered by HomeKit sensors.",
-  "footerDisplay": "[Need help?](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://paypal.me/miguelripoll23)",
+  "footerDisplay": "[Need help?](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://www.paypal.com/donate/?hosted_button_id=CQTHU44XTXK2L)",
   "schema": {
     "title": "Security System",
     "type": "object",
