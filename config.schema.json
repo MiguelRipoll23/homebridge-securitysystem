@@ -9,18 +9,21 @@
     "properties": {
       "name": {
         "title": "Name",
+        "description": "",
         "type": "string",
         "default": "Security System",
         "required": true
       },
       "serial_number": {
         "title": "Serial Number",
+        "description": "",
         "type": "string",
         "default": "S3CUR1TYSYST3M",
         "required": true
       },
       "default_mode": {
         "title": "Default Mode",
+        "description": "",
         "type": "string",
         "default": "Off",
         "required": true,
@@ -28,6 +31,7 @@
       },
       "arm_seconds": {
         "title": "Arming Delay Seconds",
+        "description": "",
         "type": "integer",
         "default": 0,
         "required": false,
@@ -35,6 +39,7 @@
       },
       "trigger_seconds": {
         "title": "Trigger Delay Seconds",
+        "description": "",
         "type": "integer",
         "default": 0,
         "required": false,
@@ -42,6 +47,7 @@
       },
       "reset_minutes": {
         "title": "Reset Delay Minutes",
+        "description": "",
         "type": "integer",
         "default": 10,
         "required": false,
@@ -68,86 +74,93 @@
         "default": false,
         "required": false
       },
-      "security_system_name": {
-        "title": "Security System Name",
-        "type": "string",
-        "default": "Security System",
-        "required": false
-      },
       "trip_switch_name": {
         "title": "Trip Switch Name",
+        "description": "",
         "type": "string",
         "default": "Trip",
         "required": false
       },
       "trip_home_switch_name": {
         "title": "Trip Home Switch Name",
+        "description": "",
         "type": "string",
         "default": "Trip Home",
         "required": false
       },
       "trip_away_switch_name": {
         "title": "Trip Away Switch Name",
+        "description": "",
         "type": "string",
         "default": "Trip Away",
         "required": false
       },
       "trip_night_switch_name": {
         "title": "Trip Night Switch Name",
+        "description": "",
         "type": "string",
         "default": "Trip Night",
         "required": false
       },
       "trip_override_switch_name": {
         "title": "Trip Override Switch Name",
+        "description": "",
         "type": "string",
         "default": "Trip Override",
         "required": false
       },
       "log_directory": {
         "title": "Log Directory Path",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/home/user/logs"
       },
       "home_arm_seconds": {
         "title": "Home Arming Delay Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "night_arm_seconds": {
         "title": "Night Arming Delay Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_arm_seconds": {
         "title": "Away Arming Delay Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "home_trigger_seconds": {
         "title": "Home Trigger Delay Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "night_trigger_seconds": {
         "title": "Night Trigger Delay Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_trigger_seconds": {
         "title": "Away Trigger Delay Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_extended_trigger_seconds": {
         "title": "Away Extended Delay Trigger Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
@@ -175,6 +188,7 @@
       },
       "double_knock_seconds": {
         "title": "Time Window Seconds",
+        "description": "",
         "type": "integer",
         "default": 90,
         "required": false,
@@ -182,24 +196,28 @@
       },
       "home_double_knock_seconds": {
         "title": "Home Double-Knock Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "away_double_knock_seconds": {
         "title": "Away Double-Knock Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "night_double_knock_seconds": {
         "title": "Night Double-Knock Seconds",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0
       },
       "double_knock_modes": {
         "title": "Double-Knock Modes",
+        "description": "",
         "type": "array",
         "default": ["Away"],
         "required": false,
@@ -212,6 +230,7 @@
       },
       "disabled_modes": {
         "title": "Disabled Modes",
+        "description": "",
         "type": "array",
         "required": false,
         "items": {
@@ -230,6 +249,7 @@
       },
       "tripped_sensor_seconds": {
         "title": "Tripped Sensor Seconds",
+        "description": "",
         "type": "integer",
         "default": 5,
         "required": false,
@@ -244,6 +264,7 @@
       },
       "siren_sensor_seconds": {
         "title": "Triggered Sensor Seconds",
+        "description": "",
         "type": "integer",
         "default": 5,
         "required": false,
@@ -286,6 +307,7 @@
       },
       "pause_minutes": {
         "title": "Pause Minutes",
+        "description": "",
         "type": "integer",
         "default": 0,
         "required": false,
@@ -342,6 +364,7 @@
       },
       "audio_language": {
         "title": "Audio Language",
+        "description": "",
         "type": "string",
         "default": "en-US",
         "required": false,
@@ -349,6 +372,7 @@
       },
       "audio_extra_variables": {
         "title": "Audio Extra Variables",
+        "description": "Add extra environment variables to the ffplay command that will be executed",
         "type": "array",
         "items": {
           "title": "Environment Variable",
@@ -366,8 +390,7 @@
             }
           }
         },
-        "required": true,
-        "description": "Add extra environment variables to the ffplay command that will be executed"
+        "required": true
       },
       "audio_path": {
         "title": "Custom Audio Path",
@@ -378,6 +401,7 @@
       },
       "audio_volume": {
         "title": "Audio Volume",
+        "description": "",
         "type": "string",
         "required": false,
         "default": 100,
@@ -385,18 +409,21 @@
       },
       "audio_arming_looped": {
         "title": "Loop Arming Sound",
+        "description": "",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "audio_alert_looped": {
-        "title": "Loop Warning Sound",
+        "title": "Loop Tripped Sound",
+        "description": "",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "server_port": {
         "title": "Listening Port",
+        "description": "",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -412,6 +439,7 @@
       },
       "webhook_url": {
         "title": "Base URL",
+        "description": "",
         "type": "string",
         "required": false,
         "format": "uri",
@@ -419,120 +447,140 @@
       },
       "webhook_target_home": {
         "title": "Target Mode: Home",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/target/home"
       },
       "webhook_target_away": {
         "title": "Target Mode: Away",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/target/away"
       },
       "webhook_target_night": {
         "title": "Target Mode: Night",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/target/night"
       },
       "webhook_target_off": {
         "title": "Target Mode: Off",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/target/off"
       },
       "webhook_current_home": {
         "title": "Current Mode: Home",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/current/home"
       },
       "webhook_current_away": {
         "title": "Current Mode: Away",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/current/away"
       },
       "webhook_current_night": {
         "title": "Current Mode: Night",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/current/night"
       },
       "webhook_current_off": {
         "title": "Current Mode: Off",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/current/off"
       },
       "webhook_current_warning": {
         "title": "Current Event: Warning",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/current/warning"
       },
       "webhook_current_triggered": {
         "title": "Current Mode: Triggered",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "/current/triggered"
       },
       "command_target_home": {
         "title": "Target Mode: Home",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo target home"
       },
       "command_target_away": {
         "title": "Target Mode: Away",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo target away"
       },
       "command_target_off": {
         "title": "Target Mode: Off",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo target off"
       },
       "command_target_night": {
         "title": "Target Mode: Night",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo target night"
       },
       "command_current_home": {
         "title": "Current Mode: Home",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo current home"
       },
       "command_current_away": {
         "title": "Current Mode: Away",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo current away"
       },
       "command_current_night": {
         "title": "Current Mode: Night",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo current night"
       },
       "command_current_off": {
         "title": "Current Mode: Off",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo current off"
       },
       "command_current_warning": {
         "title": "Current Event: Warning",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo current warning"
       },
       "command_current_triggered": {
         "title": "Current Mode: Triggered",
+        "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo current triggered"
@@ -559,7 +607,6 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "security_system_name",
         "trip_switch_name",
         "trip_home_switch_name",
         "trip_away_switch_name",

@@ -17,7 +17,6 @@ const options = {
     options.testMode = config.test_mode;
 
     // Names
-    options.securitySystemName = config.security_system_name;
     options.tripSwitchName = config.trip_switch_name;
     options.tripHomeSwitchName = config.trip_home_switch_name;
     options.tripAwaySwitchName = config.trip_away_switch_name;
@@ -172,10 +171,6 @@ const options = {
 
     if (options.isValueSet(options.resetMinutes) === false) {
       options.resetMinutes = 10;
-    }
-
-    if (options.isValueSet(options.securitySystemName) === false) {
-      options.securitySystemName = "Security System";
     }
 
     if (options.isValueSet(options.tripSwitchName) === false) {

@@ -135,7 +135,7 @@ function SecuritySystem(log, config) {
   }
 
   // Security system
-  this.service = new Service.SecuritySystem(options.securitySystemName);
+  this.service = new Service.SecuritySystem(options.name);
   this.availableTargetStates = this.getAvailableTargetStates();
 
   this.service.getCharacteristic(
@@ -145,10 +145,7 @@ function SecuritySystem(log, config) {
   this.service.addCharacteristic(Characteristic.ConfiguredName);
 
   this.service
-    .setCharacteristic(
-      Characteristic.ConfiguredName,
-      options.securitySystemName
-    )
+    .setCharacteristic(Characteristic.ConfiguredName, options.name)
     .getCharacteristic(Characteristic.SecuritySystemTargetState)
     .setProps({ validValues: this.availableTargetStates })
     .on("get", this.getTargetState.bind(this))
