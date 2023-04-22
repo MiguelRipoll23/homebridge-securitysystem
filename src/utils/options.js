@@ -23,6 +23,11 @@ const options = {
     options.tripNightSwitchName = config.trip_night_switch_name;
     options.tripOverrideSwitchName = config.trip_override_switch_name;
 
+    options.modeHomeSwitchName = config.mode_home_switch_name;
+    options.modeAwaySwitchName = config.mode_away_switch_name;
+    options.modeNightSwitchName = config.mode_night_switch_name;
+    options.modeOffSwitchName = config.mode_off_switch_name;
+
     options.logDirectory = config.log_directory;
     options.overrideOff = config.override_off;
     options.resetOffFlow = config.reset_off_flow;
@@ -191,6 +196,22 @@ const options = {
 
     if (options.isValueSet(options.tripOverrideSwitchName) === false) {
       options.tripOverrideSwitchName = "Trip Override";
+    }
+
+    if (options.isValueSet(options.modeHomeSwitchName) === false) {
+      options.modeHomeSwitchName = "Mode Home";
+    }
+
+    if (options.isValueSet(options.modeAwaySwitchName) === false) {
+      options.modeAwaySwitchName = "Mode Away";
+    }
+
+    if (options.isValueSet(options.modeNightSwitchName) === false) {
+      options.modeNightSwitchName = "Mode Night";
+    }
+
+    if (options.isValueSet(options.modeOffSwitch) === false) {
+      options.modeOffSwitch = "Mode Off";
     }
 
     if (options.isValueSet(options.overrideOff) === false) {

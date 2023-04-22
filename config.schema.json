@@ -109,6 +109,34 @@
         "default": "Trip Override",
         "required": false
       },
+      "mode_home_switch_name": {
+        "title": "Mode Home Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Mode Home",
+        "required": false
+      },
+      "mode_away_switch_name": {
+        "title": "Mode Away Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Mode Away",
+        "required": false
+      },
+      "mode_night_switch_name": {
+        "title": "Mode Night Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Mode Night",
+        "required": false
+      },
+      "mode_off_switch_name": {
+        "title": "Mode Off Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Mode Off",
+        "required": false
+      },
       "log_directory": {
         "title": "Log Directory Path",
         "description": "",
@@ -611,7 +639,11 @@
         "trip_home_switch_name",
         "trip_away_switch_name",
         "trip_night_switch_name",
-        "trip_override_switch_name"
+        "trip_override_switch_name",
+        "mode_home_switch_name",
+        "mode_away_switch_name",
+        "mode_night_switch_name",
+        "mode_off_switch_name"
       ]
     },
     {
