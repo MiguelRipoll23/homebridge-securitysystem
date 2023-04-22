@@ -1942,7 +1942,7 @@ SecuritySystem.prototype.triggerIfModeSet = function (
     ) {
       this.updateTripSwitch(value, originTypes.REGULAR_SWITCH, false, callback);
     } else {
-      this.log.debug("Security System (Trip mode not set)");
+      this.log.warn("Security System (Trip mode not set)");
       callback(HK_NOT_ALLOWED_IN_CURRENT_STATE, false);
     }
   } else {
