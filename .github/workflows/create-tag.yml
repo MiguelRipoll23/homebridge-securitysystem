@@ -52,5 +52,4 @@ jobs:
           tag: "${{ needs.prepare-tag.outputs.tag-name }}"
           prerelease: ${{ contains(needs.prepare-tag.outputs.tag-name, '-') }}
           generateReleaseNotes: true
-          discussionCategory: "Updates"
           allowUpdates: true
