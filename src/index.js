@@ -299,38 +299,63 @@ function SecuritySystem(log, config) {
     .on("set", this.setArmingLockNightSwitch.bind(this));
 
   // Mode switches
-  this.modeHomeSwitchService = new Service.Switch("Mode Home", "mode-home");
+  this.modeHomeSwitchService = new Service.Switch(
+    options.modeHomeSwitchName,
+    "mode-home"
+  );
+
   this.modeHomeSwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.modeHomeSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Mode Home")
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.modeHomeSwitchName
+    )
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeHomeSwitch.bind(this))
     .on("set", this.setModeHomeSwitch.bind(this));
 
-  this.modeAwaySwitchService = new Service.Switch("Mode Away", "mode-away");
+  this.modeAwaySwitchService = new Service.Switch(
+    options.modeAwaySwitchName,
+    "mode-away"
+  );
+
   this.modeAwaySwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.modeAwaySwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Mode Away")
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.modeAwaySwitchName
+    )
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeAwaySwitch.bind(this))
     .on("set", this.setModeAwaySwitch.bind(this));
 
-  this.modeNightSwitchService = new Service.Switch("Mode Night", "mode-night");
+  this.modeNightSwitchService = new Service.Switch(
+    options.modeNightSwitchName,
+    "mode-night"
+  );
+
   this.modeNightSwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.modeNightSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Mode Night")
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.modeNightSwitchName
+    )
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeNightSwitch.bind(this))
     .on("set", this.setModeNightSwitch.bind(this));
 
-  this.modeOffSwitchService = new Service.Switch("Mode Off", "mode-off");
+  this.modeOffSwitchService = new Service.Switch(
+    options.modeOffSwitchName,
+    "mode-off"
+  );
+
   this.modeOffSwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.modeOffSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Mode Off")
+    .setCharacteristic(Characteristic.ConfiguredName, options.modeOffSwitchName)
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeOffSwitch.bind(this))
     .on("set", this.setModeOffSwitch.bind(this));
