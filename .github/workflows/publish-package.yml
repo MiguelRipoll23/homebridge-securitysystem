@@ -48,4 +48,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
         run: |
-          npm publish --access public --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
+          npm publish --access public --provenance --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
