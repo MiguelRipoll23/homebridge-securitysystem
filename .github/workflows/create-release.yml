@@ -8,56 +8,50 @@ on:
       - main
 
 jobs:
-  prepare-tag:
-    name: Obtain tag name
+  create-tag:
+    name: Create tag
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'new-release')
     outputs:
       tag-name: ${{ steps.prepare-tag.outputs.tag-name }}
     steps:
-      - name: Obtain tag name
+      - name: Parse tag
         id: prepare-tag
         run: |
           branch_name="${{ github.event.pull_request.head.ref }}"
           tag_name=$(echo $branch_name | sed 's/version\///')
           echo "tag-name=$tag_name" >> $GITHUB_OUTPUT
 
-  create-tag:
-    name: Create new tag
-    needs: prepare-tag
-    runs-on: ubuntu-latest
-    if: needs.prepare-tag.outputs.tag-name != ''
-    steps:
       - name: Checkout branch
         uses: actions/checkout@v3
 
-      - name: Create tag name
+      - name: Create tag
         run: |
-          git tag "${{ needs.prepare-tag.outputs.tag-name }}"
+          git tag "${{ steps.prepare-tag.outputs.tag-name }}"
 
       - name: Push tag to origin
-        run: git push origin "${{ needs.prepare-tag.outputs.tag-name }}"
+        run: git push origin "${{ steps.prepare-tag.outputs.tag-name }}"
 
   create-release:
-    name: Create new release
-    needs: [prepare-tag, create-tag]
+    name: Create release
+    needs: [create-tag]
     runs-on: ubuntu-latest
-    if: needs.prepare-tag.outputs.tag-name != ''
+    if: needs.create-tag.outputs.tag-name != ''
     permissions:
       contents: write
     steps:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{ needs.prepare-tag.outputs.tag-name }}"
-          prerelease: ${{ contains(needs.prepare-tag.outputs.tag-name, '-') }}
+          tag: "${{ needs.create-tag.outputs.tag-name }}"
+          prerelease: ${{ contains(needs.create-tag.outputs.tag-name, '-') }}
           generateReleaseNotes: true
           allowUpdates: true
 
   publish-package:
     name: Publish package
     runs-on: ubuntu-latest
-    needs: create-release
+    needs: [create-tag, create-release]
 
     steps:
       - name: Checkout repository
@@ -71,7 +65,7 @@ jobs:
 
       - name: Get version
         run: |
-          echo "NPM_VERSION=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+          echo "NPM_VERSION=${{ needs.create-tag.outputs.tag-name }}" >> $GITHUB_ENV
 
       - name: Publish package
 
