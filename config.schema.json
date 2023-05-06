@@ -137,6 +137,27 @@
         "default": "Mode Off",
         "required": false
       },
+      "mode_away_extended_switch_name": {
+        "title": "Mode Away Extended Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Mode Away Extended",
+        "required": false
+      },
+      "mode_pause_switch_name": {
+        "title": "Mode Pause Name",
+        "description": "",
+        "type": "string",
+        "default": "Mode Pause",
+        "required": false
+      },
+      "audio_switch_name": {
+        "title": "Audio Name",
+        "description": "",
+        "type": "string",
+        "default": "Audio",
+        "required": false
+      },
       "log_directory": {
         "title": "Log Directory Path",
         "description": "",
@@ -643,7 +664,10 @@
         "mode_home_switch_name",
         "mode_away_switch_name",
         "mode_night_switch_name",
-        "mode_off_switch_name"
+        "mode_off_switch_name",
+        "mode_away_extended_switch_name",
+        "mode_pause_switch_name",
+        "audio_switch_name"
       ]
     },
     {

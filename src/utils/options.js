@@ -16,7 +16,7 @@ const options = {
     options.proxyMode = config.proxy_mode;
     options.testMode = config.test_mode;
 
-    // Names
+    // START: Names
     options.tripSwitchName = config.trip_switch_name;
     options.tripHomeSwitchName = config.trip_home_switch_name;
     options.tripAwaySwitchName = config.trip_away_switch_name;
@@ -27,6 +27,13 @@ const options = {
     options.modeAwaySwitchName = config.mode_away_switch_name;
     options.modeNightSwitchName = config.mode_night_switch_name;
     options.modeOffSwitchName = config.mode_off_switch_name;
+
+    options.modeAwayExtendedSwitchName = config.mode_away_extended_switch_name;
+    options.modePauseSwitchName = config.mode_pause_switch_name;
+
+    options.audioSwitchName = config.audio_switch_name;
+
+    // END: Names
 
     options.logDirectory = config.log_directory;
     options.overrideOff = config.override_off;
@@ -211,7 +218,19 @@ const options = {
     }
 
     if (options.isValueSet(options.modeOffSwitch) === false) {
-      options.modeOffSwitch = "Mode Off";
+      options.modeOffSwitchName = "Mode Off";
+    }
+
+    if (options.isValueSet(options.modeAwayExtendedSwitchName) === false) {
+      options.modeAwayExtendedSwitchName = "Mode Away Extended";
+    }
+
+    if (options.isValueSet(options.modePauseSwitchName) === false) {
+      options.modePauseSwitchName = "Mode Away Extended";
+    }
+
+    if (options.isValueSet(options.audioSwitchName) === false) {
+      options.audioSwitchName = "Audio";
     }
 
     if (options.isValueSet(options.overrideOff) === false) {

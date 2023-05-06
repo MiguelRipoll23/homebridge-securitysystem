@@ -361,7 +361,7 @@ function SecuritySystem(log, config) {
     .on("set", this.setModeOffSwitch.bind(this));
 
   this.modeAwayExtendedSwitchService = new Service.Switch(
-    "Mode Away Extended",
+    options.modeAwayExtendedSwitchName,
     "mode-away-extended"
   );
 
@@ -370,30 +370,40 @@ function SecuritySystem(log, config) {
   );
 
   this.modeAwayExtendedSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Mode Away Extended")
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.modeAwayExtendedSwitchName
+    )
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModeAwayExtendedSwitch.bind(this))
     .on("set", this.setModeAwayExtendedSwitch.bind(this));
 
-  this.modePauseSwitchService = new Service.Switch("Mode Pause", "mode-pause");
+  this.modePauseSwitchService = new Service.Switch(
+    options.modePauseSwitchName,
+    "mode-pause"
+  );
+
   this.modePauseSwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.modePauseSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Mode Pause")
+    .setCharacteristic(
+      Characteristic.ConfiguredName,
+      options.modePauseSwitchName
+    )
     .getCharacteristic(Characteristic.On)
     .on("get", this.getModePauseSwitch.bind(this))
     .on("set", this.setModePauseSwitch.bind(this));
 
   // Audio switch
   this.audioSwitchService = new Service.Switch(
-    "Audio",
+    options.audioSwitchName,
     "kx82r64zN3txDXKFiX9JDi"
   );
 
   this.audioSwitchService.addCharacteristic(Characteristic.ConfiguredName);
 
   this.audioSwitchService
-    .setCharacteristic(Characteristic.ConfiguredName, "Audio")
+    .setCharacteristic(Characteristic.ConfiguredName, options.audioSwitchName)
     .getCharacteristic(Characteristic.On)
     .on("get", this.getAudioSwitch.bind(this))
     .on("set", this.setAudioSwitch.bind(this));
