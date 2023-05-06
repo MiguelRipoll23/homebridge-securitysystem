@@ -7,6 +7,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   create-tag:
     name: Create tag
