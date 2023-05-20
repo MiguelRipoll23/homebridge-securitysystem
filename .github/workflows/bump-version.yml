@@ -46,7 +46,7 @@ jobs:
           branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
           commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
           title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
-          body: Automated pull request triggered by a new version update.
+          body: Automated pull request triggered by a new release.
           labels: new-release,ignore-for-release
           reviewers: MiguelRipoll23
           draft: true
