@@ -1,4 +1,4 @@
-name: Create version
+name: Bump version
 
 on:
   workflow_dispatch:
@@ -18,8 +18,8 @@ on:
         description: New build for prerelease
 
 jobs:
-  create-version:
-    name: Create version
+  bump-version:
+    name: Bump version
     runs-on: ubuntu-latest
     permissions:
       contents: write
