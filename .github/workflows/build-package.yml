@@ -2,6 +2,8 @@ name: Build package
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - "**.md"
   pull_request:
