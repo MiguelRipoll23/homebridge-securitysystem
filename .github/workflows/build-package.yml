@@ -1,4 +1,4 @@
-name: Install package
+name: Build package
 
 on:
   push:
@@ -10,8 +10,8 @@ on:
       - "**.md"
 
 jobs:
-  install-package:
-    name: Install package
+  build-package:
+    name: Build package
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +25,5 @@ jobs:
           cache: "npm"
           registry-url: https://registry.npmjs.org/
 
-      - name: Install package
+      - name: Build package
         run: npm ci
