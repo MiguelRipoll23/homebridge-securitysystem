@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Generate tag
         uses: MiguelRipoll23/generate-tag-name@v1.9.0
