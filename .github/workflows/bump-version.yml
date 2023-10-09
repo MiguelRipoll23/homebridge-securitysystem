@@ -36,7 +36,7 @@ jobs:
           channel: ${{ inputs.channel }}
 
       - name: Update version
-        uses: reedyuk/npm-version@1.2.1
+        uses: reedyuk/npm-version@1.2.2
         with:
           version: ${{ steps.generate-tag-name.outputs.tag-name }}
 
