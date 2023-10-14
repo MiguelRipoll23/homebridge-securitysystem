@@ -29,23 +29,23 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v4
 
-      - name: Generate tag
-        uses: MiguelRipoll23/generate-tag-name@v2.0.0
-        id: generate-tag-name
+      - name: Create tag name
+        uses: MiguelRipoll23/create-tag-name@v2.0.0
+        id: create-tag-name
         with:
           channel: ${{ inputs.channel }}
 
       - name: Update version
         uses: reedyuk/npm-version@1.2.2
         with:
-          version: ${{ steps.generate-tag-name.outputs.tag-name }}
+          version: ${{ steps.create-tag-name.outputs.tag-name }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v5
         with:
-          branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
-          commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
-          title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
+          branch: version/${{ steps.create-tag-name.outputs.tag-name }}
+          commit-message: ${{ steps.create-tag-name.outputs.tag-name }}
+          title: Bump version to ${{ steps.create-tag-name.outputs.tag-name }}
           body: Automated pull request triggered by a new release.
           labels: new-release,ignore-for-release
           reviewers: MiguelRipoll23
