@@ -6,7 +6,7 @@
 
 Homebridge plugin that creates a security system accessory that can be triggered by HomeKit sensors.
 
-[❤️ One-time donation](https://www.paypal.com/donate/?hosted_button_id=CQTHU44XTXK2L)
+❤️ [One-time donation](https://www.paypal.com/donate/?hosted_button_id=CQTHU44XTXK2L)
 
 ## Installation
 
