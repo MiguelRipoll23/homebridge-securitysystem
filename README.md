@@ -19,7 +19,7 @@ If you already have [Homebridge](https://github.com/homebridge/homebridge) insta
 <div align="left">
   <img align="right" width="205" height="445" src="./.github/demo.jpg">
   <p>Want to know how it looks like? It's pretty customizable, you can configure it to show as many switches as you like.</p>
-  <p>What you are seeing at your right is <b>the friendliest</b> configuration that you can start with, each <code>Trip</code> switch that you see can only trip the security system if the mode is set on the security system. This allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
+  <p>What you are seeing at your right is <b>the friendliest</b> configuration that you can start with. Each <code>Trip</code> switch that you see can only trip the security system if the mode is currently set. This allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
   <p>There are also <code>Mode</code> switches which let you run automations that interact with your accessories when a mode is changed or set modes bypassing HomeKit confirmation dialogs.</p>
   <p>A web server, webhooks or even shell commands are available to integrate the security system with other devices or services plus a plenty of more settings to make this plugin your own DIY security system.</p>
   <p>Homebridge / HOOBS UI is recommended to configure the plugin, for additional help please check the <a href="https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki">Wiki</a> page.</p>
