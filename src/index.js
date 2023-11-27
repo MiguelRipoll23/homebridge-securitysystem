@@ -1838,7 +1838,7 @@ SecuritySystem.prototype.sendWebhookEvent = function (type, state, origin) {
   path = path.replace("${currentMode}", this.state2Mode(this.currentState));
 
   // Send GET request to server
-  fetch(options.webhookUrl + path)
+  fetch(options.webhookUrl + path, { credentials: "include" })
     .then((response) => {
       if (response.ok === false) {
         throw new Error(`Status code (${response.status})`);
