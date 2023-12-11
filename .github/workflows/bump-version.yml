@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create tag name
-        uses: MiguelRipoll23/create-tag-name@v2.0.0
+        uses: MiguelRipoll23/create-tag-name@v2.1.0
         id: create-tag-name
         with:
           channel: ${{ inputs.channel }}
