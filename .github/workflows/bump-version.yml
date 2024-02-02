@@ -41,7 +41,7 @@ jobs:
           version: ${{ steps.create-tag-name.outputs.tag-name }}
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           branch: version/${{ steps.create-tag-name.outputs.tag-name }}
           commit-message: ${{ steps.create-tag-name.outputs.tag-name }}
