@@ -801,18 +801,7 @@ SecuritySystem.prototype.setCurrentState = function (state, origin) {
       this.resetTimeout = null;
       this.log.info("Reset (Finished)");
 
-      // Update triggered reset motion sensor
-      this.triggeredResetMotionSensorService.updateCharacteristic(
-        Characteristic.MotionDetected,
-        true
-      );
-
-      setTimeout(() => {
-        this.triggeredResetMotionSensorService.updateCharacteristic(
-          Characteristic.MotionDetected,
-          false
-        );
-      }, 750);
+      this.triggerResetSensor();
 
       // Alternative flow (Triggered -> Off -> Armed mode)
       if (options.resetOffFlow) {
@@ -843,6 +832,21 @@ SecuritySystem.prototype.setCurrentState = function (state, origin) {
   }
 
   this.save();
+};
+
+SecuritySystem.prototype.triggerResetSensor = function () {
+  // Update triggered reset motion sensor
+  this.triggeredResetMotionSensorService.updateCharacteristic(
+    Characteristic.MotionDetected,
+    true
+  );
+
+  setTimeout(() => {
+    this.triggeredResetMotionSensorService.updateCharacteristic(
+      Characteristic.MotionDetected,
+      false
+    );
+  }, 750);
 };
 
 SecuritySystem.prototype.resetTimers = function () {
@@ -1025,6 +1029,12 @@ SecuritySystem.prototype.updateTargetState = function (
     }
 
     return false;
+  }
+
+  // Trigger reset sensor for mode
+  // change in triggered state
+  if (isCurrentStateAlarmTriggered) {
+    this.triggerResetSensor();
   }
 
   // Set arming delay
