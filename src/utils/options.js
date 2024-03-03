@@ -333,7 +333,7 @@ const options = {
     }
 
     if (options.isValueSet(options.doubleKnockModes) === false) {
-      options.doubleKnockModes = ["Away"];
+      options.doubleKnockModes = [];
     }
 
     // Audio
