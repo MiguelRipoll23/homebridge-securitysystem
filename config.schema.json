@@ -268,7 +268,7 @@
         "title": "Double-Knock Modes",
         "description": "",
         "type": "array",
-        "default": ["Away"],
+        "default": [],
         "required": false,
         "items": {
           "title": "Mode",
