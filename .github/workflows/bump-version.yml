@@ -33,7 +33,7 @@ jobs:
         uses: actions/setup-node@v4.0.1
 
       - name: Create tag name
-        uses: MiguelRipoll23/create-tag-name@v2.1.1
+        uses: MiguelRipoll23/create-tag-name@v2.1.2
         id: create-tag-name
         with:
           channel: ${{ inputs.channel }}
