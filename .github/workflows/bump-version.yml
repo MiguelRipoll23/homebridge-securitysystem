@@ -5,7 +5,7 @@ on:
     inputs:
       channel:
         type: choice
-        default: stable
+        default: beta
         description: Pick channel
         options:
           - alpha
