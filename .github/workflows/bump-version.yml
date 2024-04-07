@@ -32,24 +32,24 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4.0.1
 
-      - name: Create tag name
-        uses: MiguelRipoll23/create-tag-name@v2.1.2
-        id: create-tag-name
+      - name: Get next version
+        uses: MiguelRipoll23/get-next-version@v3.0.0
+        id: get-next-version
         with:
           channel: ${{ inputs.channel }}
 
       - name: Update version
         run: |
-          npm version --no-git-tag-version ${{ env.TAG_NAME }}
+          npm version --no-git-tag-version ${{ env.NEXT_VERSION }}
         env:
-          TAG_NAME: ${{ steps.create-tag-name.outputs.tag-name }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next-version }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: version/${{ steps.create-tag-name.outputs.tag-name }}
-          commit-message: ${{ steps.create-tag-name.outputs.tag-name }}
-          title: Bump version to ${{ steps.create-tag-name.outputs.tag-name }}
+          branch: version/${{ steps.get-next-version.outputs.next-version }}
+          commit-message: ${{ steps.get-next-version.outputs.next-version }}
+          title: Bump version to ${{ steps.get-next-version.outputs.next-version }}
           body: Automated pull request triggered by a new release.
           labels: new-release,ignore-for-release
           reviewers: MiguelRipoll23
