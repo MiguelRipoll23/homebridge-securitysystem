@@ -37,6 +37,7 @@ jobs:
         id: get-next-version
         with:
           channel: ${{ inputs.channel }}
+          new-build-for-prerelease: ${{ inputs.new-build-for-prerelease }}
 
       - name: Update version
         run: |
