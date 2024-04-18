@@ -59,6 +59,9 @@ const options = {
     options.tripOverrideSwitch = config.siren_override_switch;
     options.tripModeSwitches = config.siren_mode_switches;
 
+    // Arming motion sensor
+    options.armingMotionSensor = config.arming_sensor;
+
     // Tripped motion sensor
     options.trippedMotionSensor = config.tripped_sensor;
     options.trippedMotionSensorSeconds = config.tripped_sensor_seconds;
@@ -261,18 +264,23 @@ const options = {
       options.logDirectory = null;
     }
 
+    // Arming sensor
+    if (options.isValueSet(options.armingMotionSensor) === false) {
+      options.armingMotionSensor = false;
+    }
+
     // Tripped sensor
-    if (options.isValueSet(options.trippedSensor) === false) {
-      options.trippedSensor = false;
+    if (options.isValueSet(options.trippedMotionSensor) === false) {
+      options.trippedMotionSensor = false;
     }
 
     if (options.isValueSet(options.trippedSensorSeconds) === false) {
       options.trippedSensorSeconds = 5;
     }
 
-    // Tripped sensor
-    if (options.isValueSet(options.trippedMotionSensor) === false) {
-      options.trippedMotionSensor = false;
+    // Triggered sensor
+    if (options.isValueSet(options.triggeredMotionSensor) === false) {
+      options.triggeredMotionSensor = false;
     }
 
     if (options.isValueSet(options.triggeredMotionSensorSeconds) === false) {

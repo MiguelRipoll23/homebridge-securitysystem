@@ -289,6 +289,13 @@
           "uniqueItems": true
         }
       },
+      "arming_sensor": {
+        "title": "Show Arming Sensor",
+        "description": "Adds a sensor that triggers when the security system is being armed.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
       "tripped_sensor": {
         "title": "Show Tripped Sensor",
         "description": "Adds a sensor that triggers multiple times when any of the Trip switches have been turned on.",
@@ -762,6 +769,7 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        "arming_sensor",
         "tripped_sensor",
         "siren_sensor",
         {
