@@ -794,23 +794,31 @@ SecuritySystem.prototype.getCurrentState = function (callback) {
 };
 
 SecuritySystem.prototype.setCurrentState = function (state, origin) {
-  // Check if mode already set
-  if (this.currentState === state) {
-    return;
-  }
-
-  this.currentState = state;
-  this.service.setCharacteristic(
-    Characteristic.SecuritySystemCurrentState,
-    state
-  );
-
-  this.logMode("Current", state);
-  this.handleCurrentStateChange(false);
+  // Update arming motion sensor
+  this.updateArmingMotionDetected(false);
 
   // Audio
   this.playAudio("current", state);
 
+  // Check if mode already set
+  if (this.currentState === state) {
+    this.log.warn("Current mode (Already set)");
+    return;
+  } else {
+    this.currentState = state;
+    this.service.setCharacteristic(
+      Characteristic.SecuritySystemCurrentState,
+      state
+    );
+
+    this.logMode("Current", state);
+  }
+
+  this.handleCurrentStateChange(state, origin);
+  this.save();
+};
+
+SecuritySystem.prototype.handleCurrentStateChange = function (state, origin) {
   // Commands
   this.executeCommand("current", state, origin);
 
@@ -818,53 +826,35 @@ SecuritySystem.prototype.setCurrentState = function (state, origin) {
   this.sendWebhookEvent("current", state, origin);
 
   if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Update triggered motion sensor
-    this.triggeredMotionSensorInterval = setInterval(() => {
-      this.updateTriggeredMotionDetected();
-    }, options.triggeredMotionSensorSeconds * 1000);
-
-    // Automatically arm the security system
-    // when time runs out
-    this.resetTimeout = setTimeout(() => {
-      this.resetTimeout = null;
-      this.log.info("Reset (Finished)");
-
-      this.triggerResetSensor();
-
-      // Alternative flow (Triggered -> Off -> Armed mode)
-      if (options.resetOffFlow) {
-        const originalTargetState = this.targetState;
-        this.updateTargetState(
-          Characteristic.SecuritySystemTargetState.DISARM,
-          originTypes.INTERNAL,
-          false,
-          null
-        );
-
-        setTimeout(() => {
-          this.updateTargetState(
-            originalTargetState,
-            originTypes.INTERNAL,
-            true,
-            null
-          );
-        }, 100);
-
-        return;
-      }
-
-      // Normal flow
-      this.handleTargetStateChange(false);
-      this.setCurrentState(this.targetState, false);
-    }, options.resetMinutes * 60 * 1000);
+    this.handleTriggeredState();
   }
-
-  this.save();
 };
 
-SecuritySystem.prototype.handleCurrentStateChange = function (alarmTriggered) {
-  // Arming motion sensor
-  this.updateArmingMotionDetected(false);
+SecuritySystem.prototype.handleTriggeredState = function () {
+  // Trigger triggered motion sensor
+  // every configured seconds
+  this.triggeredMotionSensorInterval = setInterval(() => {
+    this.updateTriggeredMotionDetected();
+  }, options.triggeredMotionSensorSeconds * 1000);
+
+  // Automatically arm the security system
+  // when time runs out
+  this.resetTimeout = setTimeout(() => {
+    this.resetTimeout = null;
+    this.log.info("Reset (Finished)");
+
+    this.triggerResetSensor();
+
+    // Alternative flow (Triggered -> Off -> Armed mode)
+    if (options.resetOffFlow) {
+      this.resetUsingOffMode();
+      return;
+    }
+
+    // Normal flow
+    this.handleTargetStateChange(false);
+    this.setCurrentState(this.targetState, false);
+  }, options.resetMinutes * 60 * 1000);
 };
 
 SecuritySystem.prototype.triggerResetSensor = function () {
@@ -880,6 +870,26 @@ SecuritySystem.prototype.triggerResetSensor = function () {
       false
     );
   }, 750);
+};
+
+SecuritySystem.prototype.resetUsingOffMode = function () {
+  const originalTargetState = this.targetState;
+
+  this.updateTargetState(
+    Characteristic.SecuritySystemTargetState.DISARM,
+    originTypes.INTERNAL,
+    false,
+    null
+  );
+
+  setTimeout(() => {
+    this.updateTargetState(
+      originalTargetState,
+      originTypes.INTERNAL,
+      true,
+      null
+    );
+  }, 100);
 };
 
 SecuritySystem.prototype.resetTimers = function () {
@@ -1054,13 +1064,7 @@ SecuritySystem.prototype.updateTargetState = function (
 
   // Check if current state is already set
   if (state === this.currentState) {
-    this.log.warn("Current mode (Already set)");
-
-    // Reset arming motion sensor
-    this.updateArmingMotionDetected(false);
-
-    // Play audio
-    this.playAudio("current", this.currentState);
+    this.setCurrentState(state, origin);
 
     if (callback !== null) {
       callback(null);
