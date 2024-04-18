@@ -483,6 +483,8 @@ function SecuritySystem(log, config) {
   // Services list
   this.services = [this.service, this.accessoryInformationService];
 
+  this.addArmingMotionSensor();
+
   if (options.trippedMotionSensor) {
     this.services.push(this.trippedMotionSensorService);
   }
@@ -649,7 +651,8 @@ SecuritySystem.prototype.load = async function () {
         Characteristic.SecuritySystemCurrentState,
         this.currentState
       );
-      this.handleStateUpdate(false);
+
+      this.handleTargetStateChange(false);
 
       // Log
       this.logMode("Current", this.currentState);
@@ -690,6 +693,29 @@ SecuritySystem.prototype.save = async function () {
 SecuritySystem.prototype.identify = function (callback) {
   this.log.info("Identify");
   callback(null);
+};
+
+// Services
+SecuritySystem.prototype.addArmingMotionSensor = function () {
+  if (options.armingMotionSensor === false) {
+    return;
+  }
+
+  this.armingMotionSensorService = new Service.MotionSensor(
+    "Arming",
+    "arming-motion-sensor"
+  );
+
+  this.armingMotionSensorService.addOptionalCharacteristic(
+    Characteristic.ConfiguredName
+  );
+
+  this.armingMotionSensorService
+    .setCharacteristic(Characteristic.ConfiguredName, "Arming")
+    .getCharacteristic(Characteristic.MotionDetected)
+    .on("get", this.getArmingMotionDetected.bind(this));
+
+  this.services.push(this.armingMotionSensorService);
 };
 
 // Security system
@@ -778,7 +804,9 @@ SecuritySystem.prototype.setCurrentState = function (state, origin) {
     Characteristic.SecuritySystemCurrentState,
     state
   );
+
   this.logMode("Current", state);
+  this.handleCurrentStateChange(false);
 
   // Audio
   this.playAudio("current", state);
@@ -826,12 +854,17 @@ SecuritySystem.prototype.setCurrentState = function (state, origin) {
       }
 
       // Normal flow
-      this.handleStateUpdate(false);
+      this.handleTargetStateChange(false);
       this.setCurrentState(this.targetState, false);
     }, options.resetMinutes * 60 * 1000);
   }
 
   this.save();
+};
+
+SecuritySystem.prototype.handleCurrentStateChange = function (alarmTriggered) {
+  // Arming motion sensor
+  this.updateArmingMotionDetected(false);
 };
 
 SecuritySystem.prototype.triggerResetSensor = function () {
@@ -907,7 +940,7 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 };
 
-SecuritySystem.prototype.handleStateUpdate = function (alarmTriggered) {
+SecuritySystem.prototype.handleTargetStateChange = function (alarmTriggered) {
   // Reset double-knock
   this.isKnocked = false;
 
@@ -920,6 +953,7 @@ SecuritySystem.prototype.handleStateUpdate = function (alarmTriggered) {
     return;
   }
 
+  // Reset tripped motion sensor
   const trippedOnCharacteristic = this.tripSwitchService.getCharacteristic(
     Characteristic.On
   );
@@ -928,6 +962,7 @@ SecuritySystem.prototype.handleStateUpdate = function (alarmTriggered) {
     this.updateTripSwitch(false, originTypes.INTERNAL, true, null);
   }
 
+  // Reset trip switches
   this.resetTripSwitches();
 };
 
@@ -1009,7 +1044,7 @@ SecuritySystem.prototype.updateTargetState = function (
   }
 
   // Reset everything
-  this.handleStateUpdate(false);
+  this.handleTargetStateChange(false);
 
   // Commands
   this.executeCommand("target", state, origin);
@@ -1020,6 +1055,9 @@ SecuritySystem.prototype.updateTargetState = function (
   // Check if current state is already set
   if (state === this.currentState) {
     this.log.warn("Current mode (Already set)");
+
+    // Reset arming motion sensor
+    this.updateArmingMotionDetected(false);
 
     // Play audio
     this.playAudio("current", this.currentState);
@@ -1066,6 +1104,9 @@ SecuritySystem.prototype.updateTargetState = function (
     // Delay actions
     if (armSeconds > 0) {
       this.isArming = true;
+
+      // Trigger arming motion sensor
+      this.updateArmingMotionDetected(true);
 
       // Play sound
       this.playAudio("target", state);
@@ -1452,7 +1493,7 @@ SecuritySystem.prototype.startServer = async function () {
         return;
       }
 
-      this.handleStateUpdate(true);
+      this.handleTargetStateChange(true);
       this.setCurrentState(
         Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED,
         true
@@ -2373,6 +2414,22 @@ SecuritySystem.prototype.getAudioSwitch = function (callback) {
 SecuritySystem.prototype.setAudioSwitch = function (value, callback) {
   this.log.info(`Audio (${value ? "Enabled" : "Disabled"})`);
   callback(null);
+};
+
+// Tripped Motion Sensor
+SecuritySystem.prototype.getArmingMotionDetected = function (callback) {
+  const value = this.armingMotionSensorService.getCharacteristic(
+    Characteristic.MotionDetected
+  ).value;
+
+  callback(null, value);
+};
+
+SecuritySystem.prototype.updateArmingMotionDetected = function (value) {
+  this.armingMotionSensorService.updateCharacteristic(
+    Characteristic.MotionDetected,
+    value
+  );
 };
 
 // Tripped Motion Sensor
