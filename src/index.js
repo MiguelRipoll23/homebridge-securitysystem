@@ -1054,6 +1054,10 @@ SecuritySystem.prototype.updateTargetState = function (
 
   // Check if current state is already set
   if (state === this.currentState) {
+    // Clear arming timeout
+    clearTimeout(this.armTimeout);
+
+    // Run set current state logic again
     this.setCurrentState(state, origin);
 
     if (callback !== null) {
