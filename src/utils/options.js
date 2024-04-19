@@ -10,7 +10,6 @@ const options = {
     options.defaultMode = config.default_mode;
     options.armSeconds = config.arm_seconds;
     options.triggerSeconds = config.trigger_seconds;
-    options.pauseMinutes = config.pause_minutes;
     options.resetMinutes = config.reset_minutes;
     options.saveState = config.save_state;
     options.proxyMode = config.proxy_mode;
@@ -35,29 +34,32 @@ const options = {
 
     // END: Names
 
+    // Main settings
     options.logDirectory = config.log_directory;
     options.overrideOff = config.override_off;
     options.resetOffFlow = config.reset_off_flow;
     options.disabledModes = config.disabled_modes;
 
+    // Arming settings
     options.homeArmSeconds = config.home_arm_seconds;
     options.awayArmSeconds = config.away_arm_seconds;
     options.nightArmSeconds = config.night_arm_seconds;
 
+    // Trigger settings
     options.homeTriggerSeconds = config.home_trigger_seconds;
     options.awayTriggerSeconds = config.away_trigger_seconds;
     options.nightTriggerSeconds = config.night_trigger_seconds;
 
-    options.awayExtendedTriggerSeconds = config.away_extended_trigger_seconds;
+    // Trip switches
+    options.tripSwitch = config.trip_switch || config.siren_switch;
+    options.tripOverrideSwitch =
+      config.trip_override_switch || config.siren_override_switch;
+    options.tripModeSwitches =
+      config.trip_mode_switches || config.siren_mode_switches;
 
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
     options.armingLockSwitches = config.arming_lock_switches;
-
-    // Trip switches
-    options.tripSwitch = config.siren_switch;
-    options.tripOverrideSwitch = config.siren_override_switch;
-    options.tripModeSwitches = config.siren_mode_switches;
 
     // Arming motion sensor
     options.armingMotionSensor = config.arming_sensor;
@@ -67,17 +69,28 @@ const options = {
     options.trippedMotionSensorSeconds = config.tripped_sensor_seconds;
 
     // Triggered motion sensor
-    options.triggeredMotionSensor = config.siren_sensor;
-    options.triggeredMotionSensorSeconds = config.siren_sensor_seconds;
+    options.triggeredMotionSensor =
+      config.triggered_sensor || config.siren_sensor;
+    options.triggeredMotionSensorSeconds =
+      config.triggered_sensor || config.siren_sensor_seconds;
 
     // Reset motion sensor
     options.resetSensor = config.reset_sensor;
 
     // Mode switches
     options.modeSwitches = config.mode_switches;
+
+    // Off switch
     options.modeOffSwitch = config.mode_off_switch;
+
+    // Pause switch
     options.modePauseSwitch = config.mode_pause_switch;
+    options.pauseMinutes = config.pause_minutes;
+
+    // Away extended switch
     options.modeAwayExtendedSwitch = config.mode_away_extended_switch;
+    options.modeAwayExtendedSwitchTriggerSeconds =
+      config.mode_away_extended_switch_trigger_seconds;
 
     // Double knock
     options.doubleKnock = config.double_knock;
@@ -87,8 +100,6 @@ const options = {
     options.homeDoubleKnockSeconds = config.home_double_knock_seconds;
     options.awayDoubleKnockSeconds = config.away_double_knock_seconds;
     options.nightDoubleKnockSeconds = config.night_double_knock_seconds;
-
-    options.audioSwitch = config.audio_switch;
 
     // Server
     options.serverPort = config.server_port;
@@ -102,6 +113,9 @@ const options = {
     options.audioArmingLooped = config.audio_arming_looped;
     options.audioAlertLooped = config.audio_alert_looped;
     options.audioExtraVariables = config.audio_extra_variables;
+
+    // Audio switch
+    options.audioSwitch = config.audio_switch;
 
     // Commands
     options.commandTargetHome = config.command_target_home;

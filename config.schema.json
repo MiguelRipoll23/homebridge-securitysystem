@@ -207,7 +207,7 @@
         "required": false,
         "minimum": 0
       },
-      "away_extended_trigger_seconds": {
+      "mode_away_extended_switch_seconds": {
         "title": "Away Extended Delay Trigger Seconds",
         "description": "",
         "type": "integer",
@@ -311,14 +311,14 @@
         "required": false,
         "minimum": 0
       },
-      "siren_sensor": {
+      "triggered_sensor": {
         "title": "Show Triggered Sensor",
         "description": "Adds a sensor that triggers multiple times when the security system has been triggered.",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "siren_sensor_seconds": {
+      "triggered_sensor_seconds": {
         "title": "Triggered Sensor Seconds",
         "description": "",
         "type": "integer",
@@ -383,21 +383,21 @@
         "default": false,
         "required": false
       },
-      "siren_switch": {
+      "trip_switch": {
         "title": "Show Trip Switch",
         "description": "Adds a global switch that will trip the security system.",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "siren_override_switch": {
+      "trip_override_switch": {
         "title": "Show Trip Override Switch",
         "description": "Adds a special switch that will trigger the security system bypassing the conditions set.",
         "type": "boolean",
         "default": false,
         "required": false
       },
-      "siren_mode_switches": {
+      "trip_mode_switches": {
         "title": "Show Trip Mode Switches",
         "description": "Adds switches that will trigger the security system when their mode is set.",
         "type": "boolean",
@@ -744,7 +744,7 @@
           "flex-direction": "row",
           "items": [
             "mode_away_extended_switch",
-            "away_extended_trigger_seconds"
+            "mode_away_extended_switch_trigger_seconds"
           ]
         },
         {
@@ -756,9 +756,9 @@
         },
         "arming_lock_switch",
         "arming_lock_switches",
-        "siren_switch",
-        "siren_override_switch",
-        "siren_mode_switches",
+        "trip_switch",
+        "trip_override_switch",
+        "trip_mode_switches",
         "audio_switch"
       ]
     },
@@ -771,13 +771,13 @@
       "items": [
         "arming_sensor",
         "tripped_sensor",
-        "siren_sensor",
+        "triggered_sensor",
         {
           "type": "div",
           "displayFlex": true,
           "flex-flow": "row wrap",
           "flex-direction": "row",
-          "items": ["tripped_sensor_seconds", "siren_sensor_seconds"]
+          "items": ["tripped_sensor_seconds", "triggered_sensor_seconds"]
         },
         "reset_sensor"
       ]
