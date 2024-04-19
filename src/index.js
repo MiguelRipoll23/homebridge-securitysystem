@@ -1329,10 +1329,10 @@ SecuritySystem.prototype.updateTripSwitch = function (
         modeAwayExtendedSwitchCharacteristicOn.value;
 
       if (
-        options.isValueSet(options.awayExtendedTriggerSeconds) &&
+        options.isValueSet(options.modeAwayExtendedSwitchTriggerSeconds) &&
         modeAwayExtendedSwitchCharacteristicOnValue
       ) {
-        triggerSeconds = options.awayExtendedTriggerSeconds;
+        triggerSeconds = options.modeAwayExtendedSwitchTriggerSeconds;
       } else if (options.isValueSet(options.awayTriggerSeconds)) {
         triggerSeconds = options.awayTriggerSeconds;
       }

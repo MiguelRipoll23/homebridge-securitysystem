@@ -207,7 +207,7 @@
         "required": false,
         "minimum": 0
       },
-      "away_extended_trigger_seconds": {
+      "mode_away_extended_switch_seconds": {
         "title": "Away Extended Delay Trigger Seconds",
         "description": "",
         "type": "integer",
@@ -744,7 +744,7 @@
           "flex-direction": "row",
           "items": [
             "mode_away_extended_switch",
-            "away_extended_trigger_seconds"
+            "mode_away_extended_switch_trigger_seconds"
           ]
         },
         {
