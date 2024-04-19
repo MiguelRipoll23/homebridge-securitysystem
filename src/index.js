@@ -794,77 +794,70 @@ SecuritySystem.prototype.getCurrentState = function (callback) {
 };
 
 SecuritySystem.prototype.setCurrentState = function (state, origin) {
-  // Check if mode already set
-  if (this.currentState === state) {
-    return;
-  }
-
-  this.currentState = state;
-  this.service.setCharacteristic(
-    Characteristic.SecuritySystemCurrentState,
-    state
-  );
-
-  this.logMode("Current", state);
-  this.handleCurrentStateChange(false);
+  // Update arming motion sensor
+  this.resetArmingMotionDetected();
 
   // Audio
   this.playAudio("current", state);
 
+  // Check if mode already set
+  if (this.currentState === state) {
+    this.log.warn("Current mode (Already set)");
+    return;
+  } else {
+    this.currentState = state;
+    this.service.setCharacteristic(
+      Characteristic.SecuritySystemCurrentState,
+      state
+    );
+
+    this.logMode("Current", state);
+  }
+
+  this.handleCurrentStateChange(state, origin);
+  this.save();
+};
+
+SecuritySystem.prototype.handleCurrentStateChange = function (state, origin) {
   // Commands
   this.executeCommand("current", state, origin);
 
   // Webhooks
   this.sendWebhookEvent("current", state, origin);
 
-  if (state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED) {
-    // Update triggered motion sensor
-    this.triggeredMotionSensorInterval = setInterval(() => {
-      this.updateTriggeredMotionDetected();
-    }, options.triggeredMotionSensorSeconds * 1000);
+  const isCurrentStateAlarmTriggered =
+    state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERE;
 
-    // Automatically arm the security system
-    // when time runs out
-    this.resetTimeout = setTimeout(() => {
-      this.resetTimeout = null;
-      this.log.info("Reset (Finished)");
-
-      this.triggerResetSensor();
-
-      // Alternative flow (Triggered -> Off -> Armed mode)
-      if (options.resetOffFlow) {
-        const originalTargetState = this.targetState;
-        this.updateTargetState(
-          Characteristic.SecuritySystemTargetState.DISARM,
-          originTypes.INTERNAL,
-          false,
-          null
-        );
-
-        setTimeout(() => {
-          this.updateTargetState(
-            originalTargetState,
-            originTypes.INTERNAL,
-            true,
-            null
-          );
-        }, 100);
-
-        return;
-      }
-
-      // Normal flow
-      this.handleTargetStateChange(false);
-      this.setCurrentState(this.targetState, false);
-    }, options.resetMinutes * 60 * 1000);
+  if (isCurrentStateAlarmTriggered) {
+    this.handleTriggeredState();
   }
-
-  this.save();
 };
 
-SecuritySystem.prototype.handleCurrentStateChange = function (alarmTriggered) {
-  // Arming motion sensor
-  this.updateArmingMotionDetected(false);
+SecuritySystem.prototype.handleTriggeredState = function () {
+  // Trigger triggered motion sensor
+  // every configured seconds
+  this.triggeredMotionSensorInterval = setInterval(() => {
+    this.updateTriggeredMotionDetected();
+  }, options.triggeredMotionSensorSeconds * 1000);
+
+  // Automatically arm the security system
+  // when time runs out
+  this.resetTimeout = setTimeout(() => {
+    this.resetTimeout = null;
+    this.log.info("Reset (Finished)");
+
+    this.triggerResetSensor();
+
+    // Alternative flow (Triggered -> Off -> Armed mode)
+    if (options.resetOffFlow) {
+      this.resetUsingOffMode();
+      return;
+    }
+
+    // Normal flow
+    this.handleTargetStateChange(false);
+    this.setCurrentState(this.targetState, false);
+  }, options.resetMinutes * 60 * 1000);
 };
 
 SecuritySystem.prototype.triggerResetSensor = function () {
@@ -880,6 +873,26 @@ SecuritySystem.prototype.triggerResetSensor = function () {
       false
     );
   }, 750);
+};
+
+SecuritySystem.prototype.resetUsingOffMode = function () {
+  const originalTargetState = this.targetState;
+
+  this.updateTargetState(
+    Characteristic.SecuritySystemTargetState.DISARM,
+    originTypes.INTERNAL,
+    false,
+    null
+  );
+
+  setTimeout(() => {
+    this.updateTargetState(
+      originalTargetState,
+      originTypes.INTERNAL,
+      true,
+      null
+    );
+  }, 100);
 };
 
 SecuritySystem.prototype.resetTimers = function () {
@@ -940,7 +953,10 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 };
 
-SecuritySystem.prototype.handleTargetStateChange = function (alarmTriggered) {
+SecuritySystem.prototype.handleTargetStateChange = function (
+  origin,
+  alarmTriggered
+) {
   // Reset double-knock
   this.isKnocked = false;
 
@@ -948,17 +964,25 @@ SecuritySystem.prototype.handleTargetStateChange = function (alarmTriggered) {
   this.resetModeSwitches();
   this.updateModeSwitches();
 
-  // Keep characteristic & switches on
+  // Commands
+  this.executeCommand("target", this.targetState, origin);
+
+  // Webhooks
+  this.sendWebhookEvent("target", this.targetState, origin);
+
+  // Trigger reset sensor for mode
+  // change in triggered state
   if (alarmTriggered) {
+    if (isCurrentStateAlarmTriggered) {
+      this.triggerResetSensor();
+    }
+
+    // Keep characteristic & switches on
     return;
   }
 
   // Reset tripped motion sensor
-  const trippedOnCharacteristic = this.tripSwitchService.getCharacteristic(
-    Characteristic.On
-  );
-
-  if (trippedOnCharacteristic.value) {
+  if (this.tripSwitchService.getCharacteristic(Characteristic.On).value) {
     this.updateTripSwitch(false, originTypes.INTERNAL, true, null);
   }
 
@@ -966,12 +990,7 @@ SecuritySystem.prototype.handleTargetStateChange = function (alarmTriggered) {
   this.resetTripSwitches();
 };
 
-SecuritySystem.prototype.updateTargetState = function (
-  state,
-  origin,
-  delay,
-  callback
-) {
+SecuritySystem.prototype.isBadTargetState = function (state) {
   const isTargetStateAlreadySet = this.targetState === state;
   const isCurrentStateAlarmTriggered =
     this.currentState ===
@@ -982,25 +1001,13 @@ SecuritySystem.prototype.updateTargetState = function (
   // Check if target state is already set
   if (isTargetStateAlreadySet && isCurrentStateAlarmTriggered === false) {
     this.log.warn("Target mode (Already set)");
-
-    if (callback !== null) {
-      callback(null);
-    }
-
-    return false;
+    return true;
   }
 
   // Check if state is enabled
   if (this.availableTargetStates.includes(state) === false) {
     this.log.warn("Target mode (Disabled)");
-
-    if (callback !== null) {
-      // Tip: this will revert the original state
-      // HomeKit error
-      callback(Characteristic.SecuritySystemTargetState.DISARM);
-    }
-
-    return false;
+    return true;
   }
 
   // Check arming lock switches
@@ -1014,11 +1021,20 @@ SecuritySystem.prototype.updateTargetState = function (
     this.isArmingLocked(state)
   ) {
     this.log.warn("Arming lock (Not allowed)");
+    return true;
+  }
+};
 
+SecuritySystem.prototype.updateTargetState = function (
+  state,
+  origin,
+  delay,
+  callback
+) {
+  // Validate target state
+  if (this.isBadTargetState(state)) {
     if (callback !== null) {
-      // Tip: this will revert the original state
-      // HomeKit error
-      callback(Characteristic.SecuritySystemTargetState.DISARM);
+      callback(null);
     }
 
     return false;
@@ -1028,13 +1044,6 @@ SecuritySystem.prototype.updateTargetState = function (
   this.targetState = state;
   this.logMode("Target", state);
 
-  const isTargetStateHome =
-    this.targetState === Characteristic.SecuritySystemTargetState.STAY_ARM;
-  const isTargetStateAway =
-    this.targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM;
-  const isTargetStateNight =
-    this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
-
   // Update characteristic
   if (origin === originTypes.INTERNAL || origin === originTypes.EXTERNAL) {
     this.service.updateCharacteristic(
@@ -1043,24 +1052,9 @@ SecuritySystem.prototype.updateTargetState = function (
     );
   }
 
-  // Reset everything
-  this.handleTargetStateChange(false);
-
-  // Commands
-  this.executeCommand("target", state, origin);
-
-  // Webhooks
-  this.sendWebhookEvent("target", state, origin);
-
   // Check if current state is already set
   if (state === this.currentState) {
-    this.log.warn("Current mode (Already set)");
-
-    // Reset arming motion sensor
-    this.updateArmingMotionDetected(false);
-
-    // Play audio
-    this.playAudio("current", this.currentState);
+    this.setCurrentState(state, origin);
 
     if (callback !== null) {
       callback(null);
@@ -1069,47 +1063,18 @@ SecuritySystem.prototype.updateTargetState = function (
     return false;
   }
 
-  // Trigger reset sensor for mode
-  // change in triggered state
-  if (isCurrentStateAlarmTriggered) {
-    this.triggerResetSensor();
-  }
+  // Handle mode change
+  this.handleTargetStateChange(origin, false);
 
   // Set arming delay
   let armSeconds = 0;
 
   if (delay) {
-    armSeconds = options.armSeconds;
-
-    // No delay when triggered or set to Off
-    if (isCurrentStateAlarmTriggered || isTargetStateDisarm) {
-      armSeconds = 0;
-    }
-
-    // Custom mode seconds
-    if (isTargetStateHome && options.isValueSet(options.homeArmSeconds)) {
-      armSeconds = options.homeArmSeconds;
-    } else if (
-      isTargetStateAway &&
-      options.isValueSet(options.awayArmSeconds)
-    ) {
-      armSeconds = options.awayArmSeconds;
-    } else if (
-      isTargetStateNight &&
-      options.isValueSet(options.nightArmSeconds)
-    ) {
-      armSeconds = options.nightArmSeconds;
-    }
+    armSeconds = this.getArmingSeconds();
 
     // Delay actions
     if (armSeconds > 0) {
-      this.isArming = true;
-
-      // Trigger arming motion sensor
-      this.updateArmingMotionDetected(true);
-
-      // Play sound
-      this.playAudio("target", state);
+      this.handleArmingState();
 
       // Log
       this.log.info("Arm delay (" + armSeconds + " second/s)");
@@ -1119,8 +1084,8 @@ SecuritySystem.prototype.updateTargetState = function (
   // Arm the security system
   this.armTimeout = setTimeout(() => {
     this.armTimeout = null;
-    this.setCurrentState(state, origin);
     this.isArming = false;
+    this.setCurrentState(state, origin);
   }, armSeconds * 1000);
 
   if (callback !== null) {
@@ -1128,6 +1093,50 @@ SecuritySystem.prototype.updateTargetState = function (
   }
 
   return true;
+};
+
+SecuritySystem.prototype.getArmingSeconds = function () {
+  let armSeconds = options.armSeconds;
+
+  const isCurrentStateAlarmTriggered =
+    this.currentState ===
+    Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+  const isTargetStateDisarm =
+    this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
+
+  // No delay when triggered or set to Off
+  if (isCurrentStateAlarmTriggered || isTargetStateDisarm) {
+    return 0;
+  }
+
+  const isTargetStateHome =
+    this.targetState === Characteristic.SecuritySystemTargetState.STAY_ARM;
+  const isTargetStateAway =
+    this.targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM;
+  const isTargetStateNight =
+    this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+
+  // Custom mode seconds
+  if (isTargetStateHome && options.isValueSet(options.homeArmSeconds)) {
+    armSeconds = options.homeArmSeconds;
+  } else if (isTargetStateAway && options.isValueSet(options.awayArmSeconds)) {
+    armSeconds = options.awayArmSeconds;
+  } else if (
+    isTargetStateNight &&
+    options.isValueSet(options.nightArmSeconds)
+  ) {
+    armSeconds = options.nightArmSeconds;
+  }
+
+  return armSeconds;
+};
+
+SecuritySystem.prototype.handleArmingState = function () {
+  // Trigger arming motion sensor
+  this.updateArmingMotionDetected(true);
+
+  // Play sound
+  this.playAudio("target", this.targetState);
 };
 
 SecuritySystem.prototype.getTargetState = function (callback) {
@@ -2430,6 +2439,20 @@ SecuritySystem.prototype.updateArmingMotionDetected = function (value) {
     Characteristic.MotionDetected,
     value
   );
+};
+
+SecuritySystem.prototype.resetArmingMotionDetected = function () {
+  let isArmingMotionSensorTriggered =
+    this.armingMotionSensorService.getCharacteristic(
+      Characteristic.MotionDetected
+    ).value;
+
+  if (isArmingMotionSensorTriggered) {
+    this.armingMotionSensorService.updateCharacteristic(
+      Characteristic.MotionDetected,
+      false
+    );
+  }
 };
 
 // Tripped Motion Sensor
