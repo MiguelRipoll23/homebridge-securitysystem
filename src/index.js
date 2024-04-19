@@ -825,6 +825,10 @@ SecuritySystem.prototype.handleCurrentStateChange = function (origin) {
 
   if (isCurrentStateAlarmTriggered) {
     this.handleTriggeredState();
+
+    if (options.testMode) {
+      return;
+    }
   }
 
   // Commands
