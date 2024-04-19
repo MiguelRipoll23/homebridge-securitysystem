@@ -814,26 +814,35 @@ SecuritySystem.prototype.setCurrentState = function (state, origin) {
     this.logMode("Current", state);
   }
 
-  this.handleCurrentStateChange(state, origin);
+  this.handleCurrentStateChange(origin);
   this.save();
 };
 
-SecuritySystem.prototype.handleCurrentStateChange = function (state, origin) {
-  // Commands
-  this.executeCommand("current", state, origin);
-
-  // Webhooks
-  this.sendWebhookEvent("current", state, origin);
-
+SecuritySystem.prototype.handleCurrentStateChange = function (origin) {
   const isCurrentStateAlarmTriggered =
-    state === Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERE;
+    this.currentState ===
+    Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
 
   if (isCurrentStateAlarmTriggered) {
     this.handleTriggeredState();
   }
+
+  // Commands
+  this.executeCommand("current", this.currentState, origin);
+
+  // Webhooks
+  this.sendWebhookEvent("current", this.currentState, origin);
 };
 
 SecuritySystem.prototype.handleTriggeredState = function () {
+  // Clear tripped interval
+  if (this.trippedMotionSensorInterval !== null) {
+    clearInterval(this.trippedMotionSensorInterval);
+
+    this.trippedMotionSensorInterval = null;
+    this.log.debug("Tripped interval (Cleared)");
+  }
+
   // Trigger triggered motion sensor
   // every configured seconds
   this.triggeredMotionSensorInterval = setInterval(() => {
