@@ -72,7 +72,7 @@ const options = {
     options.triggeredMotionSensor =
       config.triggered_sensor || config.siren_sensor;
     options.triggeredMotionSensorSeconds =
-      config.triggered_sensor || config.siren_sensor_seconds;
+      config.triggered_sensor_seconds || config.siren_sensor_seconds;
 
     // Reset motion sensor
     options.resetSensor = config.reset_sensor;

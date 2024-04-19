@@ -1,3 +1,6 @@
+// WARNING:
+// I didn't know about TypeScript when I wrote this code. I'm sorry.
+
 const fs = require("fs");
 const path = require("path");
 const storage = require("node-persist");
@@ -13,7 +16,7 @@ const HK_NOT_ALLOWED_IN_CURRENT_STATE = -70412;
 
 const originTypes = {
   REGULAR_SWITCH: 0,
-  SPECIAL_SWITCH: 1,
+  OVERRIDE_SWITCH: 1,
   INTERNAL: 3,
   EXTERNAL: 4,
 };
@@ -652,7 +655,7 @@ SecuritySystem.prototype.load = async function () {
         this.currentState
       );
 
-      this.handleTargetStateChange(false);
+      this.handleTargetStateChange(originTypes.INTERNAL);
 
       // Log
       this.logMode("Current", this.currentState);
@@ -868,7 +871,7 @@ SecuritySystem.prototype.handleTriggeredState = function () {
     }
 
     // Normal flow
-    this.handleTargetStateChange(false);
+    this.handleTargetStateChange(originTypes.EXTERNAL);
     this.setCurrentState(this.targetState, false);
   }, options.resetMinutes * 60 * 1000);
 };
@@ -966,10 +969,10 @@ SecuritySystem.prototype.resetTimers = function () {
   }
 };
 
-SecuritySystem.prototype.handleTargetStateChange = function (
-  origin,
-  alarmTriggered
-) {
+SecuritySystem.prototype.handleTargetStateChange = function (origin) {
+  // Clear arming timeout
+  clearTimeout(this.armTimeout);
+
   // Reset double-knock
   this.isKnocked = false;
 
@@ -985,10 +988,12 @@ SecuritySystem.prototype.handleTargetStateChange = function (
 
   // Trigger reset sensor for mode
   // change in triggered state
-  if (alarmTriggered) {
-    if (isCurrentStateAlarmTriggered) {
-      this.triggerResetSensor();
-    }
+  const isCurrentStateAlarmTriggered =
+    this.currentState ===
+    Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+
+  if (isCurrentStateAlarmTriggered) {
+    this.triggerResetSensor();
 
     // Keep characteristic & switches on
     return;
@@ -1065,11 +1070,11 @@ SecuritySystem.prototype.updateTargetState = function (
     );
   }
 
+  // Handle mode change
+  this.handleTargetStateChange(origin);
+
   // Check if current state is already set
   if (state === this.currentState) {
-    // Clear arming timeout
-    clearTimeout(this.armTimeout);
-
     // Run set current state logic again
     this.setCurrentState(state, origin);
 
@@ -1079,9 +1084,6 @@ SecuritySystem.prototype.updateTargetState = function (
 
     return false;
   }
-
-  // Handle mode change
-  this.handleTargetStateChange(origin, false);
 
   // Set arming delay
   let armSeconds = 0;
@@ -1184,9 +1186,9 @@ SecuritySystem.prototype.updateTripSwitch = function (
 
   // Check if the security system is disarmed
   const isNotOverridingOff = options.overrideOff === false;
-  const isNotSpecialSwitch = origin !== originTypes.SPECIAL_SWITCH;
+  const isNotOverrideSwitch = origin !== originTypes.OVERRIDE_SWITCH;
 
-  if (isCurrentStateDisarmed && isNotOverridingOff && isNotSpecialSwitch) {
+  if (isCurrentStateDisarmed && isNotOverridingOff && isNotOverrideSwitch) {
     this.log.warn("Trip Switch (Not armed)");
 
     if (callback !== null) {
@@ -1214,14 +1216,14 @@ SecuritySystem.prototype.updateTripSwitch = function (
     });
 
     const isFirstKnock = this.isKnocked === false;
-    const isSpecialSwitch = origin === originTypes.SPECIAL_SWITCH;
+    const isOverrideSwitch = origin === originTypes.OVERRIDE_SWITCH;
     const isStateKnockable = doubleKnockStates.includes(this.currentState);
 
     if (
       value &&
       isStateKnockable &&
       isFirstKnock &&
-      isSpecialSwitch === false
+      isOverrideSwitch === false
     ) {
       this.log.warn("Trip Switch (Knock)");
       this.isKnocked = true;
@@ -1519,10 +1521,9 @@ SecuritySystem.prototype.startServer = async function () {
         return;
       }
 
-      this.handleTargetStateChange(true);
       this.setCurrentState(
         Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED,
-        true
+        originTypes.EXTERNAL
       );
     }
 
@@ -2000,7 +2001,7 @@ SecuritySystem.prototype.getTripOverrideSwitch = function (callback) {
 
 SecuritySystem.prototype.setTripOverrideSwitch = function (value, callback) {
   this.log.info(`Trip Override Switch (${value ? "On" : "Off"})`);
-  this.updateTripSwitch(value, originTypes.SPECIAL_SWITCH, false, callback);
+  this.updateTripSwitch(value, originTypes.OVERRIDE_SWITCH, false, callback);
 };
 
 SecuritySystem.prototype.triggerIfModeSet = function (
@@ -2403,12 +2404,7 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     if (options.pauseMinutes !== 0) {
       this.pauseTimeout = setTimeout(() => {
         this.log.info("Mode pause (Finished)");
-        this.updateTargetState(
-          this.pausedCurrentState,
-          originTypes.INTERNAL,
-          true,
-          null
-        );
+        this.Atate(this.pausedCurrentState, originTypes.INTERNAL, true, null);
       }, options.pauseMinutes * 60 * 1000);
     }
   } else {
