@@ -832,6 +832,9 @@ SecuritySystem.prototype.handleCurrentStateChange = function (origin) {
     }
   }
 
+  // Reset trip switches if on
+  this.resetTripSwitches();
+
   // Commands
   this.executeCommand("current", this.currentState, origin);
 
@@ -869,8 +872,7 @@ SecuritySystem.prototype.handleTriggeredState = function () {
     }
 
     // Normal flow
-    this.handleTargetStateChange(originTypes.EXTERNAL);
-    this.setCurrentState(this.targetState, false);
+    this.setCurrentState(this.targetState, originTypes.EXTERNAL);
   }, options.resetMinutes * 60 * 1000);
 };
 
