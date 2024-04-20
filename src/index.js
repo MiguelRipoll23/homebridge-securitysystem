@@ -700,10 +700,6 @@ SecuritySystem.prototype.identify = function (callback) {
 
 // Services
 SecuritySystem.prototype.addArmingMotionSensor = function () {
-  if (options.armingMotionSensor === false) {
-    return;
-  }
-
   this.armingMotionSensorService = new Service.MotionSensor(
     "Arming",
     "arming-motion-sensor"
@@ -718,7 +714,9 @@ SecuritySystem.prototype.addArmingMotionSensor = function () {
     .getCharacteristic(Characteristic.MotionDetected)
     .on("get", this.getArmingMotionDetected.bind(this));
 
-  this.services.push(this.armingMotionSensorService);
+  if (options.armingMotionSensor) {
+    this.services.push(this.armingMotionSensorService);
+  }
 };
 
 // Security system
