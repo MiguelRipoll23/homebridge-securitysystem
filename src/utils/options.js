@@ -51,11 +51,11 @@ const options = {
     options.nightTriggerSeconds = config.night_trigger_seconds;
 
     // Trip switches
-    options.tripSwitch = config.trip_switch || config.siren_switch;
+    options.tripSwitch = config.trip_switch ?? config.siren_switch;
     options.tripOverrideSwitch =
-      config.trip_override_switch || config.siren_override_switch;
+      config.trip_override_switch ?? config.siren_override_switch;
     options.tripModeSwitches =
-      config.trip_mode_switches || config.siren_mode_switches;
+      config.trip_mode_switches ?? config.siren_mode_switches;
 
     // Arming lock switch
     options.armingLockSwitch = config.arming_lock_switch;
@@ -70,9 +70,9 @@ const options = {
 
     // Triggered motion sensor
     options.triggeredMotionSensor =
-      config.triggered_sensor || config.siren_sensor;
+      config.triggered_sensor ?? config.siren_sensor;
     options.triggeredMotionSensorSeconds =
-      config.triggered_sensor_seconds || config.siren_sensor_seconds;
+      config.triggered_sensor_seconds ?? config.siren_sensor_seconds;
 
     // Reset motion sensor
     options.resetSensor = config.reset_sensor;
