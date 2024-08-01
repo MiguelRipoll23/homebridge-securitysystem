@@ -8,7 +8,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Change directory
-        run: /var/lib/homebridge/node_modules
+        run: cd /var/lib/homebridge/node_modules
 
       - name: Checkout repository
         uses: actions/checkout@v2
