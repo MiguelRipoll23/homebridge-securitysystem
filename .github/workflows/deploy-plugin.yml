@@ -11,4 +11,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install plugin
-        run: /opt/homebridge/bin/node install
+        run: /opt/homebridge/bin/npm install
