@@ -3,12 +3,17 @@ name: Deploy plugin
 on:
   workflow_dispatch:
 
+  push:
+    branches:
+      - main     
+
 jobs:
   build:
     runs-on: self-hosted
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install plugin
         run: /opt/homebridge/bin/npm install
