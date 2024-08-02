@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-      - main     
+      - main
 
 jobs:
   build:
@@ -16,4 +16,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install plugin
-        run: /opt/homebridge/bin/npm install
+        run: sudo /opt/homebridge/bin/npm install
