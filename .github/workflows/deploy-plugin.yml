@@ -15,5 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure path
+        run: export PATH="$PATH:/opt/homebridge/bin"
+
       - name: Install plugin
-        run: sudo /opt/homebridge/bin/npm install
+        run: /opt/homebridge/bin/npm install
