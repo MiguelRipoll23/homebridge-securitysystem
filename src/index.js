@@ -970,13 +970,9 @@ SecuritySystem.prototype.resetTimers = function () {
 };
 
 SecuritySystem.prototype.handleTargetStateChange = function (origin) {
-  // Clear arming timeout
-  clearTimeout(this.armTimeout);
-
-  // Reset double-knock
-  this.isKnocked = false;
-
   this.resetTimers();
+  this.resetTripSwitches();
+  this.resetTrippedMotionSensor();
   this.resetModeSwitches();
   this.updateModeSwitches();
 
@@ -994,18 +990,10 @@ SecuritySystem.prototype.handleTargetStateChange = function (origin) {
 
   if (isCurrentStateAlarmTriggered) {
     this.triggerResetSensor();
-
-    // Keep characteristic & switches on
-    return;
   }
 
-  // Reset tripped motion sensor
-  if (this.tripSwitchService.getCharacteristic(Characteristic.On).value) {
-    this.updateTripSwitch(false, originTypes.INTERNAL, true, null);
-  }
-
-  // Reset trip switches
-  this.resetTripSwitches();
+  // Reset double-knock
+  this.isKnocked = false;
 };
 
 SecuritySystem.prototype.isBadTargetState = function (state) {
@@ -2224,6 +2212,12 @@ SecuritySystem.prototype.resetModeSwitches = function () {
   if (modePauseSwitchCharacteristicOn.value) {
     modePauseSwitchCharacteristicOn.updateValue(false);
     this.log.debug("Mode Pause Switch (Off)");
+  }
+};
+
+SecuritySystem.prototype.resetTrippedMotionSensor = function () {
+  if (this.tripSwitchService.getCharacteristic(Characteristic.On).value) {
+    this.updateTripSwitch(false, originTypes.INTERNAL, true, null);
   }
 };
 
