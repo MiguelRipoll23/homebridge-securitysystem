@@ -597,8 +597,11 @@ SecuritySystem.prototype.getServices = function () {
 };
 
 SecuritySystem.prototype.load = async function () {
+  const serialNumber = options.serialNumber;
+  const fileName = `homebridge-securitysystem-${serialNumber}`;
+
   const storageOptions = {
-    dir: path.join(storagePath, "homebridge-securitysystem"),
+    dir: path.join(storagePath, fileName),
   };
 
   await storage
