@@ -446,7 +446,7 @@
             }
           }
         },
-        "required": true
+        "required": false
       },
       "audio_path": {
         "title": "Custom Audio Path",
