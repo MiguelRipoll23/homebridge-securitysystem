@@ -41,7 +41,7 @@
     "homebridge": "^1.6.0 || ^2.0.0"
   },
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^5.1.0",
     "node-fetch": "^2.6.7",
     "node-persist": "^4.0.1"
   },
