@@ -900,7 +900,7 @@ SecuritySystem.prototype.resetUsingOffMode = function () {
   this.updateTargetState(
     Characteristic.SecuritySystemTargetState.DISARM,
     originTypes.INTERNAL,
-    false,
+    0,
     null
   );
 
@@ -908,7 +908,7 @@ SecuritySystem.prototype.resetUsingOffMode = function () {
     this.updateTargetState(
       originalTargetState,
       originTypes.INTERNAL,
-      true,
+      this.getArmingSeconds(originalTargetState),
       null
     );
   }, 100);
@@ -1077,18 +1077,13 @@ SecuritySystem.prototype.updateTargetState = function (
   }
 
   // Set arming delay
-  let armSeconds = 0;
+  const armSeconds = Number(delay) || 0;
 
-  if (delay) {
-    armSeconds = this.getArmingSeconds();
+  if (armSeconds > 0) {
+    this.handleArmingState();
 
-    // Delay actions
-    if (armSeconds > 0) {
-      this.handleArmingState();
-
-      // Log
-      this.log.info("Arm delay (" + armSeconds + " second/s)");
-    }
+    // Log
+    this.log.info("Arm delay (" + armSeconds + " second/s)");
   }
 
   // Arm the security system
@@ -1105,14 +1100,17 @@ SecuritySystem.prototype.updateTargetState = function (
   return true;
 };
 
-SecuritySystem.prototype.getArmingSeconds = function () {
+SecuritySystem.prototype.getArmingSeconds = function (state) {
+  const targetState =
+    typeof state === "number" ? state : this.targetState;
+
   let armSeconds = options.armSeconds;
 
   const isCurrentStateAlarmTriggered =
     this.currentState ===
     Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
   const isTargetStateDisarm =
-    this.targetState === Characteristic.SecuritySystemTargetState.DISARM;
+    targetState === Characteristic.SecuritySystemTargetState.DISARM;
 
   // No delay when triggered or set to Off
   if (isCurrentStateAlarmTriggered || isTargetStateDisarm) {
@@ -1120,11 +1118,11 @@ SecuritySystem.prototype.getArmingSeconds = function () {
   }
 
   const isTargetStateHome =
-    this.targetState === Characteristic.SecuritySystemTargetState.STAY_ARM;
+    targetState === Characteristic.SecuritySystemTargetState.STAY_ARM;
   const isTargetStateAway =
-    this.targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM;
+    targetState === Characteristic.SecuritySystemTargetState.AWAY_ARM;
   const isTargetStateNight =
-    this.targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+    targetState === Characteristic.SecuritySystemTargetState.NIGHT_ARM;
 
   // Custom mode seconds
   if (isTargetStateHome && options.isValueSet(options.homeArmSeconds)) {
@@ -1154,7 +1152,12 @@ SecuritySystem.prototype.getTargetState = function (callback) {
 };
 
 SecuritySystem.prototype.setTargetState = function (value, callback) {
-  this.updateTargetState(value, originTypes.REGULAR_SWITCH, true, callback);
+  this.updateTargetState(
+    value,
+    originTypes.REGULAR_SWITCH,
+    this.getArmingSeconds(value),
+    callback
+  );
 };
 
 SecuritySystem.prototype.updateTripSwitch = function (
@@ -1369,7 +1372,7 @@ SecuritySystem.prototype.updateTripSwitch = function (
         this.updateTargetState(
           Characteristic.SecuritySystemTargetState.DISARM,
           originTypes.INTERNAL,
-          false,
+          0,
           null
         );
       }
@@ -1432,7 +1435,13 @@ SecuritySystem.prototype.isAuthenticated = function (req, res) {
 };
 
 SecuritySystem.prototype.getDelayParameter = function (req) {
-  return req.query.delay === "true" ? true : false;
+  const value = parseInt(req.query.delay, 10);
+
+  if (Number.isNaN(value) || value < 0) {
+    return 0;
+  }
+
+  return value;
 };
 
 SecuritySystem.prototype.sendCodeRequiredError = function (res) {
@@ -1498,7 +1507,7 @@ SecuritySystem.prototype.startServer = async function () {
 
     let result = true;
 
-    if (this.getDelayParameter(req)) {
+    if (this.getDelayParameter(req) > 0) {
       // Delay
       result = this.updateTripSwitch(true, originTypes.EXTERNAL, false, null);
     } else {
@@ -2264,7 +2273,7 @@ SecuritySystem.prototype.setModeHomeSwitch = function (value, callback) {
   this.updateTargetState(
     Characteristic.SecuritySystemTargetState.STAY_ARM,
     originTypes.INTERNAL,
-    true,
+    this.getArmingSeconds(Characteristic.SecuritySystemTargetState.STAY_ARM),
     null
   );
   callback(null);
@@ -2286,7 +2295,7 @@ SecuritySystem.prototype.setModeAwaySwitch = function (value, callback) {
   this.updateTargetState(
     Characteristic.SecuritySystemTargetState.AWAY_ARM,
     originTypes.INTERNAL,
-    true,
+    this.getArmingSeconds(Characteristic.SecuritySystemTargetState.AWAY_ARM),
     null
   );
   callback(null);
@@ -2308,7 +2317,7 @@ SecuritySystem.prototype.setModeNightSwitch = function (value, callback) {
   this.updateTargetState(
     Characteristic.SecuritySystemTargetState.NIGHT_ARM,
     originTypes.INTERNAL,
-    true,
+    this.getArmingSeconds(Characteristic.SecuritySystemTargetState.NIGHT_ARM),
     null
   );
   callback(null);
@@ -2330,7 +2339,7 @@ SecuritySystem.prototype.setModeOffSwitch = function (value, callback) {
   this.updateTargetState(
     Characteristic.SecuritySystemTargetState.DISARM,
     originTypes.INTERNAL,
-    true,
+    0,
     null
   );
   callback(null);
@@ -2355,7 +2364,7 @@ SecuritySystem.prototype.setModeAwayExtendedSwitch = function (
   this.updateTargetState(
     Characteristic.SecuritySystemTargetState.AWAY_ARM,
     originTypes.INTERNAL,
-    true,
+    this.getArmingSeconds(Characteristic.SecuritySystemTargetState.AWAY_ARM),
     null
   );
   callback(null);
@@ -2393,7 +2402,7 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     this.updateTargetState(
       Characteristic.SecuritySystemTargetState.DISARM,
       originTypes.INTERNAL,
-      true,
+      0,
       null
     );
 
@@ -2401,7 +2410,12 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     if (options.pauseMinutes !== 0) {
       this.pauseTimeout = setTimeout(() => {
         this.log.info("Mode pause (Finished)");
-        this.Atate(this.pausedCurrentState, originTypes.INTERNAL, true, null);
+        this.updateTargetState(
+          this.pausedCurrentState,
+          originTypes.INTERNAL,
+          this.getArmingSeconds(this.pausedCurrentState),
+          null
+        );
       }, options.pauseMinutes * 60 * 1000);
     }
   } else {
@@ -2415,7 +2429,7 @@ SecuritySystem.prototype.setModePauseSwitch = function (value, callback) {
     this.updateTargetState(
       this.pausedCurrentState,
       originTypes.INTERNAL,
-      true,
+      this.getArmingSeconds(this.pausedCurrentState),
       null
     );
   }
