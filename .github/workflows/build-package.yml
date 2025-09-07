@@ -15,6 +15,10 @@ jobs:
   build-package:
     name: Build package
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout repository
@@ -28,4 +32,12 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Build package
-        run: npm ci
+        run: |
+          npm ci
+          npm pack
+
+      - name: Attest build provenance
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: "*.tgz"
