@@ -37,6 +37,7 @@ jobs:
           npm pack
 
       - name: Attest build provenance
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: "*.tgz"
