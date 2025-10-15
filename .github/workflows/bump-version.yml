@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
 
       - name: Get next version
         uses: MiguelRipoll23/get-next-version@v3.0.0
