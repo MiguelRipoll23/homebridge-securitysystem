@@ -1101,8 +1101,7 @@ SecuritySystem.prototype.updateTargetState = function (
 };
 
 SecuritySystem.prototype.getArmingSeconds = function (state) {
-  const targetState =
-    typeof state === "number" ? state : this.targetState;
+  const targetState = typeof state === "number" ? state : this.targetState;
 
   let armSeconds = options.armSeconds;
 
@@ -1587,13 +1586,7 @@ SecuritySystem.prototype.startServer = async function () {
     }
 
     const state = Characteristic.SecuritySystemTargetState.DISARM;
-    const delay = this.getDelayParameter(req);
-    const result = this.updateTargetState(
-      state,
-      originTypes.EXTERNAL,
-      delay,
-      null
-    );
+    const result = this.updateTargetState(state, originTypes.EXTERNAL, 0, null);
 
     this.sendResultResponse(res, result);
   });
