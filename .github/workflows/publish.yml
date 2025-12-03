@@ -70,7 +70,6 @@ jobs:
 
       - name: Setup node
         uses: actions/setup-node@v6
-
         with:
           registry-url: https://registry.npmjs.org/
 
@@ -79,9 +78,5 @@ jobs:
           echo "NPM_VERSION=${{ needs.create-tag.outputs.tag-name }}" >> $GITHUB_ENV
 
       - name: Publish package
-
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
         run: |
           npm publish --access public --provenance --tag "$(if [[ $NPM_VERSION == *-* ]]; then echo beta; else echo latest; fi)"
