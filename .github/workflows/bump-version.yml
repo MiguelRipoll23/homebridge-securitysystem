@@ -46,7 +46,7 @@ jobs:
           NEXT_VERSION: ${{ steps.get-next-version.outputs.next-version }}
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: version/${{ steps.get-next-version.outputs.next-version }}
           commit-message: ${{ steps.get-next-version.outputs.next-version }}
