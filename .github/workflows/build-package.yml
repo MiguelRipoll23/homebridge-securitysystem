@@ -38,6 +38,6 @@ jobs:
 
       - name: Attest build provenance
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: "*.tgz"
