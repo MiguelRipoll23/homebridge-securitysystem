@@ -8,8 +8,8 @@ on:
       - main
 
 permissions:
-  contents: write
   id-token: write
+  contents: write
 
 jobs:
   create-tag:
