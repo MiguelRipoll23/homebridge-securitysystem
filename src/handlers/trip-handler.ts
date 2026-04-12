@@ -2,7 +2,6 @@ import type { Logging } from 'homebridge';
 import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
 import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
-import { HK_NOT_ALLOWED_IN_CURRENT_STATE } from '../constants/homekit-constant.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
@@ -10,7 +9,6 @@ import type { EventBusService } from '../services/event-bus-service.js';
 import { EventType } from '../types/event-type.js';
 import type { AudioService } from '../services/audio-service.js';
 import type { SensorHandler } from './sensor-handler.js';
-import type { StateHandler } from './state-handler.js';
 import type { Condition } from '../conditions/condition.js';
 import type { ConditionContext } from '../interfaces/condition-context-interface.js';
 import { NotArmedCondition } from '../conditions/not-armed-condition.js';
@@ -18,11 +16,14 @@ import { ArmingInProgressCondition } from '../conditions/arming-in-progress-cond
 import { AlreadyTriggeredCondition } from '../conditions/already-triggered-condition.js';
 import { DoubleKnockCondition } from '../conditions/double-knock-condition.js';
 import { TriggerAlreadyRunningCondition } from '../conditions/trigger-already-running-condition.js';
+import type { TimerManager } from '../timers/timer-manager.js';
 
-/** Handles the trip switch and trigger-delay logic, including all blocking conditions. */
+/**
+ * Handles the trip switch and trigger-delay logic, including all blocking conditions.
+ * Communicates state transitions back to the state machine via the event bus so that
+ * no circular import is needed with StateHandler.
+ */
 export class TripHandler {
-  private stateHandler!: StateHandler;
-
   private readonly conditions: readonly Condition[];
 
   constructor(
@@ -34,12 +35,16 @@ export class TripHandler {
     private readonly bus: EventBusService,
     private readonly audio: AudioService,
     private readonly sensorHandler: SensorHandler,
+    private readonly timers: TimerManager,
   ) {
-    const doubleKnock = new DoubleKnockCondition((seconds, onExpire) => {
-      this.state.doubleKnockTimeout = setTimeout(() => {
-        onExpire();
-      }, seconds * 1000);
-    });
+    const doubleKnock = new DoubleKnockCondition(
+      (seconds, onExpire) => {
+        this.timers.setDoubleKnockTimer(seconds * 1000, onExpire);
+      },
+      () => {
+        this.timers.clearDoubleKnockTimer();
+      },
+    );
 
     this.conditions = [
       new NotArmedCondition(),
@@ -48,10 +53,6 @@ export class TripHandler {
       new AlreadyTriggeredCondition(),
       new TriggerAlreadyRunningCondition(),
     ];
-  }
-
-  setStateHandler(handler: StateHandler): void {
-    this.stateHandler = handler;
   }
 
   /**
@@ -130,19 +131,20 @@ export class TripHandler {
 
     if (this.options.trippedMotionSensor) {
       this.sensorHandler.pulseTrippedMotionSensor();
-      this.state.trippedMotionSensorInterval = setInterval(
-        () => this.sensorHandler.pulseTrippedMotionSensor(),
+      this.timers.setTrippedInterval(
         this.options.trippedMotionSensorSeconds * 1000,
+        () => this.sensorHandler.pulseTrippedMotionSensor(),
       );
     }
 
     const triggerSeconds = this.resolveTriggerSeconds();
     this.log.debug(`Trigger delay (${triggerSeconds}s)`);
 
-    this.state.triggerTimeout = setTimeout(() => {
-      this.state.triggerTimeout = null;
-      this.stateHandler.setCurrentState(SecurityState.TRIGGERED, origin);
-    }, triggerSeconds * 1000);
+    this.state.isTripping = true;
+    this.timers.setTriggerTimer(triggerSeconds * 1000, () => {
+      this.state.isTripping = false;
+      this.bus.emit(EventType.TRIGGER_FIRED, { origin });
+    });
 
     if (triggerSeconds > 0) {
       this.bus.emit(EventType.WARNING, { origin, triggerSeconds });
@@ -151,15 +153,10 @@ export class TripHandler {
 
   private cancelTrip(origin: OriginType, stateChanged: boolean): void {
     this.log.info('Security System (Cancelled)');
+    this.state.isTripping = false;
     this.audio.stop();
 
-    if (this.state.currentState === SecurityState.TRIGGERED) {
-      if (!stateChanged) {
-        this.stateHandler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
-      }
-    } else {
-      this.stateHandler.resetTimers();
-    }
+    this.bus.emit(EventType.TRIP_CANCELLED, { origin, stateChanged });
 
     if (this.options.trippedMotionSensor) {
       this.sensorHandler.resetTrippedMotionSensor();
@@ -196,5 +193,3 @@ export class TripHandler {
     return seconds;
   }
 }
-
-export { HK_NOT_ALLOWED_IN_CURRENT_STATE };

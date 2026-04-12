@@ -19,9 +19,11 @@ export class DoubleKnockCondition extends Condition {
    * @param onFirstKnock Called when the first knock is detected.
    *   The callback receives the window duration in seconds and a reset function
    *   to invoke when the window expires.
+   * @param onCancelTimer Called on the second knock to cancel the running window timer.
    */
   constructor(
     private readonly onFirstKnock: (seconds: number, onExpire: () => void) => void,
+    private readonly onCancelTimer: () => void,
   ) {
     super();
   }
@@ -43,12 +45,9 @@ export class DoubleKnockCondition extends Condition {
     }
 
     if (state.isKnocked) {
-      // Second knock — clear the flag and allow through.
+      // Second knock — clear the flag and cancel the window timer, then allow through.
       state.isKnocked = false;
-      if (state.doubleKnockTimeout !== null) {
-        clearTimeout(state.doubleKnockTimeout);
-        state.doubleKnockTimeout = null;
-      }
+      this.onCancelTimer();
       return false;
     }
 
@@ -58,7 +57,6 @@ export class DoubleKnockCondition extends Condition {
 
     this.onFirstKnock(seconds, () => {
       state.isKnocked = false;
-      state.doubleKnockTimeout = null;
       log.info('Trip Switch (Reset): double-knock window expired without second activation');
     });
 

@@ -52,17 +52,11 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     defaultState: SecurityState.OFF,
     availableTargetStates: [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF],
     isArming: false,
+    isTripping: false,
     isKnocked: false,
     invalidCodeCount: 0,
     pausedCurrentState: null,
     audioProcess: null,
-    armTimeout: null,
-    pauseTimeout: null,
-    triggerTimeout: null,
-    doubleKnockTimeout: null,
-    resetTimeout: null,
-    trippedMotionSensorInterval: null,
-    triggeredMotionSensorInterval: null,
     ...overrides,
   };
 }
@@ -105,6 +99,20 @@ function makeAudio() {
   return { play: vi.fn(), stop: vi.fn(), attachToBus: vi.fn() } as unknown as AudioService;
 }
 
+function makeTimers() {
+  return {
+    setArmTimer: vi.fn(), clearArmTimer: vi.fn(),
+    setTriggerTimer: vi.fn(), clearTriggerTimer: vi.fn(), isTriggerRunning: vi.fn().mockReturnValue(false),
+    setPauseTimer: vi.fn(), clearPauseTimer: vi.fn(),
+    setDoubleKnockTimer: vi.fn(), clearDoubleKnockTimer: vi.fn(),
+    setResetTimer: vi.fn(), clearResetTimer: vi.fn(),
+    setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
+    setTriggeredInterval: vi.fn(), clearTriggeredInterval: vi.fn(),
+    clearAll: vi.fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
+}
+
 function makeMockSensor() {
   return {
     resetArmingMotionSensor: vi.fn(),
@@ -132,7 +140,9 @@ describe('StateHandler.getArmingSeconds', async () => {
     const bus = new EventBusService();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio());
+    const sensor = makeMockSensor() as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
   });
 
   it('returns 0 when current state is TRIGGERED', () => {
@@ -162,15 +172,9 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio());
-    const mockTrip = { resetTripSwitches: vi.fn() };
-    const mockSw = {
-      resetModeSwitches: vi.fn(),
-      updateModeSwitches: vi.fn(),
-      isArmingLocked: vi.fn().mockReturnValue(false),
-    };
+    const sensor = makeMockSensor() as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handler.setHandlers(mockTrip as any, mockSw as any, makeMockSensor() as any);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
     expect(result).toBe(false);
@@ -182,15 +186,9 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio());
-    const mockTrip = { resetTripSwitches: vi.fn() };
-    const mockSw = {
-      resetModeSwitches: vi.fn(),
-      updateModeSwitches: vi.fn(),
-      isArmingLocked: vi.fn().mockReturnValue(false),
-    };
+    const sensor = makeMockSensor() as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handler.setHandlers(mockTrip as any, mockSw as any, makeMockSensor() as any);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.REGULAR_SWITCH, 0);
     // armSeconds=0 → synchronous transition; function returns false after setCurrentState

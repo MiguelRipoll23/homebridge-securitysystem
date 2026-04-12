@@ -11,16 +11,16 @@ import type { EventBusService } from '../services/event-bus-service.js';
 import { EventType } from '../types/event-type.js';
 import type { StorageService } from '../services/storage-service.js';
 import type { AudioService } from '../services/audio-service.js';
-import type { TripHandler } from './trip-handler.js';
-import type { SwitchHandler } from './switch-handler.js';
 import type { SensorHandler } from './sensor-handler.js';
+import type { TimerManager } from '../timers/timer-manager.js';
+import { getArmingSeconds } from '../utils/arming-util.js';
 
-/** Manages the core security-system state machine: arming, triggering, and resetting. */
+/**
+ * Manages the core security-system state machine: arming, triggering, and resetting.
+ * Cross-handler side effects are signalled via the event bus so that this class has
+ * no direct dependencies on TripHandler or SwitchHandler.
+ */
 export class StateHandler {
-  private tripHandler!: TripHandler;
-  private switchHandler!: SwitchHandler;
-  private sensorHandler!: SensorHandler;
-
   constructor(
     private readonly services: ServiceRegistry,
     private readonly state: SystemState,
@@ -30,13 +30,9 @@ export class StateHandler {
     private readonly bus: EventBusService,
     private readonly storageService: StorageService,
     private readonly audio: AudioService,
+    private readonly timers: TimerManager,
+    private readonly sensorHandler: SensorHandler,
   ) {}
-
-  setHandlers(trip: TripHandler, sw: SwitchHandler, sensor: SensorHandler): void {
-    this.tripHandler = trip;
-    this.switchHandler = sw;
-    this.sensorHandler = sensor;
-  }
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -62,7 +58,7 @@ export class StateHandler {
 
   updateTargetState(state: SecurityState, origin: OriginType, delay: number): boolean {
     if (this.isBadTargetState(state)) {
-      return false; 
+      return false;
     }
 
     this.state.targetState = state;
@@ -93,72 +89,43 @@ export class StateHandler {
     this.handleArmingState();
     this.log.info(`Arm delay (${armSeconds}s)`);
 
-    this.state.armTimeout = setTimeout(() => {
-      this.state.armTimeout = null;
+    this.timers.setArmTimer(armSeconds * 1000, () => {
       this.state.isArming = false;
       this.setCurrentState(state, origin);
-    }, armSeconds * 1000);
+    });
 
     return true;
   }
 
-  getArmingSeconds(state: SecurityState): number {
-    const isTriggered = this.state.currentState === SecurityState.TRIGGERED;
-    const isOff = state === SecurityState.OFF;
-
-    if (isTriggered || isOff) {
-      return 0; 
-    }
-
-    if (state === SecurityState.HOME && this.options.homeArmSeconds !== null) {
-      return this.options.homeArmSeconds;
-    }
-    if (state === SecurityState.AWAY && this.options.awayArmSeconds !== null) {
-      return this.options.awayArmSeconds;
-    }
-    if (state === SecurityState.NIGHT && this.options.nightArmSeconds !== null) {
-      return this.options.nightArmSeconds;
-    }
-
-    return this.options.armSeconds;
+  getArmingSeconds(targetState: SecurityState): number {
+    return getArmingSeconds(this.state, this.options, targetState);
   }
 
   resetTimers(): void {
-    if (this.state.triggerTimeout) {
-      clearTimeout(this.state.triggerTimeout);
-      this.state.triggerTimeout = null;
-      this.log.debug('Trigger timeout (Cleared)');
+    this.timers.clearAll();
+  }
+
+  /** Returns true while the trigger delay is counting down (trip switch is active). */
+  isTripping(): boolean {
+    return this.state.isTripping;
+  }
+
+  /** Checks whether arming is currently blocked by an arming-lock switch. */
+  isArmingLocked(targetState: SecurityState): boolean {
+    if (this.services.armingLockSwitchService.getCharacteristic(this.Characteristic.On).value) {
+      return true;
     }
-    if (this.state.armTimeout) {
-      clearTimeout(this.state.armTimeout);
-      this.state.armTimeout = null;
-      this.log.debug('Arming timeout (Cleared)');
-    }
-    if (this.state.triggeredMotionSensorInterval) {
-      clearInterval(this.state.triggeredMotionSensorInterval);
-      this.state.triggeredMotionSensorInterval = null;
-      this.log.debug('Triggered interval (Cleared)');
-    }
-    if (this.state.trippedMotionSensorInterval) {
-      clearInterval(this.state.trippedMotionSensorInterval);
-      this.state.trippedMotionSensorInterval = null;
-      this.log.debug('Tripped interval (Cleared)');
-    }
-    if (this.state.doubleKnockTimeout) {
-      clearTimeout(this.state.doubleKnockTimeout);
-      this.state.doubleKnockTimeout = null;
-      this.log.debug('Double-knock timeout (Cleared)');
-    }
-    if (this.state.pauseTimeout) {
-      clearTimeout(this.state.pauseTimeout);
-      this.state.pauseTimeout = null;
-      this.log.debug('Pause timeout (Cleared)');
-    }
-    if (this.state.resetTimeout) {
-      clearTimeout(this.state.resetTimeout);
-      this.state.resetTimeout = null;
-      this.log.debug('Reset timeout (Cleared)');
-    }
+
+    const modeMap: Partial<Record<SecurityState, keyof ServiceRegistry>> = {
+      [SecurityState.HOME]: 'armingLockHomeSwitchService',
+      [SecurityState.AWAY]: 'armingLockAwaySwitchService',
+      [SecurityState.NIGHT]: 'armingLockNightSwitchService',
+    };
+
+    const svcKey = modeMap[targetState];
+    return svcKey
+      ? Boolean(this.services[svcKey].getCharacteristic(this.Characteristic.On).value)
+      : false;
   }
 
   getAvailableTargetStates(): SecurityState[] {
@@ -189,7 +156,7 @@ export class StateHandler {
     }
 
     const hasLock = this.options.armingLockSwitch || this.options.armingLockSwitches;
-    if (state !== SecurityState.OFF && hasLock && this.switchHandler.isArmingLocked(state)) {
+    if (state !== SecurityState.OFF && hasLock && this.isArmingLocked(state)) {
       this.log.warn('Arming lock (Not allowed)');
       return true;
     }
@@ -199,10 +166,12 @@ export class StateHandler {
 
   private handleTargetStateChange(origin: OriginType): void {
     this.resetTimers();
-    this.tripHandler.resetTripSwitches();
+
+    // Notify handlers to reset their displayed state (bus is synchronous).
+    this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.sensorHandler.resetTrippedMotionSensor();
-    this.switchHandler.resetModeSwitches();
-    this.switchHandler.updateModeSwitches();
+    this.bus.emit(EventType.RESET_MODE_SWITCHES, {});
+    this.bus.emit(EventType.UPDATE_MODE_SWITCHES, {});
 
     this.bus.emit(EventType.TARGET_CHANGED, { state: this.state.targetState, origin });
 
@@ -218,29 +187,26 @@ export class StateHandler {
       this.handleTriggeredState();
 
       if (this.options.testMode) {
-        return; 
+        return;
       }
     }
 
-    this.tripHandler.resetTripSwitches();
+    // Notify TripHandler to reset trip switches on any state change.
+    this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.bus.emit(EventType.CURRENT_CHANGED, { state: this.state.currentState, origin });
   }
 
   private handleTriggeredState(): void {
-    if (this.state.trippedMotionSensorInterval) {
-      clearInterval(this.state.trippedMotionSensorInterval);
-      this.state.trippedMotionSensorInterval = null;
-    }
+    this.timers.clearTrippedInterval();
 
     if (this.options.triggeredMotionSensor) {
-      this.state.triggeredMotionSensorInterval = setInterval(
-        () => this.sensorHandler.pulseTriggeredMotionSensor(),
+      this.timers.setTriggeredInterval(
         this.options.triggeredMotionSensorSeconds * 1000,
+        () => this.sensorHandler.pulseTriggeredMotionSensor(),
       );
     }
 
-    this.state.resetTimeout = setTimeout(() => {
-      this.state.resetTimeout = null;
+    this.timers.setResetTimer(this.options.resetMinutes * 60 * 1000, () => {
       this.log.info('Reset (Finished)');
       this.sensorHandler.pulseResetMotionSensor();
 
@@ -249,7 +215,7 @@ export class StateHandler {
       } else {
         this.setCurrentState(this.state.targetState, OriginType.EXTERNAL);
       }
-    }, this.options.resetMinutes * 60 * 1000);
+    });
   }
 
   private handleArmingState(): void {

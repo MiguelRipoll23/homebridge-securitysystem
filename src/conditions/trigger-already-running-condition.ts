@@ -12,7 +12,7 @@ export class TriggerAlreadyRunningCondition extends Condition {
     if (!value) {
       return false;
     }
-    if (state.triggerTimeout !== null) {
+    if (state.isTripping) {
       log.warn('Security System (Already tripped): trigger delay countdown is already running');
       return true;
     }
