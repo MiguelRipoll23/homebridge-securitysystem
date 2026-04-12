@@ -11,20 +11,19 @@ import { EventType } from '../types/event-type.js';
 import type { AudioService } from '../services/audio-service.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { StateHandler } from './state-handler.js';
+import type { Condition } from '../conditions/condition.js';
+import type { ConditionContext } from '../interfaces/condition-context-interface.js';
 import { NotArmedCondition } from '../conditions/not-armed-condition.js';
 import { ArmingInProgressCondition } from '../conditions/arming-in-progress-condition.js';
 import { AlreadyTriggeredCondition } from '../conditions/already-triggered-condition.js';
 import { DoubleKnockCondition } from '../conditions/double-knock-condition.js';
-import type { ConditionContext } from '../interfaces/condition-context-interface.js';
+import { TriggerAlreadyRunningCondition } from '../conditions/trigger-already-running-condition.js';
 
 /** Handles the trip switch and trigger-delay logic, including all blocking conditions. */
 export class TripHandler {
   private stateHandler!: StateHandler;
 
-  private readonly notArmed = new NotArmedCondition();
-  private readonly armingInProgress = new ArmingInProgressCondition();
-  private readonly alreadyTriggered = new AlreadyTriggeredCondition();
-  private readonly doubleKnock: DoubleKnockCondition;
+  private readonly conditions: readonly Condition[];
 
   constructor(
     private readonly services: ServiceRegistry,
@@ -36,13 +35,19 @@ export class TripHandler {
     private readonly audio: AudioService,
     private readonly sensorHandler: SensorHandler,
   ) {
-    this.doubleKnock = new DoubleKnockCondition((seconds, onExpire) => {
-      this.log.warn('Trip Switch (Knock)');
+    const doubleKnock = new DoubleKnockCondition((seconds, onExpire) => {
       this.state.doubleKnockTimeout = setTimeout(() => {
         onExpire();
-        this.log.info('Trip Switch (Reset)');
       }, seconds * 1000);
     });
+
+    this.conditions = [
+      new NotArmedCondition(),
+      new ArmingInProgressCondition(),
+      doubleKnock,
+      new AlreadyTriggeredCondition(),
+      new TriggerAlreadyRunningCondition(),
+    ];
   }
 
   setStateHandler(handler: StateHandler): void {
@@ -60,38 +65,14 @@ export class TripHandler {
       options: this.options,
       value,
       origin,
+      log: this.log,
     };
 
     if (value) {
-      // Check blocking conditions in order.
-      if (this.notArmed.evaluate(ctx)) {
-        this.log.warn('Trip Switch (Not armed)');
-        return false;
-      }
-
-      if (this.armingInProgress.evaluate(ctx)) {
-        this.log.warn('Trip Switch (Still arming)');
-        return false;
-      }
-
-      if (this.doubleKnock.evaluate(ctx)) {
-        return false;
-      }
-
-      // Clear any lingering double-knock timeout once we've passed it.
-      if (this.state.doubleKnockTimeout !== null) {
-        clearTimeout(this.state.doubleKnockTimeout);
-        this.state.doubleKnockTimeout = null;
-      }
-
-      if (this.alreadyTriggered.evaluate(ctx)) {
-        this.log.warn('Security System (Already triggered)');
-        return false;
-      }
-
-      if (this.state.triggerTimeout !== null) {
-        this.log.warn('Security System (Already tripped)');
-        return false;
+      for (const condition of this.conditions) {
+        if (condition.evaluate(ctx)) {
+          return false;
+        }
       }
 
       this.activateTrip(origin);

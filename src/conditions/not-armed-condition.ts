@@ -10,15 +10,19 @@ import { Condition } from './condition.js';
 export class NotArmedCondition extends Condition {
   readonly name = 'not-armed';
 
-  evaluate({ state, options, value, origin }: ConditionContext): boolean {
+  evaluate({ state, options, value, origin, log }: ConditionContext): boolean {
     if (!value) {
-      return false; 
+      return false;
     }
 
     const isDisarmed = state.currentState === SecurityState.OFF;
     const isNotOverridingOff = !options.overrideOff;
     const isNotOverrideSwitch = origin !== OriginType.OVERRIDE_SWITCH;
 
-    return isDisarmed && isNotOverridingOff && isNotOverrideSwitch;
+    const blocked = isDisarmed && isNotOverridingOff && isNotOverrideSwitch;
+    if (blocked) {
+      log.warn('Trip Switch (Not armed): system is disarmed and override is not enabled');
+    }
+    return blocked;
   }
 }

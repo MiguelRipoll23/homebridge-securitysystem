@@ -5,7 +5,7 @@ import { SecurityState } from './types/security-state-type.js';
 import { OriginType } from './types/origin-type.js';
 import { HK_NOT_ALLOWED_IN_CURRENT_STATE } from './constants/homekit-constant.js';
 import { SWITCH_UUIDS } from './constants/switch-uuid-constant.js';
-import { parseOptions } from './utils/options-util.js';
+import { ConfigurationService } from './services/configuration-service.js';
 import { attachFileLogger } from './utils/log-util.js';
 import { stateToMode } from './utils/state-util.js';
 import type { SecuritySystemOptions } from './interfaces/options-interface.js';
@@ -44,7 +44,7 @@ export class SecuritySystem implements AccessoryPlugin {
     const Char = api.hap.Characteristic as CharacteristicConstructor;
     const Svc = api.hap.Service as typeof Service;
 
-    this.options = parseOptions(log, config);
+    this.options = new ConfigurationService(log, config).options;
     attachFileLogger(log, this.options);
 
     const defaultState = this.modeToStateVal(this.options.defaultMode);

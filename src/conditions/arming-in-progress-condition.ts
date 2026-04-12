@@ -8,10 +8,14 @@ import { Condition } from './condition.js';
 export class ArmingInProgressCondition extends Condition {
   readonly name = 'arming-in-progress';
 
-  evaluate({ state, value }: ConditionContext): boolean {
+  evaluate({ state, value, log }: ConditionContext): boolean {
     if (!value) {
-      return false; 
+      return false;
     }
-    return state.isArming;
+    if (state.isArming) {
+      log.warn('Trip Switch (Still arming): arm delay countdown is still in progress');
+      return true;
+    }
+    return false;
   }
 }
