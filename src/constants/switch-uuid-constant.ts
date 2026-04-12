@@ -1,0 +1,23 @@
+/** Stable subtype UUIDs for each HomeKit service. Must not change between restarts. */
+export const SWITCH_UUIDS = {
+  TRIP: 'siren-switch',
+  TRIP_HOME: 'siren-home',
+  TRIP_AWAY: 'siren-away',
+  TRIP_NIGHT: 'siren-night',
+  TRIP_OVERRIDE: 'pink-sheep',
+  ARMING_LOCK: 'arming-lock',
+  ARMING_LOCK_HOME: 'arming-lock-home',
+  ARMING_LOCK_AWAY: 'arming-lock-away',
+  ARMING_LOCK_NIGHT: 'arming-lock-night',
+  MODE_HOME: 'mode-home',
+  MODE_AWAY: 'mode-away',
+  MODE_NIGHT: 'mode-night',
+  MODE_OFF: 'mode-off',
+  MODE_AWAY_EXTENDED: 'mode-away-extended',
+  MODE_PAUSE: 'mode-pause',
+  AUDIO: 'kx82r64zN3txDXKFiX9JDi',
+  ARMING_SENSOR: 'arming-motion-sensor',
+  TRIPPED_SENSOR: 'siren-tripped',
+  TRIGGERED_SENSOR: 'siren-triggered',
+  RESET_SENSOR: 'reset-event',
+} as const;

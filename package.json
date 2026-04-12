@@ -1,13 +1,18 @@
 {
   "name": "homebridge-securitysystem",
   "displayName": "Homebridge Security System",
-  "version": "9.1.2",
+  "type": "module",
+  "version": "9.2.0",
   "description": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit sensors.",
-  "main": "src/index.js",
-  "scripts": {
-    "debug": "homebridge -I -D",
-    "test": "exit 0",
-    "build": "exit 0"
+  "author": "MiguelRipoll23",
+  "license": "MIT",
+  "homepage": "https://github.com/MiguelRipoll23/homebridge-securitysystem#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MiguelRipoll23/homebridge-securitysystem.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MiguelRipoll23/homebridge-securitysystem/issues"
   },
   "keywords": [
     "homebridge-plugin",
@@ -17,39 +22,40 @@
     "alarm",
     "category-security"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/MiguelRipoll23/homebridge-securitysystem.git"
+  "main": "dist/index.js",
+  "engines": {
+    "node": "^20.18.0 || ^22.10.0 || ^24.0.0",
+    "homebridge": "^1.8.0 || ^2.0.0"
   },
-  "author": "MiguelRipoll23",
-  "license": "MIT",
-  "bugs": {
-    "url": "http://github.com/MiguelRipoll23/homebridge-securitysystem/issues"
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
+    "prepublishOnly": "npm run lint && npm run build",
+    "watch": "npm run build && npm link && nodemon"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.13",
+    "hono": "^4.12.12",
+    "node-persist": "^4.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/node-persist": "^3.1.8",
+    "eslint": "^9.39.1",
+    "homebridge": "^2.0.0-beta.87",
+    "nodemon": "^3.1.11",
+    "rimraf": "^6.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^3.0.0"
   },
   "funding": [
     {
       "type": "github",
       "url": "https://github.com/sponsors/MiguelRipoll23"
-    },
-    {
-      "type": "buymeacoffee",
-      "url": "https://www.buymeacoffee.com/MiguelRipoll23"
-    },
-    {
-      "type": "paypal",
-      "url": "https://paypal.me/miguelripoll23"
     }
-  ],
-  "engines": {
-    "node": "^18.15.0 || ^20.7.0 || ^22 || ^24",
-    "homebridge": "^1.6.0 || ^2.0.0"
-  },
-  "dependencies": {
-    "express": "^5.1.0",
-    "node-fetch": "^2.6.7",
-    "node-persist": "^4.0.1"
-  },
-  "devDependencies": {
-    "eslint": "^10.0.0"
-  }
+  ]
 }
