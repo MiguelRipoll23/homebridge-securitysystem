@@ -1,3 +1,4 @@
+import type { Logging } from 'homebridge';
 import type { OriginType } from '../types/origin-type.js';
 import type { SecuritySystemOptions } from './options-interface.js';
 import type { ServiceRegistry } from './service-registry-interface.js';
@@ -11,4 +12,6 @@ export interface ConditionContext {
   /** The value being set (true = activating, false = deactivating). */
   value: boolean;
   origin: OriginType;
+  /** Logger used by conditions to emit their own warning messages when blocking. */
+  log: Logging;
 }

@@ -48,8 +48,12 @@ function makeOptions(overrides: Partial<SecuritySystemOptions> = {}): SecuritySy
   } as unknown as SecuritySystemOptions;
 }
 
+function makeLog() {
+  return { info: vi.fn(), warn: vi.fn(), debug: vi.fn(), error: vi.fn(), success: vi.fn() };
+}
+
 function makeCtx(state: SystemState, options: SecuritySystemOptions, value: boolean, origin = OriginType.REGULAR_SWITCH): ConditionContext {
-  return { state, services: {} as ConditionContext['services'], options, value, origin };
+  return { state, services: {} as ConditionContext['services'], options, value, origin, log: makeLog() as unknown as ConditionContext['log'] };
 }
 
 // ── NotArmedCondition ─────────────────────────────────────────────────────────

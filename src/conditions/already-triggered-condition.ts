@@ -9,10 +9,14 @@ import { Condition } from './condition.js';
 export class AlreadyTriggeredCondition extends Condition {
   readonly name = 'already-triggered';
 
-  evaluate({ state, value }: ConditionContext): boolean {
+  evaluate({ state, value, log }: ConditionContext): boolean {
     if (!value) {
-      return false; 
+      return false;
     }
-    return state.currentState === SecurityState.TRIGGERED;
+    const blocked = state.currentState === SecurityState.TRIGGERED;
+    if (blocked) {
+      log.warn('Security System (Already triggered): alarm is already active');
+    }
+    return blocked;
   }
 }

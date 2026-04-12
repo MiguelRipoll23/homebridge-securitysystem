@@ -26,20 +26,20 @@ export class DoubleKnockCondition extends Condition {
     super();
   }
 
-  evaluate({ state, options, value, origin }: ConditionContext): boolean {
+  evaluate({ state, options, value, origin, log }: ConditionContext): boolean {
     if (!value || !options.doubleKnock) {
-      return false; 
+      return false;
     }
     if (origin === OriginType.OVERRIDE_SWITCH) {
-      return false; 
+      return false;
     }
     if (state.isArming) {
-      return false; 
+      return false;
     }
 
     const knockableStates = options.doubleKnockModes.map(m => modeToState(m.toLowerCase()));
     if (!knockableStates.includes(state.currentState)) {
-      return false; 
+      return false;
     }
 
     if (state.isKnocked) {
@@ -59,8 +59,10 @@ export class DoubleKnockCondition extends Condition {
     this.onFirstKnock(seconds, () => {
       state.isKnocked = false;
       state.doubleKnockTimeout = null;
+      log.info('Trip Switch (Reset): double-knock window expired without second activation');
     });
 
+    log.warn('Trip Switch (Knock): double-knock is required, waiting for second activation');
     return true;
   }
 
