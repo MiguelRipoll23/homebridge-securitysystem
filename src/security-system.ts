@@ -1,10 +1,6 @@
-import type { API, AccessoryPlugin, Logging, Service, CharacteristicValue } from 'homebridge';
-import { HAPStatus } from 'homebridge';
+import type { API, AccessoryPlugin, Logging, Service } from 'homebridge';
 import type { CharacteristicConstructor } from './interfaces/hap-types-interface.js';
 import { SecurityState } from './types/security-state-type.js';
-import { OriginType } from './types/origin-type.js';
-import { HK_NOT_ALLOWED_IN_CURRENT_STATE } from './constants/homekit-constant.js';
-import { SWITCH_UUIDS } from './constants/switch-uuid-constant.js';
 import { ConfigurationService } from './services/configuration-service.js';
 import { attachFileLogger } from './utils/log-util.js';
 import { stateToMode, modeToState } from './utils/state-util.js';
@@ -21,6 +17,8 @@ import { StateHandler } from './handlers/state-handler.js';
 import { TripHandler } from './handlers/trip-handler.js';
 import { SwitchHandler } from './handlers/switch-handler.js';
 import { SensorHandler } from './handlers/sensor-handler.js';
+import { buildServiceRegistry, buildServiceList } from './homekit/service-factory.js';
+import { HomeKitRegistrar } from './homekit/homekit-registrar.js';
 
 export class SecuritySystem implements AccessoryPlugin {
   private readonly options: SecuritySystemOptions;
@@ -50,7 +48,7 @@ export class SecuritySystem implements AccessoryPlugin {
     const defaultState = modeToState(this.options.defaultMode);
     this.state = this.buildState(defaultState === (-1 as SecurityState) ? SecurityState.OFF : defaultState);
 
-    this.svcs = this.buildServices(Svc, Char);
+    this.svcs = buildServiceRegistry(Svc, Char, this.options);
     this.state.availableTargetStates = this.calcAvailableTargetStates();
 
     // Sync main service initial values.
@@ -67,6 +65,8 @@ export class SecuritySystem implements AccessoryPlugin {
     this.audioService = new AudioService(log, this.options, this.state, () =>
       Boolean(this.svcs.audioSwitchService.getCharacteristic(Char.On).value),
     );
+
+    // Handlers.
     this.sensorHandler = new SensorHandler(this.svcs, Char, log);
     this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log);
     this.stateHandler = new StateHandler(
@@ -88,11 +88,12 @@ export class SecuritySystem implements AccessoryPlugin {
     webhookSvc.attachToBus(this.bus);
     commandSvc.attachToBus(this.bus);
 
-    // Register HomeKit handlers.
-    this.registerHandlers(Char);
+    // Register HomeKit characteristic handlers.
+    new HomeKitRegistrar(this.api, this.log, this.svcs, this.state, this.stateHandler, this.tripHandler, this.switchHandler)
+      .register(Char);
 
     // Build the exposed service list.
-    this.serviceList = this.buildServiceList();
+    this.serviceList = buildServiceList(this.svcs, this.options, this.state);
 
     // Startup tasks.
     this.logStartup();
@@ -145,248 +146,6 @@ export class SecuritySystem implements AccessoryPlugin {
     };
   }
 
-  private buildServices(Svc: typeof Service, Char: CharacteristicConstructor): ServiceRegistry {
-    const sw = (name: string, sub: string) => {
-      const s = new Svc.Switch(name, sub);
-      s.addCharacteristic(Char.ConfiguredName);
-      s.setCharacteristic(Char.ConfiguredName, name);
-      return s;
-    };
-    const sensor = (name: string, sub: string) => {
-      const s = new Svc.MotionSensor(name, sub);
-      s.addOptionalCharacteristic(Char.ConfiguredName);
-      s.setCharacteristic(Char.ConfiguredName, name);
-      return s;
-    };
-    const o = this.options;
-
-    const mainSvc = new Svc.SecuritySystem(o.name);
-    mainSvc.addCharacteristic(Char.ConfiguredName);
-
-    const infoSvc = new Svc.AccessoryInformation();
-    infoSvc.setCharacteristic(Char.Identify, true);
-    infoSvc.setCharacteristic(Char.Manufacturer, 'MiguelRipoll23');
-    infoSvc.setCharacteristic(Char.Model, 'DIY');
-    infoSvc.setCharacteristic(Char.SerialNumber, o.serialNumber);
-
-    const audioSvc = sw(o.audioSwitchName, SWITCH_UUIDS.AUDIO);
-    audioSvc.getCharacteristic(Char.On).value = true;
-
-    return {
-      mainService: mainSvc,
-      accessoryInfoService: infoSvc,
-      tripSwitchService: sw(o.tripSwitchName, SWITCH_UUIDS.TRIP),
-      tripHomeSwitchService: sw(o.tripHomeSwitchName, SWITCH_UUIDS.TRIP_HOME),
-      tripAwaySwitchService: sw(o.tripAwaySwitchName, SWITCH_UUIDS.TRIP_AWAY),
-      tripNightSwitchService: sw(o.tripNightSwitchName, SWITCH_UUIDS.TRIP_NIGHT),
-      tripOverrideSwitchService: sw(o.tripOverrideSwitchName, SWITCH_UUIDS.TRIP_OVERRIDE),
-      armingLockSwitchService: sw('Arming Lock', SWITCH_UUIDS.ARMING_LOCK),
-      armingLockHomeSwitchService: sw('Arming Lock Home', SWITCH_UUIDS.ARMING_LOCK_HOME),
-      armingLockAwaySwitchService: sw('Arming Lock Away', SWITCH_UUIDS.ARMING_LOCK_AWAY),
-      armingLockNightSwitchService: sw('Arming Lock Night', SWITCH_UUIDS.ARMING_LOCK_NIGHT),
-      modeHomeSwitchService: sw(o.modeHomeSwitchName, SWITCH_UUIDS.MODE_HOME),
-      modeAwaySwitchService: sw(o.modeAwaySwitchName, SWITCH_UUIDS.MODE_AWAY),
-      modeNightSwitchService: sw(o.modeNightSwitchName, SWITCH_UUIDS.MODE_NIGHT),
-      modeOffSwitchService: sw(o.modeOffSwitchName, SWITCH_UUIDS.MODE_OFF),
-      modeAwayExtendedSwitchService: sw(o.modeAwayExtendedSwitchName, SWITCH_UUIDS.MODE_AWAY_EXTENDED),
-      modePauseSwitchService: sw(o.modePauseSwitchName, SWITCH_UUIDS.MODE_PAUSE),
-      audioSwitchService: audioSvc,
-      armingMotionSensorService: sensor('Arming', SWITCH_UUIDS.ARMING_SENSOR),
-      trippedMotionSensorService: sensor('Tripped', SWITCH_UUIDS.TRIPPED_SENSOR),
-      triggeredMotionSensorService: sensor('Triggered', SWITCH_UUIDS.TRIGGERED_SENSOR),
-      triggeredResetMotionSensorService: sensor('Triggered Reset', SWITCH_UUIDS.RESET_SENSOR),
-    };
-  }
-
-  private registerHandlers(Char: CharacteristicConstructor): void {
-    const s = this.svcs;
-    const HK_ERR = HK_NOT_ALLOWED_IN_CURRENT_STATE;
-
-    // Main security system.
-    s.mainService.getCharacteristic(Char.SecuritySystemCurrentState)
-      .onGet(async (): Promise<CharacteristicValue> => this.state.currentState);
-    s.mainService.getCharacteristic(Char.SecuritySystemTargetState)
-      .onGet(async (): Promise<CharacteristicValue> => this.state.targetState)
-      .onSet(async (v: CharacteristicValue) => {
-        this.stateHandler.updateTargetState(v as SecurityState, OriginType.REGULAR_SWITCH, this.stateHandler.getArmingSeconds(v as SecurityState));
-      });
-
-    // Trip switches.
-    const tripSetHandler = (v: CharacteristicValue, origin: OriginType) => {
-      const ok = this.tripHandler.updateTripSwitch(v as boolean, origin, false);
-      if (!ok) {
-        throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus); 
-      }
-    };
-
-    s.tripSwitchService.getCharacteristic(Char.On)
-      .onGet(async () => Boolean(s.tripSwitchService.getCharacteristic(Char.On).value))
-      .onSet(async (v) => {
-        this.log.info(`Trip Switch (${v ? 'On' : 'Off'})`); tripSetHandler(v, OriginType.REGULAR_SWITCH); 
-      });
-
-    const modeTrips: Array<[keyof ServiceRegistry, SecurityState, string]> = [
-      ['tripHomeSwitchService', SecurityState.HOME, 'Trip Home'],
-      ['tripAwaySwitchService', SecurityState.AWAY, 'Trip Away'],
-      ['tripNightSwitchService', SecurityState.NIGHT, 'Trip Night'],
-    ];
-    for (const [key, mode, label] of modeTrips) {
-      const svc = s[key];
-      svc.getCharacteristic(Char.On)
-        .onGet(async () => Boolean(svc.getCharacteristic(Char.On).value))
-        .onSet(async (v) => {
-          this.log.info(`${label} Switch (${v ? 'On' : 'Off'})`);
-          const ok = this.tripHandler.triggerIfModeSet(mode, v as boolean);
-          if (!ok) {
-            throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus); 
-          }
-        });
-    }
-
-    s.tripOverrideSwitchService.getCharacteristic(Char.On)
-      .onGet(async () => Boolean(s.tripOverrideSwitchService.getCharacteristic(Char.On).value))
-      .onSet(async (v) => {
-        this.log.info(`Trip Override Switch (${v ? 'On' : 'Off'})`); tripSetHandler(v, OriginType.OVERRIDE_SWITCH); 
-      });
-
-    // Mode switches.
-    const modeSwitches: Array<[keyof ServiceRegistry, SecurityState | null, string]> = [
-      ['modeHomeSwitchService', SecurityState.HOME, 'Mode Home'],
-      ['modeAwaySwitchService', SecurityState.AWAY, 'Mode Away'],
-      ['modeNightSwitchService', SecurityState.NIGHT, 'Mode Night'],
-      ['modeOffSwitchService', null, 'Mode Off'],
-    ];
-    for (const [key, mode, label] of modeSwitches) {
-      const svc = s[key];
-      svc.getCharacteristic(Char.On)
-        .onGet(async () => Boolean(svc.getCharacteristic(Char.On).value))
-        .onSet(async (v) => {
-          this.log.info(`${label} Switch (${v ? 'On' : 'Off'})`);
-          const err = mode !== null ? this.switchHandler.setModeSwitch(mode, v as boolean) : this.switchHandler.setModeOffSwitch(v as boolean);
-          if (err) {
-            throw new this.api.hap.HapStatusError(err as HAPStatus); 
-          }
-        });
-    }
-
-    s.modeAwayExtendedSwitchService.getCharacteristic(Char.On)
-      .onGet(async () => Boolean(s.modeAwayExtendedSwitchService.getCharacteristic(Char.On).value))
-      .onSet(async (v) => {
-        const err = this.switchHandler.setModeAwayExtendedSwitch(v as boolean);
-        if (err) {
-          throw new this.api.hap.HapStatusError(err as HAPStatus); 
-        }
-      });
-
-    s.modePauseSwitchService.getCharacteristic(Char.On)
-      .onGet(async () => Boolean(s.modePauseSwitchService.getCharacteristic(Char.On).value))
-      .onSet(async (v) => {
-        const err = this.switchHandler.setModePauseSwitch(v as boolean);
-        if (err) {
-          throw new this.api.hap.HapStatusError(err as HAPStatus); 
-        }
-      });
-
-    // Arming lock switches.
-    const lockSwitches: Array<[keyof ServiceRegistry, string]> = [
-      ['armingLockSwitchService', 'global'],
-      ['armingLockHomeSwitchService', 'home'],
-      ['armingLockAwaySwitchService', 'away'],
-      ['armingLockNightSwitchService', 'night'],
-    ];
-    for (const [key, mode] of lockSwitches) {
-      const svc = s[key];
-      svc.getCharacteristic(Char.On)
-        .onGet(async () => Boolean(svc.getCharacteristic(Char.On).value))
-        .onSet(async (v) => this.log.info(`Arming lock [${mode}] (${v ? 'On' : 'Off'})`));
-    }
-
-    // Audio switch.
-    s.audioSwitchService.getCharacteristic(Char.On)
-      .onGet(async () => Boolean(s.audioSwitchService.getCharacteristic(Char.On).value))
-      .onSet(async (v) => this.log.info(`Audio (${v ? 'Enabled' : 'Disabled'})`));
-
-    // Motion sensors (read-only).
-    const sensorKeys = ['armingMotionSensorService', 'trippedMotionSensorService',
-      'triggeredMotionSensorService', 'triggeredResetMotionSensorService'] as const;
-    for (const key of sensorKeys) {
-      s[key].getCharacteristic(Char.MotionDetected)
-        .onGet(async () => Boolean(s[key].getCharacteristic(Char.MotionDetected).value));
-    }
-  }
-
-  private buildServiceList(): Service[] {
-    const s = this.svcs;
-    const o = this.options;
-    const avail = this.state.availableTargetStates;
-    const list: Service[] = [s.mainService, s.accessoryInfoService];
-
-    if (o.armingMotionSensor) {
-      list.push(s.armingMotionSensorService); 
-    }
-    if (o.trippedMotionSensor) {
-      list.push(s.trippedMotionSensorService); 
-    }
-    if (o.triggeredMotionSensor) {
-      list.push(s.triggeredMotionSensorService); 
-    }
-    if (o.resetSensor) {
-      list.push(s.triggeredResetMotionSensorService); 
-    }
-    if (o.armingLockSwitch) {
-      list.push(s.armingLockSwitchService); 
-    }
-    if (o.armingLockSwitches) {
-      list.push(s.armingLockHomeSwitchService, s.armingLockAwaySwitchService, s.armingLockNightSwitchService);
-    }
-    if (o.tripSwitch) {
-      list.push(s.tripSwitchService); 
-    }
-    if (o.tripOverrideSwitch) {
-      list.push(s.tripOverrideSwitchService); 
-    }
-
-    if (avail.includes(SecurityState.HOME)) {
-      if (o.modeSwitches) {
-        list.push(s.modeHomeSwitchService); 
-      }
-      if (o.tripModeSwitches) {
-        list.push(s.tripHomeSwitchService); 
-      }
-    }
-    if (avail.includes(SecurityState.AWAY)) {
-      if (o.modeSwitches) {
-        list.push(s.modeAwaySwitchService); 
-      }
-      if (o.tripModeSwitches) {
-        list.push(s.tripAwaySwitchService); 
-      }
-    }
-    if (avail.includes(SecurityState.NIGHT)) {
-      if (o.modeSwitches) {
-        list.push(s.modeNightSwitchService); 
-      }
-      if (o.tripModeSwitches) {
-        list.push(s.tripNightSwitchService); 
-      }
-    }
-
-    if (o.modeSwitches && o.modeOffSwitch) {
-      list.push(s.modeOffSwitchService); 
-    }
-    if (o.modeAwayExtendedSwitch) {
-      list.push(s.modeAwayExtendedSwitchService); 
-    }
-    if (o.modePauseSwitch) {
-      list.push(s.modePauseSwitchService); 
-    }
-    if (o.audio && o.audioSwitch) {
-      list.push(s.audioSwitchService); 
-    }
-
-    return list;
-  }
-
   private calcAvailableTargetStates(): SecurityState[] {
     const all = [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF];
     const disabled = this.options.disabledModes.map(m => modeToState(m.toLowerCase()));
@@ -395,7 +154,7 @@ export class SecuritySystem implements AccessoryPlugin {
 
   private logStartup(): void {
     if (this.options.testMode) {
-      this.log.warn('Test Mode'); 
+      this.log.warn('Test Mode');
     }
     stateToMode(this.state.defaultState);
     this.stateHandler.logMode('Default', this.state.defaultState);
@@ -403,10 +162,10 @@ export class SecuritySystem implements AccessoryPlugin {
     this.log.info(`Trigger delay (${this.options.triggerSeconds}s)`);
     this.log.info(`Audio (${this.options.audio ? 'Enabled' : 'Disabled'})`);
     if (this.options.proxyMode) {
-      this.log.info('Proxy mode (Enabled)'); 
+      this.log.info('Proxy mode (Enabled)');
     }
     if (this.options.webhookUrl) {
-      this.log.info(`Webhook (${this.options.webhookUrl})`); 
+      this.log.info(`Webhook (${this.options.webhookUrl})`);
     }
   }
 }
