@@ -1,6 +1,7 @@
 import type { API, AccessoryPlugin, Logging, Service } from 'homebridge';
 import type { CharacteristicConstructor } from './interfaces/hap-types-interface.js';
 import { SecurityState } from './types/security-state-type.js';
+import { OriginType } from './types/origin-type.js';
 import { ConfigurationService } from './services/configuration-service.js';
 import { attachFileLogger } from './utils/log-util.js';
 import { stateToMode, modeToState } from './utils/state-util.js';
@@ -8,6 +9,7 @@ import type { SecuritySystemOptions } from './interfaces/options-interface.js';
 import type { SystemState } from './interfaces/system-state-interface.js';
 import type { ServiceRegistry } from './interfaces/service-registry-interface.js';
 import { EventBusService } from './services/event-bus-service.js';
+import { EventType } from './types/event-type.js';
 import { StorageService } from './services/storage-service.js';
 import { AudioService } from './services/audio-service.js';
 import { WebhookService } from './services/webhook-service.js';
@@ -68,20 +70,30 @@ export class SecuritySystem implements AccessoryPlugin {
     );
     const timerManager = new TimerManager(log);
 
-    // Handlers.
+    // Handlers — construction order matters: sensorHandler first (leaf), then stateHandler,
+    // then switchHandler (depends on stateHandler), then tripHandler.
     this.sensorHandler = new SensorHandler(this.svcs, Char, log);
-    this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log, timerManager);
     this.stateHandler = new StateHandler(
-      this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, this.audioService, timerManager,
+      this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, this.audioService, timerManager, this.sensorHandler,
     );
+    this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log, timerManager, this.stateHandler);
     this.tripHandler = new TripHandler(
       this.svcs, this.state, this.options, Char, log, this.bus, this.audioService, this.sensorHandler, timerManager,
     );
 
-    // Wire circular deps.
-    this.stateHandler.setHandlers(this.tripHandler, this.switchHandler, this.sensorHandler);
-    this.switchHandler.setStateHandler(this.stateHandler);
-    this.tripHandler.setStateHandler(this.stateHandler);
+    // Wire bus listeners for cross-handler coordination (no more circular constructor deps).
+    this.switchHandler.subscribeToStateEvents(this.bus);
+    this.bus.on(EventType.RESET_TRIP_SWITCHES, () => this.tripHandler.resetTripSwitches());
+    this.bus.on(EventType.TRIGGER_FIRED, ({ origin }) => {
+      this.stateHandler.setCurrentState(SecurityState.TRIGGERED, origin);
+    });
+    this.bus.on(EventType.TRIP_CANCELLED, ({ stateChanged }) => {
+      if (this.state.currentState === SecurityState.TRIGGERED && !stateChanged) {
+        this.stateHandler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
+      } else {
+        this.stateHandler.resetTimers();
+      }
+    });
 
     // Attach side-effect listeners.
     this.audioService.attachToBus(this.bus);

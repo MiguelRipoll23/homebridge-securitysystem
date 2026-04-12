@@ -11,18 +11,16 @@ import type { EventBusService } from '../services/event-bus-service.js';
 import { EventType } from '../types/event-type.js';
 import type { StorageService } from '../services/storage-service.js';
 import type { AudioService } from '../services/audio-service.js';
-import type { TripHandler } from './trip-handler.js';
-import type { SwitchHandler } from './switch-handler.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { TimerManager } from '../timers/timer-manager.js';
 import { getArmingSeconds } from '../utils/arming-util.js';
 
-/** Manages the core security-system state machine: arming, triggering, and resetting. */
+/**
+ * Manages the core security-system state machine: arming, triggering, and resetting.
+ * Cross-handler side effects are signalled via the event bus so that this class has
+ * no direct dependencies on TripHandler or SwitchHandler.
+ */
 export class StateHandler {
-  private tripHandler!: TripHandler;
-  private switchHandler!: SwitchHandler;
-  private sensorHandler!: SensorHandler;
-
   constructor(
     private readonly services: ServiceRegistry,
     private readonly state: SystemState,
@@ -33,13 +31,8 @@ export class StateHandler {
     private readonly storageService: StorageService,
     private readonly audio: AudioService,
     private readonly timers: TimerManager,
+    private readonly sensorHandler: SensorHandler,
   ) {}
-
-  setHandlers(trip: TripHandler, sw: SwitchHandler, sensor: SensorHandler): void {
-    this.tripHandler = trip;
-    this.switchHandler = sw;
-    this.sensorHandler = sensor;
-  }
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -65,7 +58,7 @@ export class StateHandler {
 
   updateTargetState(state: SecurityState, origin: OriginType, delay: number): boolean {
     if (this.isBadTargetState(state)) {
-      return false; 
+      return false;
     }
 
     this.state.targetState = state;
@@ -117,6 +110,24 @@ export class StateHandler {
     return this.state.isTripping;
   }
 
+  /** Checks whether arming is currently blocked by an arming-lock switch. */
+  isArmingLocked(targetState: SecurityState): boolean {
+    if (this.services.armingLockSwitchService.getCharacteristic(this.Characteristic.On).value) {
+      return true;
+    }
+
+    const modeMap: Partial<Record<SecurityState, keyof ServiceRegistry>> = {
+      [SecurityState.HOME]: 'armingLockHomeSwitchService',
+      [SecurityState.AWAY]: 'armingLockAwaySwitchService',
+      [SecurityState.NIGHT]: 'armingLockNightSwitchService',
+    };
+
+    const svcKey = modeMap[targetState];
+    return svcKey
+      ? Boolean(this.services[svcKey].getCharacteristic(this.Characteristic.On).value)
+      : false;
+  }
+
   getAvailableTargetStates(): SecurityState[] {
     const all = [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF];
     const disabled = this.options.disabledModes.map(m => modeToState(m.toLowerCase()));
@@ -145,7 +156,7 @@ export class StateHandler {
     }
 
     const hasLock = this.options.armingLockSwitch || this.options.armingLockSwitches;
-    if (state !== SecurityState.OFF && hasLock && this.switchHandler.isArmingLocked(state)) {
+    if (state !== SecurityState.OFF && hasLock && this.isArmingLocked(state)) {
       this.log.warn('Arming lock (Not allowed)');
       return true;
     }
@@ -155,10 +166,12 @@ export class StateHandler {
 
   private handleTargetStateChange(origin: OriginType): void {
     this.resetTimers();
-    this.tripHandler.resetTripSwitches();
+
+    // Notify handlers to reset their displayed state (bus is synchronous).
+    this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.sensorHandler.resetTrippedMotionSensor();
-    this.switchHandler.resetModeSwitches();
-    this.switchHandler.updateModeSwitches();
+    this.bus.emit(EventType.RESET_MODE_SWITCHES, {});
+    this.bus.emit(EventType.UPDATE_MODE_SWITCHES, {});
 
     this.bus.emit(EventType.TARGET_CHANGED, { state: this.state.targetState, origin });
 
@@ -174,11 +187,12 @@ export class StateHandler {
       this.handleTriggeredState();
 
       if (this.options.testMode) {
-        return; 
+        return;
       }
     }
 
-    this.tripHandler.resetTripSwitches();
+    // Notify TripHandler to reset trip switches on any state change.
+    this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.bus.emit(EventType.CURRENT_CHANGED, { state: this.state.currentState, origin });
   }
 

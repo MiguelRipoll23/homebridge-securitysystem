@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
+import { EventType } from '../types/event-type.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
@@ -10,7 +11,7 @@ import type { ServiceRegistry } from '../interfaces/service-registry-interface.j
 function makeMockChar(value: unknown = false) {
   const c = { value, updateValue: vi.fn() };
   c.updateValue.mockImplementation((v: unknown) => {
-    c.value = v; 
+    c.value = v;
   });
   return c;
 }
@@ -38,7 +39,7 @@ function makeServices(): ServiceRegistry {
   ];
   const s: Record<string, ReturnType<typeof makeMockService>> = {};
   for (const k of keys) {
-    s[k] = makeMockService(); 
+    s[k] = makeMockService();
   }
   return s as unknown as ServiceRegistry;
 }
@@ -87,14 +88,9 @@ describe('TripHandler', async () => {
 
   let state: SystemState;
   let services: ServiceRegistry;
+  let bus: InstanceType<typeof EventBusService>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let tripHandler: any;
-  const mockStateHandler = {
-    setCurrentState: vi.fn(),
-    updateTargetState: vi.fn(),
-    resetTimers: vi.fn(),
-    getArmingSeconds: vi.fn().mockReturnValue(0),
-  };
   const mockSensorHandler = {
     pulseTrippedMotionSensor: vi.fn(),
     resetTrippedMotionSensor: vi.fn(),
@@ -112,12 +108,10 @@ describe('TripHandler', async () => {
     vi.clearAllMocks();
     state = makeState({ currentState: SecurityState.HOME });
     services = makeServices();
-    const bus = new EventBusService();
+    bus = new EventBusService();
     const mockLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockAudio as any, mockSensorHandler as any, mockTimers);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tripHandler.setStateHandler(mockStateHandler as any);
   });
 
   it('blocks trip when system is disarmed (not overriding)', () => {
@@ -152,21 +146,41 @@ describe('TripHandler', async () => {
   });
 
   it('cancels trip and stops audio', () => {
+    const emitted: unknown[] = [];
+    bus.on(EventType.TRIP_CANCELLED, (payload) => emitted.push(payload));
+
     tripHandler.updateTripSwitch(false, OriginType.REGULAR_SWITCH, false);
+
     expect(mockAudio.stop).toHaveBeenCalled();
-    expect(mockStateHandler.resetTimers).toHaveBeenCalled();
+    expect(emitted).toHaveLength(1);
   });
 
-  it('disarms when trip cancelled while triggered and stateChanged=false', () => {
+  it('emits TRIP_CANCELLED with stateChanged=false when trip cancelled while triggered', () => {
     state.currentState = SecurityState.TRIGGERED;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let payload: any;
+    bus.on(EventType.TRIP_CANCELLED, (p) => {
+      payload = p;
+    });
+
     tripHandler.updateTripSwitch(false, OriginType.REGULAR_SWITCH, false);
-    expect(mockStateHandler.updateTargetState).toHaveBeenCalledWith(SecurityState.OFF, OriginType.INTERNAL, 0);
+
+    expect(payload).toBeDefined();
+    expect(payload.stateChanged).toBe(false);
   });
 
-  it('does not disarm when stateChanged=true', () => {
+  it('emits TRIP_CANCELLED with stateChanged=true when state has changed', () => {
     state.currentState = SecurityState.TRIGGERED;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let payload: any;
+    bus.on(EventType.TRIP_CANCELLED, (p) => {
+      payload = p;
+    });
+
     tripHandler.updateTripSwitch(false, OriginType.INTERNAL, true);
-    expect(mockStateHandler.updateTargetState).not.toHaveBeenCalled();
+
+    expect(payload).toBeDefined();
+    expect(payload.stateChanged).toBe(true);
   });
 
   it('triggerIfModeSet allows when current mode matches required', () => {

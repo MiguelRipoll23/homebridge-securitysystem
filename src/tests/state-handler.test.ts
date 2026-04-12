@@ -140,7 +140,9 @@ describe('StateHandler.getArmingSeconds', async () => {
     const bus = new EventBusService();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers());
+    const sensor = makeMockSensor() as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
   });
 
   it('returns 0 when current state is TRIGGERED', () => {
@@ -170,15 +172,9 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers());
-    const mockTrip = { resetTripSwitches: vi.fn() };
-    const mockSw = {
-      resetModeSwitches: vi.fn(),
-      updateModeSwitches: vi.fn(),
-      isArmingLocked: vi.fn().mockReturnValue(false),
-    };
+    const sensor = makeMockSensor() as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handler.setHandlers(mockTrip as any, mockSw as any, makeMockSensor() as any);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
     expect(result).toBe(false);
@@ -190,15 +186,9 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers());
-    const mockTrip = { resetTripSwitches: vi.fn() };
-    const mockSw = {
-      resetModeSwitches: vi.fn(),
-      updateModeSwitches: vi.fn(),
-      isArmingLocked: vi.fn().mockReturnValue(false),
-    };
+    const sensor = makeMockSensor() as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handler.setHandlers(mockTrip as any, mockSw as any, makeMockSensor() as any);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.REGULAR_SWITCH, 0);
     // armSeconds=0 → synchronous transition; function returns false after setCurrentState
