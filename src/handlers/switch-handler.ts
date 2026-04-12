@@ -8,6 +8,7 @@ import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { StateHandler } from './state-handler.js';
 import { OriginType } from '../types/origin-type.js';
 import { capitalise } from '../utils/state-util.js';
+import type { TimerManager } from '../timers/timer-manager.js';
 
 /** Handles all mode switches, arming-lock switches, and the pause/extended switches. */
 export class SwitchHandler {
@@ -19,6 +20,7 @@ export class SwitchHandler {
     private readonly options: SecuritySystemOptions,
     private readonly Characteristic: CharacteristicConstructor,
     private readonly log: Logging,
+    private readonly timers: TimerManager,
   ) {}
 
   setStateHandler(handler: StateHandler): void {
@@ -70,19 +72,15 @@ export class SwitchHandler {
       this.stateHandler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
 
       if (this.options.pauseMinutes !== 0) {
-        this.state.pauseTimeout = setTimeout(() => {
+        this.timers.setPauseTimer(this.options.pauseMinutes * 60 * 1000, () => {
           this.log.info('Mode pause (Finished)');
           const prev = this.state.pausedCurrentState ?? this.state.defaultState;
           this.stateHandler.updateTargetState(prev, OriginType.INTERNAL, this.stateHandler.getArmingSeconds(prev));
-        }, this.options.pauseMinutes * 60 * 1000);
+        });
       }
     } else {
       this.log.info('Mode pause (Cancelled)');
-
-      if (this.state.pauseTimeout !== null) {
-        clearTimeout(this.state.pauseTimeout);
-        this.state.pauseTimeout = null;
-      }
+      this.timers.clearPauseTimer();
 
       const prev = this.state.pausedCurrentState ?? this.state.defaultState;
       this.stateHandler.updateTargetState(prev, OriginType.INTERNAL, this.stateHandler.getArmingSeconds(prev));

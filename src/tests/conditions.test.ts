@@ -18,17 +18,11 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     defaultState: SecurityState.OFF,
     availableTargetStates: [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF],
     isArming: false,
+    isTripping: false,
     isKnocked: false,
     invalidCodeCount: 0,
     pausedCurrentState: null,
     audioProcess: null,
-    armTimeout: null,
-    pauseTimeout: null,
-    triggerTimeout: null,
-    doubleKnockTimeout: null,
-    resetTimeout: null,
-    trippedMotionSensorInterval: null,
-    triggeredMotionSensorInterval: null,
     ...overrides,
   };
 }
@@ -139,7 +133,7 @@ describe('AlreadyTriggeredCondition', () => {
 describe('DoubleKnockCondition', () => {
   it('allows through when doubleKnock option is disabled', () => {
     const onFirstKnock = vi.fn();
-    const cond = new DoubleKnockCondition(onFirstKnock);
+    const cond = new DoubleKnockCondition(onFirstKnock, vi.fn());
     const state = makeState({ isKnocked: false });
     const opts = makeOptions({ doubleKnock: false, doubleKnockModes: ['home'] });
     expect(cond.evaluate(makeCtx(state, opts, true))).toBe(false);
@@ -148,7 +142,7 @@ describe('DoubleKnockCondition', () => {
 
   it('allows override switch to bypass double-knock', () => {
     const onFirstKnock = vi.fn();
-    const cond = new DoubleKnockCondition(onFirstKnock);
+    const cond = new DoubleKnockCondition(onFirstKnock, vi.fn());
     const state = makeState({ isKnocked: false, currentState: SecurityState.HOME });
     const opts = makeOptions({ doubleKnock: true, doubleKnockModes: ['home'], doubleKnockSeconds: 90 });
     expect(cond.evaluate(makeCtx(state, opts, true, OriginType.OVERRIDE_SWITCH))).toBe(false);
@@ -157,7 +151,7 @@ describe('DoubleKnockCondition', () => {
 
   it('blocks first knock and calls onFirstKnock', () => {
     const onFirstKnock = vi.fn();
-    const cond = new DoubleKnockCondition(onFirstKnock);
+    const cond = new DoubleKnockCondition(onFirstKnock, vi.fn());
     const state = makeState({ isKnocked: false, currentState: SecurityState.HOME });
     const opts = makeOptions({ doubleKnock: true, doubleKnockModes: ['home'], doubleKnockSeconds: 90 });
     expect(cond.evaluate(makeCtx(state, opts, true))).toBe(true);
@@ -166,7 +160,7 @@ describe('DoubleKnockCondition', () => {
   });
 
   it('allows second knock through and clears isKnocked', () => {
-    const cond = new DoubleKnockCondition(vi.fn());
+    const cond = new DoubleKnockCondition(vi.fn(), vi.fn());
     const state = makeState({ isKnocked: true, currentState: SecurityState.HOME });
     const opts = makeOptions({ doubleKnock: true, doubleKnockModes: ['home'], doubleKnockSeconds: 90 });
     expect(cond.evaluate(makeCtx(state, opts, true))).toBe(false);
@@ -175,7 +169,7 @@ describe('DoubleKnockCondition', () => {
 
   it('uses mode-specific knock window when configured', () => {
     const onFirstKnock = vi.fn();
-    const cond = new DoubleKnockCondition(onFirstKnock);
+    const cond = new DoubleKnockCondition(onFirstKnock, vi.fn());
     const state = makeState({ isKnocked: false, currentState: SecurityState.AWAY });
     const opts = makeOptions({ doubleKnock: true, doubleKnockModes: ['away'], doubleKnockSeconds: 90, awayDoubleKnockSeconds: 30 });
     cond.evaluate(makeCtx(state, opts, true));

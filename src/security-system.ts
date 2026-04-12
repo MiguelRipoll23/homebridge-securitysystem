@@ -19,6 +19,7 @@ import { SwitchHandler } from './handlers/switch-handler.js';
 import { SensorHandler } from './handlers/sensor-handler.js';
 import { buildServiceRegistry, buildServiceList } from './homekit/service-factory.js';
 import { HomeKitRegistrar } from './homekit/homekit-registrar.js';
+import { TimerManager } from './timers/timer-manager.js';
 
 export class SecuritySystem implements AccessoryPlugin {
   private readonly options: SecuritySystemOptions;
@@ -65,15 +66,16 @@ export class SecuritySystem implements AccessoryPlugin {
     this.audioService = new AudioService(log, this.options, this.state, () =>
       Boolean(this.svcs.audioSwitchService.getCharacteristic(Char.On).value),
     );
+    const timerManager = new TimerManager(log);
 
     // Handlers.
     this.sensorHandler = new SensorHandler(this.svcs, Char, log);
-    this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log);
+    this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log, timerManager);
     this.stateHandler = new StateHandler(
-      this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, this.audioService,
+      this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, this.audioService, timerManager,
     );
     this.tripHandler = new TripHandler(
-      this.svcs, this.state, this.options, Char, log, this.bus, this.audioService, this.sensorHandler,
+      this.svcs, this.state, this.options, Char, log, this.bus, this.audioService, this.sensorHandler, timerManager,
     );
 
     // Wire circular deps.
@@ -132,17 +134,11 @@ export class SecuritySystem implements AccessoryPlugin {
       defaultState,
       availableTargetStates: [],
       isArming: false,
+      isTripping: false,
       isKnocked: false,
       invalidCodeCount: 0,
       pausedCurrentState: null,
       audioProcess: null,
-      armTimeout: null,
-      pauseTimeout: null,
-      triggerTimeout: null,
-      doubleKnockTimeout: null,
-      resetTimeout: null,
-      trippedMotionSensorInterval: null,
-      triggeredMotionSensorInterval: null,
     };
   }
 

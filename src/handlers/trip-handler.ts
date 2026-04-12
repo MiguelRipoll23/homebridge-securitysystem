@@ -12,6 +12,7 @@ import type { AudioService } from '../services/audio-service.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { StateHandler } from './state-handler.js';
 import type { Condition } from '../conditions/condition.js';
+import type { TimerManager } from '../timers/timer-manager.js';
 import type { ConditionContext } from '../interfaces/condition-context-interface.js';
 import { NotArmedCondition } from '../conditions/not-armed-condition.js';
 import { ArmingInProgressCondition } from '../conditions/arming-in-progress-condition.js';
@@ -34,12 +35,16 @@ export class TripHandler {
     private readonly bus: EventBusService,
     private readonly audio: AudioService,
     private readonly sensorHandler: SensorHandler,
+    private readonly timers: TimerManager,
   ) {
-    const doubleKnock = new DoubleKnockCondition((seconds, onExpire) => {
-      this.state.doubleKnockTimeout = setTimeout(() => {
-        onExpire();
-      }, seconds * 1000);
-    });
+    const doubleKnock = new DoubleKnockCondition(
+      (seconds, onExpire) => {
+        this.timers.setDoubleKnockTimer(seconds * 1000, onExpire);
+      },
+      () => {
+        this.timers.clearDoubleKnockTimer();
+      },
+    );
 
     this.conditions = [
       new NotArmedCondition(),
@@ -130,19 +135,20 @@ export class TripHandler {
 
     if (this.options.trippedMotionSensor) {
       this.sensorHandler.pulseTrippedMotionSensor();
-      this.state.trippedMotionSensorInterval = setInterval(
-        () => this.sensorHandler.pulseTrippedMotionSensor(),
+      this.timers.setTrippedInterval(
         this.options.trippedMotionSensorSeconds * 1000,
+        () => this.sensorHandler.pulseTrippedMotionSensor(),
       );
     }
 
     const triggerSeconds = this.resolveTriggerSeconds();
     this.log.debug(`Trigger delay (${triggerSeconds}s)`);
 
-    this.state.triggerTimeout = setTimeout(() => {
-      this.state.triggerTimeout = null;
+    this.state.isTripping = true;
+    this.timers.setTriggerTimer(triggerSeconds * 1000, () => {
+      this.state.isTripping = false;
       this.stateHandler.setCurrentState(SecurityState.TRIGGERED, origin);
-    }, triggerSeconds * 1000);
+    });
 
     if (triggerSeconds > 0) {
       this.bus.emit(EventType.WARNING, { origin, triggerSeconds });
@@ -151,6 +157,7 @@ export class TripHandler {
 
   private cancelTrip(origin: OriginType, stateChanged: boolean): void {
     this.log.info('Security System (Cancelled)');
+    this.state.isTripping = false;
     this.audio.stop();
 
     if (this.state.currentState === SecurityState.TRIGGERED) {

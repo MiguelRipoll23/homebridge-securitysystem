@@ -50,17 +50,11 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     defaultState: SecurityState.OFF,
     availableTargetStates: [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF],
     isArming: false,
+    isTripping: false,
     isKnocked: false,
     invalidCodeCount: 0,
     pausedCurrentState: null,
     audioProcess: null,
-    armTimeout: null,
-    pauseTimeout: null,
-    triggerTimeout: null,
-    doubleKnockTimeout: null,
-    resetTimeout: null,
-    trippedMotionSensorInterval: null,
-    triggeredMotionSensorInterval: null,
     ...overrides,
   };
 }
@@ -106,6 +100,13 @@ describe('TripHandler', async () => {
     resetTrippedMotionSensor: vi.fn(),
   };
   const mockAudio = { stop: vi.fn(), play: vi.fn(), attachToBus: vi.fn() };
+  const mockTimers = {
+    setTriggerTimer: vi.fn(), clearTriggerTimer: vi.fn(), isTriggerRunning: vi.fn().mockReturnValue(false),
+    setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
+    setDoubleKnockTimer: vi.fn(), clearDoubleKnockTimer: vi.fn(),
+    clearAll: vi.fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -114,7 +115,7 @@ describe('TripHandler', async () => {
     const bus = new EventBusService();
     const mockLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockAudio as any, mockSensorHandler as any);
+    tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockAudio as any, mockSensorHandler as any, mockTimers);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tripHandler.setStateHandler(mockStateHandler as any);
   });
@@ -138,10 +139,10 @@ describe('TripHandler', async () => {
   });
 
   it('blocks trip when trigger timeout is already running', () => {
-    state.triggerTimeout = setTimeout(() => {}, 99999);
+    state.isTripping = true;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
     expect(result).toBe(false);
-    clearTimeout(state.triggerTimeout!);
+    state.isTripping = false;
   });
 
   it('allows trip when system is armed (HOME mode)', () => {

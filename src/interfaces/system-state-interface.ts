@@ -9,17 +9,9 @@ export interface SystemState {
   availableTargetStates: SecurityState[];
 
   isArming: boolean;
+  isTripping: boolean;
   isKnocked: boolean;
   invalidCodeCount: number;
   pausedCurrentState: SecurityState | null;
   audioProcess: ChildProcess | null;
-
-  // Active timers (null = not running)
-  armTimeout: ReturnType<typeof setTimeout> | null;
-  pauseTimeout: ReturnType<typeof setTimeout> | null;
-  triggerTimeout: ReturnType<typeof setTimeout> | null;
-  doubleKnockTimeout: ReturnType<typeof setTimeout> | null;
-  resetTimeout: ReturnType<typeof setTimeout> | null;
-  trippedMotionSensorInterval: ReturnType<typeof setInterval> | null;
-  triggeredMotionSensorInterval: ReturnType<typeof setInterval> | null;
 }

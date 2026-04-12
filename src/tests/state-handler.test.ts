@@ -52,17 +52,11 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     defaultState: SecurityState.OFF,
     availableTargetStates: [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF],
     isArming: false,
+    isTripping: false,
     isKnocked: false,
     invalidCodeCount: 0,
     pausedCurrentState: null,
     audioProcess: null,
-    armTimeout: null,
-    pauseTimeout: null,
-    triggerTimeout: null,
-    doubleKnockTimeout: null,
-    resetTimeout: null,
-    trippedMotionSensorInterval: null,
-    triggeredMotionSensorInterval: null,
     ...overrides,
   };
 }
@@ -105,6 +99,20 @@ function makeAudio() {
   return { play: vi.fn(), stop: vi.fn(), attachToBus: vi.fn() } as unknown as AudioService;
 }
 
+function makeTimers() {
+  return {
+    setArmTimer: vi.fn(), clearArmTimer: vi.fn(),
+    setTriggerTimer: vi.fn(), clearTriggerTimer: vi.fn(), isTriggerRunning: vi.fn().mockReturnValue(false),
+    setPauseTimer: vi.fn(), clearPauseTimer: vi.fn(),
+    setDoubleKnockTimer: vi.fn(), clearDoubleKnockTimer: vi.fn(),
+    setResetTimer: vi.fn(), clearResetTimer: vi.fn(),
+    setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
+    setTriggeredInterval: vi.fn(), clearTriggeredInterval: vi.fn(),
+    clearAll: vi.fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
+}
+
 function makeMockSensor() {
   return {
     resetArmingMotionSensor: vi.fn(),
@@ -132,7 +140,7 @@ describe('StateHandler.getArmingSeconds', async () => {
     const bus = new EventBusService();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio());
+    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers());
   });
 
   it('returns 0 when current state is TRIGGERED', () => {
@@ -162,7 +170,7 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio());
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers());
     const mockTrip = { resetTripSwitches: vi.fn() };
     const mockSw = {
       resetModeSwitches: vi.fn(),
@@ -182,7 +190,7 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio());
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers());
     const mockTrip = { resetTripSwitches: vi.fn() };
     const mockSw = {
       resetModeSwitches: vi.fn(),

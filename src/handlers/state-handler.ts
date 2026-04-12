@@ -14,6 +14,7 @@ import type { AudioService } from '../services/audio-service.js';
 import type { TripHandler } from './trip-handler.js';
 import type { SwitchHandler } from './switch-handler.js';
 import type { SensorHandler } from './sensor-handler.js';
+import type { TimerManager } from '../timers/timer-manager.js';
 
 /** Manages the core security-system state machine: arming, triggering, and resetting. */
 export class StateHandler {
@@ -30,6 +31,7 @@ export class StateHandler {
     private readonly bus: EventBusService,
     private readonly storageService: StorageService,
     private readonly audio: AudioService,
+    private readonly timers: TimerManager,
   ) {}
 
   setHandlers(trip: TripHandler, sw: SwitchHandler, sensor: SensorHandler): void {
@@ -93,11 +95,10 @@ export class StateHandler {
     this.handleArmingState();
     this.log.info(`Arm delay (${armSeconds}s)`);
 
-    this.state.armTimeout = setTimeout(() => {
-      this.state.armTimeout = null;
+    this.timers.setArmTimer(armSeconds * 1000, () => {
       this.state.isArming = false;
       this.setCurrentState(state, origin);
-    }, armSeconds * 1000);
+    });
 
     return true;
   }
@@ -124,41 +125,12 @@ export class StateHandler {
   }
 
   resetTimers(): void {
-    if (this.state.triggerTimeout) {
-      clearTimeout(this.state.triggerTimeout);
-      this.state.triggerTimeout = null;
-      this.log.debug('Trigger timeout (Cleared)');
-    }
-    if (this.state.armTimeout) {
-      clearTimeout(this.state.armTimeout);
-      this.state.armTimeout = null;
-      this.log.debug('Arming timeout (Cleared)');
-    }
-    if (this.state.triggeredMotionSensorInterval) {
-      clearInterval(this.state.triggeredMotionSensorInterval);
-      this.state.triggeredMotionSensorInterval = null;
-      this.log.debug('Triggered interval (Cleared)');
-    }
-    if (this.state.trippedMotionSensorInterval) {
-      clearInterval(this.state.trippedMotionSensorInterval);
-      this.state.trippedMotionSensorInterval = null;
-      this.log.debug('Tripped interval (Cleared)');
-    }
-    if (this.state.doubleKnockTimeout) {
-      clearTimeout(this.state.doubleKnockTimeout);
-      this.state.doubleKnockTimeout = null;
-      this.log.debug('Double-knock timeout (Cleared)');
-    }
-    if (this.state.pauseTimeout) {
-      clearTimeout(this.state.pauseTimeout);
-      this.state.pauseTimeout = null;
-      this.log.debug('Pause timeout (Cleared)');
-    }
-    if (this.state.resetTimeout) {
-      clearTimeout(this.state.resetTimeout);
-      this.state.resetTimeout = null;
-      this.log.debug('Reset timeout (Cleared)');
-    }
+    this.timers.clearAll();
+  }
+
+  /** Returns true while the trigger delay is counting down (trip switch is active). */
+  isTripping(): boolean {
+    return this.state.isTripping;
   }
 
   getAvailableTargetStates(): SecurityState[] {
@@ -227,20 +199,16 @@ export class StateHandler {
   }
 
   private handleTriggeredState(): void {
-    if (this.state.trippedMotionSensorInterval) {
-      clearInterval(this.state.trippedMotionSensorInterval);
-      this.state.trippedMotionSensorInterval = null;
-    }
+    this.timers.clearTrippedInterval();
 
     if (this.options.triggeredMotionSensor) {
-      this.state.triggeredMotionSensorInterval = setInterval(
-        () => this.sensorHandler.pulseTriggeredMotionSensor(),
+      this.timers.setTriggeredInterval(
         this.options.triggeredMotionSensorSeconds * 1000,
+        () => this.sensorHandler.pulseTriggeredMotionSensor(),
       );
     }
 
-    this.state.resetTimeout = setTimeout(() => {
-      this.state.resetTimeout = null;
+    this.timers.setResetTimer(this.options.resetMinutes * 60 * 1000, () => {
       this.log.info('Reset (Finished)');
       this.sensorHandler.pulseResetMotionSensor();
 
@@ -249,7 +217,7 @@ export class StateHandler {
       } else {
         this.setCurrentState(this.state.targetState, OriginType.EXTERNAL);
       }
-    }, this.options.resetMinutes * 60 * 1000);
+    });
   }
 
   private handleArmingState(): void {

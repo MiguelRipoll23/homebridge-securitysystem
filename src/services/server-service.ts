@@ -53,7 +53,7 @@ export class ServerService {
         arming: this.state.isArming,
         current_mode: stateToMode(this.state.currentState),
         target_mode: stateToMode(this.state.targetState),
-        tripped: this.state.triggerTimeout !== null,
+        tripped: this.stateHandler.isTripping(),
       });
     });
 
