@@ -7,7 +7,7 @@ import { HK_NOT_ALLOWED_IN_CURRENT_STATE } from './constants/homekit-constant.js
 import { SWITCH_UUIDS } from './constants/switch-uuid-constant.js';
 import { ConfigurationService } from './services/configuration-service.js';
 import { attachFileLogger } from './utils/log-util.js';
-import { stateToMode } from './utils/state-util.js';
+import { stateToMode, modeToState } from './utils/state-util.js';
 import type { SecuritySystemOptions } from './interfaces/options-interface.js';
 import type { SystemState } from './interfaces/system-state-interface.js';
 import type { ServiceRegistry } from './interfaces/service-registry-interface.js';
@@ -47,11 +47,11 @@ export class SecuritySystem implements AccessoryPlugin {
     this.options = new ConfigurationService(log, config).options;
     attachFileLogger(log, this.options);
 
-    const defaultState = this.modeToStateVal(this.options.defaultMode);
-    this.state = this.buildState(defaultState);
+    const defaultState = modeToState(this.options.defaultMode);
+    this.state = this.buildState(defaultState === (-1 as SecurityState) ? SecurityState.OFF : defaultState);
 
     this.svcs = this.buildServices(Svc, Char);
-    this.state.availableTargetStates = this.calcAvailableStates(Char);
+    this.state.availableTargetStates = this.calcAvailableTargetStates();
 
     // Sync main service initial values.
     this.svcs.mainService.getCharacteristic(Char.SecuritySystemTargetState).value = this.state.targetState;
@@ -387,31 +387,10 @@ export class SecuritySystem implements AccessoryPlugin {
     return list;
   }
 
-  private calcAvailableStates(Char: CharacteristicConstructor): SecurityState[] {
-    const all = this.svcs.mainService
-      .getCharacteristic(Char.SecuritySystemTargetState)
-      .props.validValues ?? [0, 1, 2, 3];
-
-    const disabled = this.options.disabledModes.map(m => {
-      switch (m.toLowerCase()) {
-      case 'home': return SecurityState.HOME;
-      case 'away': return SecurityState.AWAY;
-      case 'night': return SecurityState.NIGHT;
-      case 'off': return SecurityState.OFF;
-      default: return -1 as SecurityState;
-      }
-    });
-
-    return (all as SecurityState[]).filter(s => !disabled.includes(s));
-  }
-
-  private modeToStateVal(mode: string): SecurityState {
-    switch (mode) {
-    case 'home': return SecurityState.HOME;
-    case 'away': return SecurityState.AWAY;
-    case 'night': return SecurityState.NIGHT;
-    default: return SecurityState.OFF;
-    }
+  private calcAvailableTargetStates(): SecurityState[] {
+    const all = [SecurityState.HOME, SecurityState.AWAY, SecurityState.NIGHT, SecurityState.OFF];
+    const disabled = this.options.disabledModes.map(m => modeToState(m.toLowerCase()));
+    return all.filter(s => !disabled.includes(s));
   }
 
   private logStartup(): void {
