@@ -15,6 +15,7 @@ import type { TripHandler } from './trip-handler.js';
 import type { SwitchHandler } from './switch-handler.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { TimerManager } from '../timers/timer-manager.js';
+import { getArmingSeconds } from '../utils/arming-util.js';
 
 /** Manages the core security-system state machine: arming, triggering, and resetting. */
 export class StateHandler {
@@ -103,25 +104,8 @@ export class StateHandler {
     return true;
   }
 
-  getArmingSeconds(state: SecurityState): number {
-    const isTriggered = this.state.currentState === SecurityState.TRIGGERED;
-    const isOff = state === SecurityState.OFF;
-
-    if (isTriggered || isOff) {
-      return 0; 
-    }
-
-    if (state === SecurityState.HOME && this.options.homeArmSeconds !== null) {
-      return this.options.homeArmSeconds;
-    }
-    if (state === SecurityState.AWAY && this.options.awayArmSeconds !== null) {
-      return this.options.awayArmSeconds;
-    }
-    if (state === SecurityState.NIGHT && this.options.nightArmSeconds !== null) {
-      return this.options.nightArmSeconds;
-    }
-
-    return this.options.armSeconds;
+  getArmingSeconds(targetState: SecurityState): number {
+    return getArmingSeconds(this.state, this.options, targetState);
   }
 
   resetTimers(): void {
