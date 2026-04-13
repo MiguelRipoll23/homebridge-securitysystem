@@ -40,7 +40,7 @@
     "node-persist": "^4.0.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.10.1",
     "@types/node-persist": "^3.1.8",
     "eslint": "^9.39.1",
