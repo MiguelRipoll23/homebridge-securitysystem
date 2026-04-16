@@ -59,10 +59,75 @@ jobs:
           generateReleaseNotes: true
           allowUpdates: true
 
+  update-changelog:
+    name: Update changelog
+    needs: [create-tag, create-release]
+    runs-on: ubuntu-latest
+    if: needs.create-tag.outputs.tag-name != ''
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Build changelog entry from auto release notes
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ needs.create-tag.outputs.tag-name }}
+        run: |
+          release_notes_text="$(
+            gh api \
+              repos/${{ github.repository }}/releases/tags/${TAG_NAME} \
+              --jq '.body'
+          )"
+
+          if [ -z "${release_notes_text}" ]; then
+            echo "Release notes were not generated. Skipping changelog update."
+            exit 0
+          fi
+
+          current_date="$(date -u +%F)"
+          release_header="## ${TAG_NAME} - ${current_date}"
+
+          if [ -f CHANGELOG.md ] && grep -Fqx "${release_header}" CHANGELOG.md; then
+            echo "Changelog already contains ${release_header}. Skipping changelog update."
+            exit 0
+          fi
+
+          temporary_file_path="$(mktemp)"
+          {
+            echo "# Changelog"
+            echo
+            echo "${release_header}"
+            echo
+            echo "${release_notes_text}"
+            echo
+            if [ -f CHANGELOG.md ]; then
+              awk 'NR == 1 && $0 == "# Changelog" { next } { print }' CHANGELOG.md
+            fi
+          } > "${temporary_file_path}"
+
+          mv "${temporary_file_path}" CHANGELOG.md
+
+      - name: Commit changelog
+        run: |
+          if git diff --quiet CHANGELOG.md; then
+            echo "No changelog updates to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for ${{ needs.create-tag.outputs.tag-name }}"
+          git push origin HEAD:main
+
   publish-package:
     name: Publish package
     runs-on: ubuntu-latest
-    needs: [create-tag, create-release]
+    needs: [create-tag, create-release, update-changelog]
 
     steps:
       - name: Checkout branch
