@@ -1,4 +1,4 @@
-import type { API, Logging, CharacteristicValue } from 'homebridge';
+import type { API, Logging, CharacteristicValue, Service } from 'homebridge';
 import { HAPStatus } from 'homebridge';
 import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
@@ -66,6 +66,26 @@ export class HomeKitRegistrar {
             throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
           }
         });
+    }
+
+    const customModeTrips: Array<[Service[], SecurityState]> = [
+      [s.customTripHomeSwitchServices, SecurityState.HOME],
+      [s.customTripAwaySwitchServices, SecurityState.AWAY],
+      [s.customTripNightSwitchServices, SecurityState.NIGHT],
+    ];
+    for (const [services, mode] of customModeTrips) {
+      for (const svc of services) {
+        const name = String(svc.getCharacteristic(Char.ConfiguredName).value ?? 'Custom Trip');
+        svc.getCharacteristic(Char.On)
+          .onGet(async () => Boolean(svc.getCharacteristic(Char.On).value))
+          .onSet(async (v: CharacteristicValue) => {
+            this.log.info(`${name} Switch (${v ? 'On' : 'Off'})`);
+            const ok = this.tripHandler.triggerIfModeSet(mode, v as boolean);
+            if (!ok) {
+              throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
+            }
+          });
+      }
     }
 
     s.tripOverrideSwitchService.getCharacteristic(Char.On)

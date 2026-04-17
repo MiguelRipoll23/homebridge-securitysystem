@@ -26,6 +26,11 @@ export interface ServiceRegistry {
   modeAwayExtendedSwitchService: Service;
   modePauseSwitchService: Service;
 
+  // Custom trip mode switches (dynamic, one per configured entry)
+  customTripHomeSwitchServices: Service[];
+  customTripAwaySwitchServices: Service[];
+  customTripNightSwitchServices: Service[];
+
   // Audio switch
   audioSwitchService: Service;
 

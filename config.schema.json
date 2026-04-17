@@ -404,6 +404,57 @@
         "default": true,
         "required": false
       },
+      "trip_home_switches": {
+        "title": "Custom Trip Home Switches",
+        "description": "Additional trip switches for Home mode. Final name is \"Home <Label>\".",
+        "type": "array",
+        "items": {
+          "title": "Switch",
+          "type": "object",
+          "properties": {
+            "label": {
+              "title": "Label",
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        "required": false
+      },
+      "trip_away_switches": {
+        "title": "Custom Trip Away Switches",
+        "description": "Additional trip switches for Away mode. Final name is \"Away <Label>\".",
+        "type": "array",
+        "items": {
+          "title": "Switch",
+          "type": "object",
+          "properties": {
+            "label": {
+              "title": "Label",
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        "required": false
+      },
+      "trip_night_switches": {
+        "title": "Custom Trip Night Switches",
+        "description": "Additional trip switches for Night mode. Final name is \"Night <Label>\".",
+        "type": "array",
+        "items": {
+          "title": "Switch",
+          "type": "object",
+          "properties": {
+            "label": {
+              "title": "Label",
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        "required": false
+      },
       "audio_switch": {
         "title": "Show Audio Switch",
         "description": "Adds a global switch to enable or disable audio except for alarm triggered.",
@@ -759,6 +810,24 @@
         "trip_switch",
         "trip_override_switch",
         "trip_mode_switches",
+        {
+          "key": "trip_home_switches",
+          "type": "tabarray",
+          "title": "{{ value.label || 'Home Switch' }}",
+          "items": ["trip_home_switches[].label"]
+        },
+        {
+          "key": "trip_away_switches",
+          "type": "tabarray",
+          "title": "{{ value.label || 'Away Switch' }}",
+          "items": ["trip_away_switches[].label"]
+        },
+        {
+          "key": "trip_night_switches",
+          "type": "tabarray",
+          "title": "{{ value.label || 'Night Switch' }}",
+          "items": ["trip_night_switches[].label"]
+        },
         "audio_switch"
       ]
     },

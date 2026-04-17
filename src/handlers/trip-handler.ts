@@ -124,6 +124,21 @@ export class TripHandler {
         this.log.debug(`${label} Switch (Off)`);
       }
     }
+
+    const customGroups = [
+      this.services.customTripHomeSwitchServices,
+      this.services.customTripAwaySwitchServices,
+      this.services.customTripNightSwitchServices,
+    ];
+
+    for (const group of customGroups) {
+      for (const svc of group) {
+        const char = svc.getCharacteristic(this.Characteristic.On);
+        if (char.value) {
+          char.updateValue(false);
+        }
+      }
+    }
   }
 
   private activateTrip(origin: OriginType): void {

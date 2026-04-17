@@ -4,6 +4,11 @@ export interface AudioVariable {
   value: string;
 }
 
+/** A single custom trip switch entry with a user-defined label. */
+export interface TripModeSwitch {
+  label: string;
+}
+
 /** Fully-parsed, strongly-typed configuration options for the security system. */
 export interface SecuritySystemOptions {
   name: string;
@@ -50,6 +55,11 @@ export interface SecuritySystemOptions {
   tripSwitch: boolean;
   tripOverrideSwitch: boolean;
   tripModeSwitches: boolean;
+
+  // Custom trip mode switches
+  tripHomeSwitches: TripModeSwitch[];
+  tripAwaySwitches: TripModeSwitch[];
+  tripNightSwitches: TripModeSwitch[];
 
   // Arming lock
   armingLockSwitch: boolean;
