@@ -1,4 +1,4 @@
-import type { Logging } from 'homebridge';
+import type { Logging, Service } from 'homebridge';
 import { SENSOR_PULSE_MS } from '../constants/homekit-constant.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
 import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
@@ -73,7 +73,7 @@ export class SensorHandler {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private scheduleReset(service: ServiceRegistry[keyof ServiceRegistry]): void {
+  private scheduleReset(service: Service): void {
     setTimeout(() => {
       service.updateCharacteristic(this.Characteristic.MotionDetected, false);
     }, SENSOR_PULSE_MS);

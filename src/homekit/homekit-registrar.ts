@@ -1,7 +1,7 @@
 import type { API, Logging, CharacteristicValue, Service } from 'homebridge';
 import { HAPStatus } from 'homebridge';
 import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
-import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
+import type { ServiceRegistry, SingleServiceKey } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
@@ -50,7 +50,7 @@ export class HomeKitRegistrar {
         tripSetHandler(v, OriginType.REGULAR_SWITCH);
       });
 
-    const modeTrips: Array<[keyof ServiceRegistry, SecurityState, string]> = [
+    const modeTrips: Array<[SingleServiceKey, SecurityState, string]> = [
       ['tripHomeSwitchService', SecurityState.HOME, 'Trip Home'],
       ['tripAwaySwitchService', SecurityState.AWAY, 'Trip Away'],
       ['tripNightSwitchService', SecurityState.NIGHT, 'Trip Night'],
@@ -96,7 +96,7 @@ export class HomeKitRegistrar {
       });
 
     // Mode switches.
-    const modeSwitches: Array<[keyof ServiceRegistry, SecurityState | null, string]> = [
+    const modeSwitches: Array<[SingleServiceKey, SecurityState | null, string]> = [
       ['modeHomeSwitchService', SecurityState.HOME, 'Mode Home'],
       ['modeAwaySwitchService', SecurityState.AWAY, 'Mode Away'],
       ['modeNightSwitchService', SecurityState.NIGHT, 'Mode Night'],
@@ -136,7 +136,7 @@ export class HomeKitRegistrar {
       });
 
     // Arming lock switches.
-    const lockSwitches: Array<[keyof ServiceRegistry, string]> = [
+    const lockSwitches: Array<[SingleServiceKey, string]> = [
       ['armingLockSwitchService', 'global'],
       ['armingLockHomeSwitchService', 'home'],
       ['armingLockAwaySwitchService', 'away'],

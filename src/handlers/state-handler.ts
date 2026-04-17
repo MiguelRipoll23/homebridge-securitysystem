@@ -4,7 +4,7 @@ import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
 import { stateToMode, capitalise } from '../utils/state-util.js';
 import { modeToState } from '../utils/state-util.js';
-import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
+import type { ServiceRegistry, SingleServiceKey } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { EventBusService } from '../services/event-bus-service.js';
@@ -116,7 +116,7 @@ export class StateHandler {
       return true;
     }
 
-    const modeMap: Partial<Record<SecurityState, keyof ServiceRegistry>> = {
+    const modeMap: Partial<Record<SecurityState, SingleServiceKey>> = {
       [SecurityState.HOME]: 'armingLockHomeSwitchService',
       [SecurityState.AWAY]: 'armingLockAwaySwitchService',
       [SecurityState.NIGHT]: 'armingLockNightSwitchService',

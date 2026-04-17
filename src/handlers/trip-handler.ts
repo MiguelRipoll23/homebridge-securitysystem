@@ -2,7 +2,7 @@ import type { Logging } from 'homebridge';
 import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
 import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
-import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
+import type { ServiceRegistry, SingleServiceKey } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { EventBusService } from '../services/event-bus-service.js';
@@ -110,7 +110,7 @@ export class TripHandler {
   }
 
   resetTripSwitches(): void {
-    const switches: Array<[keyof ServiceRegistry, string]> = [
+    const switches: Array<[SingleServiceKey, string]> = [
       ['tripHomeSwitchService', 'Trip Home'],
       ['tripAwaySwitchService', 'Trip Away'],
       ['tripNightSwitchService', 'Trip Night'],

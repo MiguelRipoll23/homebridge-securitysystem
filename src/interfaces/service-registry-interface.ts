@@ -40,3 +40,8 @@ export interface ServiceRegistry {
   triggeredMotionSensorService: Service;
   triggeredResetMotionSensorService: Service;
 }
+
+/** Keys of ServiceRegistry whose value is a single Service (not Service[]). */
+export type SingleServiceKey = {
+  [K in keyof ServiceRegistry]: ServiceRegistry[K] extends Service[] ? never : K;
+}[keyof ServiceRegistry];
