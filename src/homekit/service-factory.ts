@@ -1,6 +1,6 @@
 import type { Service } from 'homebridge';
 import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
-import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
+import type { SecuritySystemOptions, TripModeSwitch } from '../interfaces/options-interface.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import { SecurityState } from '../types/security-state-type.js';
@@ -37,6 +37,9 @@ export function buildServiceRegistry(
   const audioSvc = sw(options.audioSwitchName, SWITCH_UUIDS.AUDIO);
   audioSvc.getCharacteristic(Char.On).value = true;
 
+  const buildCustomTripSwitches = (mode: string, modeLabel: string, switches: TripModeSwitch[]): Service[] =>
+    switches.map((s, i) => sw(`${modeLabel} ${s.label}`, `trip-${mode}-${i}`));
+
   return {
     mainService: mainSvc,
     accessoryInfoService: infoSvc,
@@ -55,6 +58,9 @@ export function buildServiceRegistry(
     modeOffSwitchService: sw(options.modeOffSwitchName, SWITCH_UUIDS.MODE_OFF),
     modeAwayExtendedSwitchService: sw(options.modeAwayExtendedSwitchName, SWITCH_UUIDS.MODE_AWAY_EXTENDED),
     modePauseSwitchService: sw(options.modePauseSwitchName, SWITCH_UUIDS.MODE_PAUSE),
+    customTripHomeSwitchServices: buildCustomTripSwitches('home', 'Home', options.tripHomeSwitches),
+    customTripAwaySwitchServices: buildCustomTripSwitches('away', 'Away', options.tripAwaySwitches),
+    customTripNightSwitchServices: buildCustomTripSwitches('night', 'Night', options.tripNightSwitches),
     audioSwitchService: audioSvc,
     armingMotionSensorService: sensor('Arming', SWITCH_UUIDS.ARMING_SENSOR),
     trippedMotionSensorService: sensor('Tripped', SWITCH_UUIDS.TRIPPED_SENSOR),
@@ -104,6 +110,7 @@ export function buildServiceList(
     if (options.tripModeSwitches) {
       list.push(svcs.tripHomeSwitchService);
     }
+    list.push(...svcs.customTripHomeSwitchServices);
   }
   if (avail.includes(SecurityState.AWAY)) {
     if (options.modeSwitches) {
@@ -112,6 +119,7 @@ export function buildServiceList(
     if (options.tripModeSwitches) {
       list.push(svcs.tripAwaySwitchService);
     }
+    list.push(...svcs.customTripAwaySwitchServices);
   }
   if (avail.includes(SecurityState.NIGHT)) {
     if (options.modeSwitches) {
@@ -120,6 +128,7 @@ export function buildServiceList(
     if (options.tripModeSwitches) {
       list.push(svcs.tripNightSwitchService);
     }
+    list.push(...svcs.customTripNightSwitchServices);
   }
 
   if (options.modeSwitches && options.modeOffSwitch) {

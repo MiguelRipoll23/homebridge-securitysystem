@@ -161,6 +161,17 @@ export class ConfigurationService {
       audioExtraVariables: Array.isArray(raw.audio_extra_variables)
         ? (raw.audio_extra_variables as { key: string; value: string }[])
         : [],
+
+      // Custom trip mode switches
+      tripHomeSwitches: Array.isArray(raw.trip_home_switches)
+        ? (raw.trip_home_switches as { label: string }[])
+        : [],
+      tripAwaySwitches: Array.isArray(raw.trip_away_switches)
+        ? (raw.trip_away_switches as { label: string }[])
+        : [],
+      tripNightSwitches: Array.isArray(raw.trip_night_switches)
+        ? (raw.trip_night_switches as { label: string }[])
+        : [],
       audioSwitch: this.bool(raw, 'audio_switch', false),
 
       // Server
