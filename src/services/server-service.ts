@@ -1,5 +1,6 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { serve } from '@hono/node-server';
+import { Scalar } from '@scalar/hono-api-reference';
 import type { Context, MiddlewareHandler } from 'hono';
 import type { Logging } from 'homebridge';
 import { SecurityState } from '../types/security-state-type.js';
@@ -14,19 +15,6 @@ import { ErrorSchema } from '../schemas/error-schema.js';
 import { StatusResponseSchema } from '../schemas/status-response-schema.js';
 import { ModeRequestSchema } from '../schemas/mode-request-schema.js';
 import { ArmingLockRequestSchema } from '../schemas/arming-lock-schema.js';
-
-const SCALAR_HTML = `<!doctype html>
-<html>
-<head>
-  <title>Homebridge Security System API</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body>
-  <script id="api-reference" data-url="/openapi.json"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
-</body>
-</html>`;
 
 const MODE_TO_STATE: Record<string, SecurityState> = {
   home: SecurityState.HOME,
@@ -159,7 +147,20 @@ export class ServerService {
     const auth = this.createAuthMiddleware();
 
     // Scalar UI
-    this.application.get('/', (c) => c.html(SCALAR_HTML));
+    this.application.get(
+      '/',
+      Scalar({
+        url: '/openapi.json',
+        pageTitle: 'Homebridge Security System API',
+        metaData: {
+          title: 'Homebridge Security System API',
+          description: 'Remote control API for the Homebridge Security System plugin.',
+          ogTitle: 'Homebridge Security System API',
+          ogDescription: 'Remote control API for the Homebridge Security System plugin.',
+        },
+        defaultOpenAllTags: true,
+      }),
+    );
 
     // Register Bearer auth security scheme for OpenAPI documentation
     this.application.openAPIRegistry.registerComponent('securitySchemes', 'BearerAuth', {
