@@ -890,7 +890,7 @@
       "description": "Expose a server to interact with the security system remotely.",
       "expandable": true,
       "expanded": false,
-      "items": ["server_port", "server_code"]
+      "items": ["server_port", "server_api_key"]
     },
     {
       "type": "fieldset",
