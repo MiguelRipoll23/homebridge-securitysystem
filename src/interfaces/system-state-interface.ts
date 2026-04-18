@@ -11,7 +11,7 @@ export interface SystemState {
   isArming: boolean;
   isTripping: boolean;
   isKnocked: boolean;
-  invalidCodeCount: number;
+  serverAuthenticationAttempts: number;
   pausedCurrentState: SecurityState | null;
   audioProcess: ChildProcess | null;
 }

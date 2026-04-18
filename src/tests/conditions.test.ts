@@ -20,7 +20,7 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isArming: false,
     isTripping: false,
     isKnocked: false,
-    invalidCodeCount: 0,
+    serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
     audioProcess: null,
     ...overrides,

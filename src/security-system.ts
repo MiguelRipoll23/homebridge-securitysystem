@@ -148,7 +148,7 @@ export class SecuritySystem implements AccessoryPlugin {
       isArming: false,
       isTripping: false,
       isKnocked: false,
-      invalidCodeCount: 0,
+      serverAuthenticationAttempts: 0,
       pausedCurrentState: null,
       audioProcess: null,
     };
