@@ -237,30 +237,30 @@ export class ServerService {
     const authHeader = context.req.header('Authorization');
 
     if (authHeader === undefined || !authHeader.startsWith('Bearer ')) {
-      this.log.info('Code required (Server)');
+      this.log.info('API key required - Authorization header missing (Server)');
       return context.json(
         { reason: 'API key required. Use the Authorization: Bearer <key> header.' },
         401,
       ) as Response;
     }
 
-    if (this.state.invalidCodeCount >= 5) {
-      this.log.info('Code blocked (Server)');
+    if (this.state.serverAuthenticationAttempts >= 5) {
+      this.log.warn('API key blocked - too many invalid attempts (Server)');
       return context.json(
         { reason: 'API key blocked due to too many invalid attempts' },
         403,
       ) as Response;
     }
 
-    const code = authHeader.slice('Bearer '.length).trim();
+    const apiKey = authHeader.slice('Bearer '.length).trim();
 
-    if (code !== this.options.serverApiKey) {
-      this.state.invalidCodeCount++;
-      this.log.info('Code invalid (Server)');
+    if (apiKey !== this.options.serverApiKey) {
+      this.state.serverAuthenticationAttempts++;
+      this.log.warn(`API key invalid - attempt ${this.state.serverAuthenticationAttempts}/5 (Server)`);
       return context.json({ reason: 'API key invalid' }, 403) as Response;
     }
 
-    this.state.invalidCodeCount = 0;
+    this.state.serverAuthenticationAttempts = 0;
     return null;
   }
 }
