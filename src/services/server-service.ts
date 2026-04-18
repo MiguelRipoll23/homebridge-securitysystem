@@ -152,12 +152,6 @@ export class ServerService {
       Scalar({
         url: '/openapi.json',
         pageTitle: 'Homebridge Security System API',
-        metaData: {
-          title: 'Homebridge Security System API',
-          description: 'Remote control API for the Homebridge Security System plugin.',
-          ogTitle: 'Homebridge Security System API',
-          ogDescription: 'Remote control API for the Homebridge Security System plugin.',
-        },
         defaultOpenAllTags: true,
       }),
     );
