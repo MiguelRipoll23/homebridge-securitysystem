@@ -176,7 +176,8 @@ export class ConfigurationService {
 
       // Server
       serverPort: this.num(raw, 'server_port'),
-      serverCode: this.num(raw, 'server_code'),
+      // TODO: Remove serverCode fallback in future major version
+      serverApiKey: this.str(raw, 'server_api_key') ?? (this.num(raw, 'server_code') !== null ? String(this.num(raw, 'server_code')!) : null),
 
       // Shell commands
       commandTargetHome: this.str(raw, 'command_target_home'),

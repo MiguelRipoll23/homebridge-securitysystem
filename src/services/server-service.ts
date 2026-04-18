@@ -160,7 +160,7 @@ export class ServerService {
     this.application.openAPIRegistry.registerComponent('securitySchemes', 'BearerAuth', {
       type: 'http',
       scheme: 'bearer',
-      description: 'Numeric API key configured via the serverCode plugin option.',
+      description: 'API key configured via the server_api_key plugin option.',
     });
 
     // OpenAPI spec
@@ -226,11 +226,11 @@ export class ServerService {
   }
 
   /**
-   * Validates the Authorization: Bearer <key> header when serverCode is configured.
+   * Validates the Authorization: Bearer <key> header when serverApiKey is configured.
    * Returns an error Response on failure, or null to allow the request through.
    */
   private authenticate(context: Context): Response | null {
-    if (this.options.serverCode === null) {
+    if (this.options.serverApiKey === null) {
       return null;
     }
 
@@ -254,7 +254,7 @@ export class ServerService {
 
     const code = authHeader.slice('Bearer '.length).trim();
 
-    if (parseInt(code, 10) !== this.options.serverCode) {
+    if (code !== this.options.serverApiKey) {
       this.state.invalidCodeCount++;
       this.log.info('Code invalid (Server)');
       return context.json({ reason: 'API key invalid' }, 403) as Response;

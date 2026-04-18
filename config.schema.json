@@ -536,13 +536,12 @@
         "minimum": 0,
         "placeholder": 80
       },
-      "server_code": {
-        "title": "Security Code",
-        "description": "All requests will require this code to be sent.",
-        "type": "integer",
+      "server_api_key": {
+        "title": "API Key",
+        "description": "A key used to protect the server and authenticate requests.",
+        "type": "string",
         "required": false,
-        "minimum": 0,
-        "placeholder": "XXXX"
+        "placeholder": "your-api-key"
       },
       "webhook_url": {
         "title": "Base URL",

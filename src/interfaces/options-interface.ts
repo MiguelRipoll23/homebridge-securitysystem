@@ -101,7 +101,7 @@ export interface SecuritySystemOptions {
 
   // Server
   serverPort: number | null;
-  serverCode: number | null;
+  serverApiKey: string | null;
 
   // Shell commands
   commandTargetHome: string | null;
