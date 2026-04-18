@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.0.0-beta.2 - 2026-04-18
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.2 -->
+
+## What's Changed
+### 🛠️ Other Changes
+* Replace numeric server code with string-based API key authentication by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/760
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.0.0-beta.1...v11.0.0-beta.2
+
+
 ## v11.0.0-beta.1 - 2026-04-18
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.1 -->
