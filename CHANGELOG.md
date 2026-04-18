@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.0.0-beta.1 - 2026-04-18
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.1 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* Add OpenAPI documentation and refactor API endpoints by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/758
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v10.1.0...v11.0.0-beta.1
+
+
 ## v10.1.0 - 2026-04-18
 
 <!-- Release notes generated using configuration in .github/release.yml at v10.1.0 -->
