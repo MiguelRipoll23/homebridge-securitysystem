@@ -36,8 +36,11 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
+    "@hono/zod-openapi": "^1.3.0",
+    "@scalar/hono-api-reference": "^0.10.9",
     "hono": "^4.12.14",
-    "node-persist": "^4.0.1"
+    "node-persist": "^4.0.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
