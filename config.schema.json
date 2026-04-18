@@ -536,7 +536,7 @@
         "minimum": 0,
         "placeholder": 80
       },
-      "server_code": {
+      "server_api_key": {
         "title": "API Key",
         "description": "A key used to protect the server and authenticate requests.",
         "type": "string",
