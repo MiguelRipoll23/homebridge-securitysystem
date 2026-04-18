@@ -176,7 +176,7 @@ export class ConfigurationService {
 
       // Server
       serverPort: this.num(raw, 'server_port'),
-      serverCode: this.num(raw, 'server_code'),
+      serverCode: this.str(raw, 'server_code'),
 
       // Shell commands
       commandTargetHome: this.str(raw, 'command_target_home'),
