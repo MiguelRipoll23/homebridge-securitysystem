@@ -10,9 +10,7 @@ Homebridge plugin that creates a security system accessory that can be triggered
 
 ## Installation
 
-If you already have [Homebridge](https://github.com/homebridge/homebridge) installed, execute the following command:
-
-`npm i -g --unsafe-perm homebridge-securitysystem`
+In the Homebridge UI, go to the plugins section, click the search button, then search for `homebridge-securitysystem`, and click the install button.
 
 ## Demo
 
