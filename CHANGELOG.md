@@ -1,5 +1,22 @@
 # Changelog
 
+## v10.1.0 - 2026-04-18
+
+<!-- Release notes generated using configuration in .github/release.yml at v10.1.0 -->
+
+## What's Changed
+### ✨ Enhancements
+* feat: add custom trip mode switches per mode via config by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/750
+### 📦 Dependencies
+* build(deps-dev): bump typescript from 6.0.2 to 6.0.3 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/749
+### 🛠️ Other Changes
+* fix: resolve Service|Service[] type errors and CHANGELOG detection bug by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/752
+* Refactor trip switches: prefix custom switches and add comprehensive tests by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/755
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v10.0.0...v10.1.0
+
+
 ## v10.1.0-beta.3 - 2026-04-18
 
 <!-- Release notes generated using configuration in .github/release.yml at v10.1.0-beta.3 -->
