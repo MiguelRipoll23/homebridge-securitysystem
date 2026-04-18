@@ -38,7 +38,7 @@ export function buildServiceRegistry(
   audioSvc.getCharacteristic(Char.On).value = true;
 
   const buildCustomTripSwitches = (mode: string, modeLabel: string, switches: TripModeSwitch[]): Service[] =>
-    switches.map((s, i) => sw(`${modeLabel} ${s.label}`, `trip-${mode}-${i}`));
+    switches.map((s, i) => sw(`Trip ${modeLabel} ${s.label}`, `trip-${mode}-${i}`));
 
   return {
     mainService: mainSvc,

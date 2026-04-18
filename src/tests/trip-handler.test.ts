@@ -37,10 +37,13 @@ function makeServices(): ServiceRegistry {
     'audioSwitchService', 'armingMotionSensorService', 'trippedMotionSensorService',
     'triggeredMotionSensorService', 'triggeredResetMotionSensorService', 'accessoryInfoService',
   ];
-  const s: Record<string, ReturnType<typeof makeMockService>> = {};
+  const s: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
   for (const k of keys) {
     s[k] = makeMockService();
   }
+  s.customTripHomeSwitchServices = [];
+  s.customTripAwaySwitchServices = [];
+  s.customTripNightSwitchServices = [];
   return s as unknown as ServiceRegistry;
 }
 
@@ -193,5 +196,87 @@ describe('TripHandler', async () => {
     state.currentState = SecurityState.AWAY;
     const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
     expect(result).toBe(false);
+  });
+
+  // ── Custom trip switch tests ───────────────────────────────────────────────
+
+  describe('Custom Trip Switches', () => {
+    it('custom HOME trip switch triggers only in HOME mode', () => {
+      state.currentState = SecurityState.HOME;
+      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
+      expect(result).toBe(true);
+    });
+
+    it('custom HOME trip switch blocks when not in HOME mode', () => {
+      state.currentState = SecurityState.AWAY;
+      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
+      expect(result).toBe(false);
+    });
+
+    it('custom AWAY trip switch triggers only in AWAY mode', () => {
+      state.currentState = SecurityState.AWAY;
+      const result = tripHandler.triggerIfModeSet(SecurityState.AWAY, true);
+      expect(result).toBe(true);
+    });
+
+    it('custom AWAY trip switch blocks when not in AWAY mode', () => {
+      state.currentState = SecurityState.HOME;
+      const result = tripHandler.triggerIfModeSet(SecurityState.AWAY, true);
+      expect(result).toBe(false);
+    });
+
+    it('custom NIGHT trip switch triggers only in NIGHT mode', () => {
+      state.currentState = SecurityState.NIGHT;
+      const result = tripHandler.triggerIfModeSet(SecurityState.NIGHT, true);
+      expect(result).toBe(true);
+    });
+
+    it('custom NIGHT trip switch blocks when not in NIGHT mode', () => {
+      state.currentState = SecurityState.HOME;
+      const result = tripHandler.triggerIfModeSet(SecurityState.NIGHT, true);
+      expect(result).toBe(false);
+    });
+
+    it('custom trip switch blocks when alarm is already triggered', () => {
+      state.currentState = SecurityState.TRIGGERED;
+      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
+      expect(result).toBe(false);
+    });
+
+    it('custom trip switch cancellation works with triggerIfModeSet', () => {
+      state.currentState = SecurityState.HOME;
+      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, false);
+      expect(result).toBe(true);
+      expect(mockAudio.stop).toHaveBeenCalled();
+    });
+
+    it('resetTripSwitches includes custom trip switch services', () => {
+      const mockChar = makeMockChar(true);
+      const mockSvc = { getCharacteristic: vi.fn().mockReturnValue(mockChar) };
+      (services.customTripHomeSwitchServices as unknown[]) = [mockSvc];
+
+      tripHandler.resetTripSwitches();
+
+      expect(mockChar.updateValue).toHaveBeenCalledWith(false);
+    });
+
+    it('resetTripSwitches handles multiple custom switches per mode', () => {
+      const mockChar1 = makeMockChar(true);
+      const mockChar2 = makeMockChar(true);
+      const mockChar3 = makeMockChar(false);
+
+      const mockSvc1 = { getCharacteristic: vi.fn().mockReturnValue(mockChar1) };
+      const mockSvc2 = { getCharacteristic: vi.fn().mockReturnValue(mockChar2) };
+      const mockSvc3 = { getCharacteristic: vi.fn().mockReturnValue(mockChar3) };
+
+      (services.customTripHomeSwitchServices as unknown[]) = [mockSvc1, mockSvc2];
+      (services.customTripAwaySwitchServices as unknown[]) = [mockSvc3];
+
+      tripHandler.resetTripSwitches();
+
+      expect(mockChar1.updateValue).toHaveBeenCalledWith(false);
+      expect(mockChar2.updateValue).toHaveBeenCalledWith(false);
+      expect(mockChar3.updateValue).not.toHaveBeenCalled();
+    });
   });
 });
