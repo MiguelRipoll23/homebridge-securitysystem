@@ -121,28 +121,28 @@ describe('TripHandler', async () => {
     state.currentState = SecurityState.OFF;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
     expect(result.success).toBe(false);
-    expect(result.reason).toBe('system is disarmed and override is not enabled');
+    expect(result.reason).toBe('Trip Switch (Not armed): system is disarmed and override is not enabled');
   });
 
   it('blocks trip when arming is in progress', () => {
     state.isArming = true;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
     expect(result.success).toBe(false);
-    expect(result.reason).toBe('arm delay countdown is still in progress');
+    expect(result.reason).toBe('Trip Switch (Still arming): arm delay countdown is still in progress');
   });
 
   it('blocks trip when already triggered', () => {
     state.currentState = SecurityState.TRIGGERED;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
     expect(result.success).toBe(false);
-    expect(result.reason).toBe('alarm is already active');
+    expect(result.reason).toBe('Security System (Already triggered): alarm is already active');
   });
 
   it('blocks trip when trigger timeout is already running', () => {
     state.isTripping = true;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
     expect(result.success).toBe(false);
-    expect(result.reason).toBe('trigger delay countdown is already running');
+    expect(result.reason).toBe('Security System (Already tripped): trigger delay countdown is already running');
     state.isTripping = false;
   });
 

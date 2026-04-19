@@ -15,8 +15,8 @@ export class AlreadyTriggeredCondition extends Condition {
     }
     const blocked = state.currentState === SecurityState.TRIGGERED;
     if (blocked) {
-      this._failureReason = 'alarm is already active';
-      log.warn('Security System (Already triggered): alarm is already active');
+      this._failureReason = 'Security System (Already triggered): alarm is already active';
+      log.warn(this._failureReason);
     }
     return blocked;
   }
