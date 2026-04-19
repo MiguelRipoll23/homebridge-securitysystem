@@ -7,13 +7,14 @@ on:
     paths-ignore:
       - "**.md"
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
     paths-ignore:
       - "**.md"
 
 jobs:
   build-package:
     name: Build package
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ignore-for-release') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,6 +36,7 @@ jobs:
       - name: Build package
         run: |
           npm ci
+          npm run lint
           npm pack
 
       - name: Attest build provenance

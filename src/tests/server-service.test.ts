@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
