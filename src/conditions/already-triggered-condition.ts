@@ -10,6 +10,7 @@ export class AlreadyTriggeredCondition extends Condition {
   readonly name = 'already-triggered';
 
   evaluate({ state, value, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }

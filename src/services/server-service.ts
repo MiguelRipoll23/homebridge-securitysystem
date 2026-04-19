@@ -37,15 +37,14 @@ const AUTH_RESPONSES = {
 
 const statusRoute = createRoute({
   method: 'get',
-  path: '/status',
-  summary: 'Get system status',
-  description:
-    'Returns the current arming state, active mode, target mode, and trip status of the security system.',
+  path: '/state',
+  summary: 'Get state',
+  description: 'Returns the current arming state, active mode, target mode, and trip status.',
   security: [{ BearerAuth: [] }],
   responses: {
     200: {
       content: { 'application/json': { schema: StatusResponseSchema } },
-      description: 'Current system status',
+      description: 'Current system state',
     },
     ...AUTH_RESPONSES,
   },
@@ -57,14 +56,14 @@ const modeRoute = createRoute({
   summary: 'Change security mode',
   description:
     'Sets the target security mode. Supported modes: home, away, night, off, triggered. ' +
-    'Use "triggered" to activate the alarm. An optional delay (ms) defers the transition.',
+    'Use "triggered" to activate the alarm. An optional delay (seconds) defers the transition.',
   security: [{ BearerAuth: [] }],
   request: {
     body: {
       content: {
         'application/json': {
           schema: ModeRequestSchema,
-          example: { mode: 'home', delay: 5000 },
+          example: { mode: 'home', delay: 5 },
         },
       },
       required: true,
@@ -174,8 +173,8 @@ export class ServerService {
       },
     });
 
-    // GET /status
-    this.application.use('/status', auth);
+    // GET /state
+    this.application.use('/state', auth);
     this.application.openapi(statusRoute, (c) => {
       return c.json({
         arming: this.state.isArming,

@@ -9,6 +9,7 @@ export class TriggerAlreadyRunningCondition extends Condition {
   readonly name = 'trigger-already-running';
 
   evaluate({ state, value, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }

@@ -15,6 +15,7 @@ export class ArmingLockCondition extends Condition {
   }
 
   evaluate({ state, services, options }: ConditionContext): boolean {
+    this.clearFailureReason();
     const hasLockFeature = options.armingLockSwitch || options.armingLockSwitches;
     if (!hasLockFeature) {
       return false;

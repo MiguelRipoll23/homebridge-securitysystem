@@ -17,9 +17,15 @@ export abstract class Condition {
     return this._failureReason;
   }
 
+  /** Must be called at the top of every evaluate() implementation to clear any stale reason. */
+  protected clearFailureReason(): void {
+    this._failureReason = undefined;
+  }
+
   /**
    * Returns `true` if this condition blocks the action described by `context`.
    * When `true` is returned the caller must reject the HomeKit request.
+   * Implementations must call `this.clearFailureReason()` before any allow/deny logic.
    */
   abstract evaluate(context: ConditionContext): boolean;
 }

@@ -1,4 +1,4 @@
-export interface ServiceResult {
+export type ServiceResult = {
   success: boolean;
   reason?: string;
-}
+};

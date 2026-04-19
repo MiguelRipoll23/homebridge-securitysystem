@@ -29,6 +29,7 @@ export class DoubleKnockCondition extends Condition {
   }
 
   evaluate({ state, options, value, origin, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value || !options.doubleKnock) {
       return false;
     }

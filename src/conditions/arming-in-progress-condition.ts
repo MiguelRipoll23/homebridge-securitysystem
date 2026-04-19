@@ -9,6 +9,7 @@ export class ArmingInProgressCondition extends Condition {
   readonly name = 'arming-in-progress';
 
   evaluate({ state, value, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }

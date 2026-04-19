@@ -39,6 +39,7 @@ export class HomeKitRegistrar {
     const tripSetHandler = (v: CharacteristicValue, origin: OriginType) => {
       const result = this.tripHandler.updateTripSwitch(v as boolean, origin, false);
       if (!result.success) {
+        this.log.debug(result.reason ?? 'Trip blocked');
         throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
       }
     };
@@ -63,6 +64,7 @@ export class HomeKitRegistrar {
           this.log.info(`${label} Switch (${v ? 'On' : 'Off'})`);
           const result = this.tripHandler.triggerIfModeSet(mode, v as boolean);
           if (!result.success) {
+            this.log.debug(result.reason ?? 'Trip blocked');
             throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
           }
         });
@@ -82,6 +84,7 @@ export class HomeKitRegistrar {
             this.log.info(`${name} Switch (${v ? 'On' : 'Off'})`);
             const result = this.tripHandler.triggerIfModeSet(mode, v as boolean);
             if (!result.success) {
+              this.log.debug(result.reason ?? 'Trip blocked');
               throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
             }
           });

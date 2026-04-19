@@ -11,6 +11,7 @@ export class NotArmedCondition extends Condition {
   readonly name = 'not-armed';
 
   evaluate({ state, options, value, origin, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }
