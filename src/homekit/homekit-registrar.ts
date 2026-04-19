@@ -37,8 +37,9 @@ export class HomeKitRegistrar {
 
     // Trip switches.
     const tripSetHandler = (v: CharacteristicValue, origin: OriginType) => {
-      const ok = this.tripHandler.updateTripSwitch(v as boolean, origin, false);
-      if (!ok) {
+      const result = this.tripHandler.updateTripSwitch(v as boolean, origin, false);
+      if (!result.success) {
+        this.log.debug(result.reason ?? 'Trip blocked');
         throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
       }
     };
@@ -61,8 +62,9 @@ export class HomeKitRegistrar {
         .onGet(async () => Boolean(svc.getCharacteristic(Char.On).value))
         .onSet(async (v: CharacteristicValue) => {
           this.log.info(`${label} Switch (${v ? 'On' : 'Off'})`);
-          const ok = this.tripHandler.triggerIfModeSet(mode, v as boolean);
-          if (!ok) {
+          const result = this.tripHandler.triggerIfModeSet(mode, v as boolean);
+          if (!result.success) {
+            this.log.debug(result.reason ?? 'Trip blocked');
             throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
           }
         });
@@ -80,8 +82,9 @@ export class HomeKitRegistrar {
           .onGet(async () => Boolean(svc.getCharacteristic(Char.On).value))
           .onSet(async (v: CharacteristicValue) => {
             this.log.info(`${name} Switch (${v ? 'On' : 'Off'})`);
-            const ok = this.tripHandler.triggerIfModeSet(mode, v as boolean);
-            if (!ok) {
+            const result = this.tripHandler.triggerIfModeSet(mode, v as boolean);
+            if (!result.success) {
+              this.log.debug(result.reason ?? 'Trip blocked');
               throw new this.api.hap.HapStatusError(HK_ERR as HAPStatus);
             }
           });

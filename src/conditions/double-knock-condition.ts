@@ -29,6 +29,7 @@ export class DoubleKnockCondition extends Condition {
   }
 
   evaluate({ state, options, value, origin, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value || !options.doubleKnock) {
       return false;
     }
@@ -60,7 +61,8 @@ export class DoubleKnockCondition extends Condition {
       log.info('Trip Switch (Reset): double-knock window expired without second activation');
     });
 
-    log.warn('Trip Switch (Knock): double-knock is required, waiting for second activation');
+    this._failureReason = 'Trip Switch (Knock): double-knock is required, waiting for second activation';
+    log.warn(this._failureReason);
     return true;
   }
 

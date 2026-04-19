@@ -11,6 +11,7 @@ export class NotArmedCondition extends Condition {
   readonly name = 'not-armed';
 
   evaluate({ state, options, value, origin, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }
@@ -21,7 +22,8 @@ export class NotArmedCondition extends Condition {
 
     const blocked = isDisarmed && isNotOverridingOff && isNotOverrideSwitch;
     if (blocked) {
-      log.warn('Trip Switch (Not armed): system is disarmed and override is not enabled');
+      this._failureReason = 'Trip Switch (Not armed): system is disarmed and override is not enabled';
+      log.warn(this._failureReason);
     }
     return blocked;
   }

@@ -17,6 +17,7 @@ import { AlreadyTriggeredCondition } from '../conditions/already-triggered-condi
 import { DoubleKnockCondition } from '../conditions/double-knock-condition.js';
 import { TriggerAlreadyRunningCondition } from '../conditions/trigger-already-running-condition.js';
 import type { TimerManager } from '../timers/timer-manager.js';
+import type { ServiceResult } from '../types/service-result-type.js';
 
 /**
  * Handles the trip switch and trigger-delay logic, including all blocking conditions.
@@ -56,24 +57,33 @@ export class TripHandler {
   }
 
   /**
-   * Core trip-switch logic shared by all trip/trigger paths.
-   * Returns `true` on success, `false` if blocked.
+   * Evaluates all blocking conditions for a trip action without side effects.
+   * Returns a failed result with the condition's reason if any condition blocks the action.
    */
-  updateTripSwitch(value: boolean, origin: OriginType, stateChanged: boolean): boolean {
-    const ctx: ConditionContext = {
-      state: this.state,
-      services: this.services,
-      options: this.options,
-      value,
-      origin,
-      log: this.log,
-    };
+  checkTripConditions(value: boolean, origin: OriginType): ServiceResult {
+    if (!value) {
+      return { success: true };
+    }
 
+    const ctx = this.makeContext(value, origin);
+    for (const condition of this.conditions) {
+      if (condition.evaluate(ctx)) {
+        return { success: false, reason: condition.failureReason };
+      }
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Core trip-switch logic shared by all trip/trigger paths.
+   * Returns a result object indicating success or the reason for failure.
+   */
+  updateTripSwitch(value: boolean, origin: OriginType, stateChanged: boolean): ServiceResult {
     if (value) {
-      for (const condition of this.conditions) {
-        if (condition.evaluate(ctx)) {
-          return false;
-        }
+      const conditionResult = this.checkTripConditions(value, origin);
+      if (!conditionResult.success) {
+        return conditionResult;
       }
 
       this.activateTrip(origin);
@@ -86,14 +96,14 @@ export class TripHandler {
       this.services.tripSwitchService.updateCharacteristic(this.Characteristic.On, value);
     }
 
-    return true;
+    return { success: true };
   }
 
   /**
    * Trip a mode-specific switch. Only triggers if the system is currently in
    * the required mode (or the alarm is triggered and target matches).
    */
-  triggerIfModeSet(requiredState: SecurityState, value: boolean): boolean {
+  triggerIfModeSet(requiredState: SecurityState, value: boolean): ServiceResult {
     const isTriggered = this.state.currentState === SecurityState.TRIGGERED;
 
     if (value) {
@@ -102,7 +112,7 @@ export class TripHandler {
 
       if (!modeMatches) {
         this.log.debug('Security System (Trip mode not set)');
-        return false;
+        return { success: false, reason: 'mode not set' };
       }
     }
 
@@ -139,6 +149,17 @@ export class TripHandler {
         }
       }
     }
+  }
+
+  private makeContext(value: boolean, origin: OriginType): ConditionContext {
+    return {
+      state: this.state,
+      services: this.services,
+      options: this.options,
+      value,
+      origin,
+      log: this.log,
+    };
   }
 
   private activateTrip(origin: OriginType): void {

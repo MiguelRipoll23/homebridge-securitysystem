@@ -9,11 +9,13 @@ export class TriggerAlreadyRunningCondition extends Condition {
   readonly name = 'trigger-already-running';
 
   evaluate({ state, value, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }
     if (state.isTripping) {
-      log.warn('Security System (Already tripped): trigger delay countdown is already running');
+      this._failureReason = 'Security System (Already tripped): trigger delay countdown is already running';
+      log.warn(this._failureReason);
       return true;
     }
     return false;

@@ -11,8 +11,8 @@ export const ModeRequestSchema = z
       .nonnegative()
       .optional()
       .openapi({
-        example: 5000,
-        description: 'Optional delay in milliseconds before applying the mode change',
+        example: 5,
+        description: 'Optional delay in seconds before applying the mode change',
       }),
   })
   .openapi('ModeRequest');

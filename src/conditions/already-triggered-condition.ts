@@ -10,12 +10,14 @@ export class AlreadyTriggeredCondition extends Condition {
   readonly name = 'already-triggered';
 
   evaluate({ state, value, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }
     const blocked = state.currentState === SecurityState.TRIGGERED;
     if (blocked) {
-      log.warn('Security System (Already triggered): alarm is already active');
+      this._failureReason = 'Security System (Already triggered): alarm is already active';
+      log.warn(this._failureReason);
     }
     return blocked;
   }

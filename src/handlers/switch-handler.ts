@@ -11,6 +11,7 @@ import { capitalise } from '../utils/state-util.js';
 import type { TimerManager } from '../timers/timer-manager.js';
 import type { EventBusService } from '../services/event-bus-service.js';
 import { EventType } from '../types/event-type.js';
+import type { ServiceResult } from '../types/service-result-type.js';
 
 /**
  * Handles all mode switches and the pause/extended switches.
@@ -98,7 +99,7 @@ export class SwitchHandler {
 
   // ── Arming lock switches ───────────────────────────────────────────────────
 
-  updateArmingLock(mode: string, value: boolean): boolean {
+  updateArmingLock(mode: string, value: boolean): ServiceResult {
     this.logArmingLock(mode, value);
 
     const map: Record<string, SingleServiceKey> = {
@@ -111,11 +112,11 @@ export class SwitchHandler {
     const key = map[mode];
     if (!key) {
       this.log.debug(`Unknown arming lock mode (${mode})`);
-      return false;
+      return { success: false, reason: `unknown arming lock mode: ${mode}` };
     }
 
     this.services[key].getCharacteristic(this.Characteristic.On).updateValue(value);
-    return true;
+    return { success: true };
   }
 
   // ── Mode switch display ────────────────────────────────────────────────────

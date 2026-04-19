@@ -9,11 +9,13 @@ export class ArmingInProgressCondition extends Condition {
   readonly name = 'arming-in-progress';
 
   evaluate({ state, value, log }: ConditionContext): boolean {
+    this.clearFailureReason();
     if (!value) {
       return false;
     }
     if (state.isArming) {
-      log.warn('Trip Switch (Still arming): arm delay countdown is still in progress');
+      this._failureReason = 'Trip Switch (Still arming): arm delay countdown is still in progress';
+      log.warn(this._failureReason);
       return true;
     }
     return false;

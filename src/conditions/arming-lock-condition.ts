@@ -15,14 +15,15 @@ export class ArmingLockCondition extends Condition {
   }
 
   evaluate({ state, services, options }: ConditionContext): boolean {
+    this.clearFailureReason();
     const hasLockFeature = options.armingLockSwitch || options.armingLockSwitches;
     if (!hasLockFeature) {
-      return false; 
+      return false;
     }
 
     const targetState = state.targetState;
     if (targetState === SecurityState.OFF) {
-      return false; 
+      return false;
     }
 
     // Check global arming-lock switch.
@@ -30,19 +31,28 @@ export class ArmingLockCondition extends Condition {
       .getCharacteristic(this.Characteristic.On).value;
 
     if (globalOn) {
-      return true; 
+      this._failureReason = 'arming is blocked by the global arming lock switch';
+      return true;
     }
 
     // Check mode-specific arming-lock switch.
+    let blocked = false;
     switch (targetState) {
     case SecurityState.HOME:
-      return Boolean(services.armingLockHomeSwitchService.getCharacteristic(this.Characteristic.On).value);
+      blocked = Boolean(services.armingLockHomeSwitchService.getCharacteristic(this.Characteristic.On).value);
+      break;
     case SecurityState.AWAY:
-      return Boolean(services.armingLockAwaySwitchService.getCharacteristic(this.Characteristic.On).value);
+      blocked = Boolean(services.armingLockAwaySwitchService.getCharacteristic(this.Characteristic.On).value);
+      break;
     case SecurityState.NIGHT:
-      return Boolean(services.armingLockNightSwitchService.getCharacteristic(this.Characteristic.On).value);
-    default:
-      return false;
+      blocked = Boolean(services.armingLockNightSwitchService.getCharacteristic(this.Characteristic.On).value);
+      break;
     }
+
+    if (blocked) {
+      this._failureReason = 'arming is blocked by a mode-specific arming lock switch';
+    }
+
+    return blocked;
   }
 }
