@@ -14,6 +14,7 @@ import type { SwitchHandler } from '../handlers/switch-handler.js';
 import { ErrorSchema } from '../schemas/error-schema.js';
 import { StatusResponseSchema } from '../schemas/status-response-schema.js';
 import { ModeRequestSchema } from '../schemas/mode-request-schema.js';
+import { TripModeRequestSchema } from '../schemas/trip-mode-request-schema.js';
 import { ArmingLockRequestSchema } from '../schemas/arming-lock-schema.js';
 import type { ServiceResult } from '../types/service-result-type.js';
 
@@ -52,11 +53,12 @@ const statusRoute = createRoute({
 
 const modeRoute = createRoute({
   method: 'put',
-  path: '/mode',
-  summary: 'Change security mode',
+  path: '/mode/update',
+  summary: 'Change mode',
   description:
-    'Sets the target security mode. Supported modes: home, away, night, off, triggered. ' +
-    'Use "triggered" to activate the alarm. An optional delay (seconds) defers the transition.',
+    'Sets the target security mode. Supported modes: home, away, night, off. ' +
+    'An optional delay (seconds) defers the transition. ' +
+    'To trigger the alarm use the POST /mode/trip endpoint instead.',
   security: [{ BearerAuth: [] }],
   request: {
     body: {
@@ -79,10 +81,40 @@ const modeRoute = createRoute({
   },
 });
 
+const tripModeRoute = createRoute({
+  method: 'post',
+  path: '/mode/trip',
+  summary: 'Trip mode',
+  description:
+    'Activates the alarm ("triggered" state). ' +
+    'If mode is specified the alarm only fires when the system is currently in that mode. ' +
+    'An optional delay (seconds) defers the activation.',
+  security: [{ BearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: TripModeRequestSchema,
+          example: { mode: 'home', delay: 30 },
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    204: { description: 'Trip accepted' },
+    ...AUTH_RESPONSES,
+    409: {
+      content: { 'application/json': { schema: ErrorSchema } },
+      description: 'Trip rejected by the system',
+    },
+  },
+});
+
 const armingLockRoute = createRoute({
   method: 'put',
   path: '/switches/arming-lock',
-  summary: 'Update arming lock switch',
+  summary: 'Update arming lock',
   description: 'Enables or disables the arming lock for a specific mode or globally.',
   security: [{ BearerAuth: [] }],
   request: {
@@ -117,11 +149,16 @@ export class ServerService {
     private readonly stateHandler: StateHandler,
     private readonly tripHandler: TripHandler,
     private readonly switchHandler: SwitchHandler,
-  ) {}
+  ) {
+    this.registerRoutes();
+  }
+
+  /** Exposed for testing — returns the underlying Hono app. */
+  get app(): OpenAPIHono {
+    return this.application;
+  }
 
   start(): void {
-    this.registerRoutes();
-
     const server = serve(
       { fetch: this.application.fetch, port: this.options.serverPort! },
       () => this.log.info(`Server (${this.options.serverPort})`),
@@ -184,27 +221,52 @@ export class ServerService {
       });
     });
 
-    // PUT /mode
-    this.application.use('/mode', auth);
+    // PUT /mode/update
+    this.application.use('/mode/update', auth);
     this.application.openapi(modeRoute, (c) => {
       const { mode, delay = 0 } = c.req.valid('json');
-      let result: ServiceResult;
-
-      if (mode === 'triggered') {
-        if (delay > 0) {
-          result = this.tripHandler.updateTripSwitch(true, OriginType.EXTERNAL, false);
-        } else {
-          result = this.tripHandler.checkTripConditions(true, OriginType.EXTERNAL);
-          if (result.success) {
-            this.stateHandler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-          }
-        }
-      } else {
-        result = this.stateHandler.updateTargetState(MODE_TO_STATE[mode], OriginType.EXTERNAL, delay);
-      }
+      const result = this.stateHandler.updateTargetState(MODE_TO_STATE[mode], OriginType.EXTERNAL, delay);
 
       if (!result.success) {
         return c.json({ reason: result.reason ?? 'Mode change rejected by the system' }, 409);
+      }
+
+      return c.body(null, 204);
+    });
+
+    // POST /mode/trip
+    this.application.use('/mode/trip', auth);
+    this.application.openapi(tripModeRoute, (c) => {
+      const { mode, delay } = c.req.valid('json');
+      const effectiveDelay = delay ?? 0;
+
+      if (effectiveDelay > 0) {
+        const precheck = this.tripHandler.checkTripConditions(true, OriginType.EXTERNAL);
+        if (!precheck.success) {
+          return c.json({ reason: precheck.reason ?? 'Trip rejected by the system' }, 409);
+        }
+
+        setTimeout(() => {
+          if (mode != null) {
+            this.tripHandler.triggerIfModeSet(MODE_TO_STATE[mode], true);
+          } else {
+            this.tripHandler.updateTripSwitch(true, OriginType.EXTERNAL, false);
+          }
+        }, effectiveDelay * 1000);
+
+        return c.body(null, 204);
+      }
+
+      let result: ServiceResult;
+
+      if (mode != null) {
+        result = this.tripHandler.triggerIfModeSet(MODE_TO_STATE[mode], true);
+      } else {
+        result = this.tripHandler.updateTripSwitch(true, OriginType.EXTERNAL, false);
+      }
+
+      if (!result.success) {
+        return c.json({ reason: result.reason ?? 'Trip rejected by the system' }, 409);
       }
 
       return c.body(null, 204);
