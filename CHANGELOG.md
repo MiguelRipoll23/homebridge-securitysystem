@@ -1,5 +1,25 @@
 # Changelog
 
+## v11.0.0 - 2026-04-19
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.0.0 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* Add OpenAPI documentation and refactor API endpoints by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/758
+* Replace numeric server code with string-based API key authentication by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/760
+### ✨ Enhancements
+* refactor: replace boolean returns with ServiceResult objects and add condition failure reasons by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/764
+### 🛠️ Other Changes
+* fix: update server configuration to use API key instead of server code by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/762
+* Improve API authentication logging and naming clarity by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/763
+* Separate trip endpoint from mode update endpoint by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/766
+* Add lint step to build workflow and improve PR trigger conditions by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/768
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v10.1.0...v11.0.0
+
+
 ## v11.0.0-beta.5 - 2026-04-19
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.5 -->
