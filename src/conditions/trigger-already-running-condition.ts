@@ -13,6 +13,7 @@ export class TriggerAlreadyRunningCondition extends Condition {
       return false;
     }
     if (state.isTripping) {
+      this._failureReason = 'trigger delay countdown is already running';
       log.warn('Security System (Already tripped): trigger delay countdown is already running');
       return true;
     }

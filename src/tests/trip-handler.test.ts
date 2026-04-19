@@ -120,32 +120,36 @@ describe('TripHandler', async () => {
   it('blocks trip when system is disarmed (not overriding)', () => {
     state.currentState = SecurityState.OFF;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('system is disarmed and override is not enabled');
   });
 
   it('blocks trip when arming is in progress', () => {
     state.isArming = true;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('arm delay countdown is still in progress');
   });
 
   it('blocks trip when already triggered', () => {
     state.currentState = SecurityState.TRIGGERED;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('alarm is already active');
   });
 
   it('blocks trip when trigger timeout is already running', () => {
     state.isTripping = true;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('trigger delay countdown is already running');
     state.isTripping = false;
   });
 
   it('allows trip when system is armed (HOME mode)', () => {
     state.currentState = SecurityState.HOME;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
   });
 
   it('cancels trip and stops audio', () => {
@@ -189,13 +193,14 @@ describe('TripHandler', async () => {
   it('triggerIfModeSet allows when current mode matches required', () => {
     state.currentState = SecurityState.HOME;
     const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
   });
 
   it('triggerIfModeSet blocks when current mode does not match', () => {
     state.currentState = SecurityState.AWAY;
     const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('mode not set');
   });
 
   // ── Custom trip switch tests ───────────────────────────────────────────────
@@ -204,49 +209,49 @@ describe('TripHandler', async () => {
     it('custom HOME trip switch triggers only in HOME mode', () => {
       state.currentState = SecurityState.HOME;
       const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
     });
 
     it('custom HOME trip switch blocks when not in HOME mode', () => {
       state.currentState = SecurityState.AWAY;
       const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-      expect(result).toBe(false);
+      expect(result.success).toBe(false);
     });
 
     it('custom AWAY trip switch triggers only in AWAY mode', () => {
       state.currentState = SecurityState.AWAY;
       const result = tripHandler.triggerIfModeSet(SecurityState.AWAY, true);
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
     });
 
     it('custom AWAY trip switch blocks when not in AWAY mode', () => {
       state.currentState = SecurityState.HOME;
       const result = tripHandler.triggerIfModeSet(SecurityState.AWAY, true);
-      expect(result).toBe(false);
+      expect(result.success).toBe(false);
     });
 
     it('custom NIGHT trip switch triggers only in NIGHT mode', () => {
       state.currentState = SecurityState.NIGHT;
       const result = tripHandler.triggerIfModeSet(SecurityState.NIGHT, true);
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
     });
 
     it('custom NIGHT trip switch blocks when not in NIGHT mode', () => {
       state.currentState = SecurityState.HOME;
       const result = tripHandler.triggerIfModeSet(SecurityState.NIGHT, true);
-      expect(result).toBe(false);
+      expect(result.success).toBe(false);
     });
 
     it('custom trip switch blocks when alarm is already triggered', () => {
       state.currentState = SecurityState.TRIGGERED;
       const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-      expect(result).toBe(false);
+      expect(result.success).toBe(false);
     });
 
     it('custom trip switch cancellation works with triggerIfModeSet', () => {
       state.currentState = SecurityState.HOME;
       const result = tripHandler.triggerIfModeSet(SecurityState.HOME, false);
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
       expect(mockAudio.stop).toHaveBeenCalled();
     });
 

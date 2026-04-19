@@ -14,6 +14,7 @@ import type { AudioService } from '../services/audio-service.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { TimerManager } from '../timers/timer-manager.js';
 import { getArmingSeconds } from '../utils/arming-util.js';
+import type { ServiceResult } from '../types/service-result-type.js';
 
 /**
  * Manages the core security-system state machine: arming, triggering, and resetting.
@@ -56,9 +57,10 @@ export class StateHandler {
     this.storageService.save(this.state);
   }
 
-  updateTargetState(state: SecurityState, origin: OriginType, delay: number): boolean {
-    if (this.isBadTargetState(state)) {
-      return false;
+  updateTargetState(state: SecurityState, origin: OriginType, delay: number): ServiceResult {
+    const reason = this.getBadTargetStateReason(state);
+    if (reason !== null) {
+      return { success: false, reason };
     }
 
     this.state.targetState = state;
@@ -75,14 +77,14 @@ export class StateHandler {
 
     if (state === this.state.currentState) {
       this.setCurrentState(state, origin);
-      return false;
+      return { success: true };
     }
 
     const armSeconds = delay > 0 ? delay : 0;
 
     if (armSeconds === 0) {
       this.setCurrentState(state, origin);
-      return false;
+      return { success: true };
     }
 
     this.state.isArming = true;
@@ -94,7 +96,7 @@ export class StateHandler {
       this.setCurrentState(state, origin);
     });
 
-    return true;
+    return { success: true };
   }
 
   getArmingSeconds(targetState: SecurityState): number {
@@ -141,27 +143,31 @@ export class StateHandler {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private isBadTargetState(state: SecurityState): boolean {
+  /**
+   * Returns a human-readable reason string if `state` is an invalid target,
+   * or `null` if the transition is permitted.
+   */
+  private getBadTargetStateReason(state: SecurityState): string | null {
     const isTriggered = this.state.currentState === SecurityState.TRIGGERED;
     const alreadySet = this.state.targetState === state;
 
     if (alreadySet && !isTriggered) {
       this.log.warn('Target mode (Already set)');
-      return true;
+      return 'target mode is already set';
     }
 
     if (!this.state.availableTargetStates.includes(state)) {
       this.log.warn('Target mode (Disabled)');
-      return true;
+      return 'target mode is disabled';
     }
 
     const hasLock = this.options.armingLockSwitch || this.options.armingLockSwitches;
     if (state !== SecurityState.OFF && hasLock && this.isArmingLocked(state)) {
       this.log.warn('Arming lock (Not allowed)');
-      return true;
+      return 'arming is blocked by an arming lock switch';
     }
 
-    return false;
+    return null;
   }
 
   private handleTargetStateChange(origin: OriginType): void {

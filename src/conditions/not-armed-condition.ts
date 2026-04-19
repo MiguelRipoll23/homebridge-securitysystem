@@ -21,6 +21,7 @@ export class NotArmedCondition extends Condition {
 
     const blocked = isDisarmed && isNotOverridingOff && isNotOverrideSwitch;
     if (blocked) {
+      this._failureReason = 'system is disarmed and override is not enabled';
       log.warn('Trip Switch (Not armed): system is disarmed and override is not enabled');
     }
     return blocked;

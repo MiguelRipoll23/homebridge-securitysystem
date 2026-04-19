@@ -13,6 +13,7 @@ export class ArmingInProgressCondition extends Condition {
       return false;
     }
     if (state.isArming) {
+      this._failureReason = 'arm delay countdown is still in progress';
       log.warn('Trip Switch (Still arming): arm delay countdown is still in progress');
       return true;
     }

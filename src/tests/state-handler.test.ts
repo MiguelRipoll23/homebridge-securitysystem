@@ -167,7 +167,7 @@ describe('StateHandler.updateTargetState', async () => {
   const { StateHandler } = await import('../handlers/state-handler.js');
   const { EventBusService } = await import('../services/event-bus-service.js');
 
-  it('returns false when target state is already set (not triggered)', async () => {
+  it('returns failure when target state is already set (not triggered)', async () => {
     const state = makeState({ currentState: SecurityState.HOME, targetState: SecurityState.HOME });
     const log = makeMockLog();
     const bus = new EventBusService();
@@ -177,7 +177,8 @@ describe('StateHandler.updateTargetState', async () => {
     const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('target mode is already set');
     expect(log.warn).toHaveBeenCalledWith('Target mode (Already set)');
   });
 
@@ -191,8 +192,7 @@ describe('StateHandler.updateTargetState', async () => {
     const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.REGULAR_SWITCH, 0);
-    // armSeconds=0 → synchronous transition; function returns false after setCurrentState
-    expect(result).toBe(false);
+    expect(result.success).toBe(true);
     expect(state.targetState).toBe(SecurityState.HOME);
   });
 });

@@ -15,6 +15,7 @@ import { ErrorSchema } from '../schemas/error-schema.js';
 import { StatusResponseSchema } from '../schemas/status-response-schema.js';
 import { ModeRequestSchema } from '../schemas/mode-request-schema.js';
 import { ArmingLockRequestSchema } from '../schemas/arming-lock-schema.js';
+import type { ServiceResult } from '../types/service-result-type.js';
 
 const MODE_TO_STATE: Record<string, SecurityState> = {
   home: SecurityState.HOME,
@@ -188,24 +189,23 @@ export class ServerService {
     this.application.use('/mode', auth);
     this.application.openapi(modeRoute, (c) => {
       const { mode, delay = 0 } = c.req.valid('json');
-      let success: boolean;
+      let result: ServiceResult;
 
       if (mode === 'triggered') {
         if (delay > 0) {
-          success = this.tripHandler.updateTripSwitch(true, OriginType.EXTERNAL, false);
+          result = this.tripHandler.updateTripSwitch(true, OriginType.EXTERNAL, false);
         } else {
-          if (this.state.currentState === SecurityState.OFF && !this.options.overrideOff) {
-            return c.json({ reason: 'Cannot trigger alarm while system is disarmed' }, 409);
+          result = this.tripHandler.checkTripConditions(true, OriginType.EXTERNAL);
+          if (result.success) {
+            this.stateHandler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
           }
-          this.stateHandler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-          success = true;
         }
       } else {
-        success = this.stateHandler.updateTargetState(MODE_TO_STATE[mode], OriginType.EXTERNAL, delay);
+        result = this.stateHandler.updateTargetState(MODE_TO_STATE[mode], OriginType.EXTERNAL, delay);
       }
 
-      if (!success) {
-        return c.json({ reason: 'Mode change rejected by the system' }, 409);
+      if (!result.success) {
+        return c.json({ reason: result.reason ?? 'Mode change rejected by the system' }, 409);
       }
 
       return c.body(null, 204);
@@ -215,10 +215,10 @@ export class ServerService {
     this.application.use('/switches/arming-lock', auth);
     this.application.openapi(armingLockRoute, (c) => {
       const { mode, value } = c.req.valid('json');
-      const success = this.switchHandler.updateArmingLock(mode, value);
+      const result = this.switchHandler.updateArmingLock(mode, value);
 
-      if (!success) {
-        return c.json({ reason: 'Arming lock update rejected by the system' }, 409);
+      if (!result.success) {
+        return c.json({ reason: result.reason ?? 'Arming lock update rejected by the system' }, 409);
       }
 
       return c.body(null, 204);
