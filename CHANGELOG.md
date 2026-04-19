@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.0.0-beta.5 - 2026-04-19
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.5 -->
+
+## What's Changed
+### 🛠️ Other Changes
+* Add lint step to build workflow and improve PR trigger conditions by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/768
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.0.0-beta.4...v11.0.0-beta.5
+
+
 ## v11.0.0-beta.4 - 2026-04-19
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.4 -->
