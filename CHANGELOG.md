@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.0.0-beta.4 - 2026-04-19
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.4 -->
+
+## What's Changed
+### 🛠️ Other Changes
+* Separate trip endpoint from mode update endpoint by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/766
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.0.0-beta.3...v11.0.0-beta.4
+
+
 ## v11.0.0-beta.3 - 2026-04-19
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.0.0-beta.3 -->
