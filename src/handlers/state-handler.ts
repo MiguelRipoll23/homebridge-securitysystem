@@ -58,6 +58,21 @@ export class StateHandler {
   }
 
   updateTargetState(state: SecurityState, origin: OriginType, delay: number): ServiceResult {
+    // Same-target re-call: "confirm this mode externally; apply it now"
+    if (state === this.state.targetState && this.state.currentState !== SecurityState.TRIGGERED) {
+      if (state === this.state.currentState) {
+        return { success: true };
+      }
+
+      if (this.state.isArming) {
+        this.timers.clearArmTimer();
+        this.state.isArming = false;
+      }
+
+      this.setCurrentState(state, origin);
+      return { success: true };
+    }
+
     const reason = this.getBadTargetStateReason(state);
     if (reason !== null) {
       return { success: false, reason };

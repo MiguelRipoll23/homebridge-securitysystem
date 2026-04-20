@@ -167,19 +167,52 @@ describe('StateHandler.updateTargetState', async () => {
   const { StateHandler } = await import('../handlers/state-handler.js');
   const { EventBusService } = await import('../services/event-bus-service.js');
 
-  it('returns failure when target state is already set (not triggered)', async () => {
+  it('returns success (no-op) when currentState already matches the requested mode', async () => {
     const state = makeState({ currentState: SecurityState.HOME, targetState: SecurityState.HOME });
     const log = makeMockLog();
     const bus = new EventBusService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensor = makeMockSensor() as any;
+    const timers = makeTimers();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
-    expect(result.success).toBe(false);
-    expect(result.reason).toBe('target mode is already set');
-    expect(log.warn).toHaveBeenCalledWith('Target mode (Already set)');
+    expect(result.success).toBe(true);
+    expect(timers.clearArmTimer).not.toHaveBeenCalled();
+  });
+
+  it('cancels arm timer and applies state immediately on same-target re-call while arming', async () => {
+    const state = makeState({ currentState: SecurityState.OFF, targetState: SecurityState.HOME, isArming: true });
+    const log = makeMockLog();
+    const bus = new EventBusService();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sensor = makeMockSensor() as any;
+    const timers = makeTimers();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
+
+    const result = handler.updateTargetState(SecurityState.HOME, OriginType.EXTERNAL, 0);
+    expect(result.success).toBe(true);
+    expect(timers.clearArmTimer).toHaveBeenCalled();
+    expect(state.isArming).toBe(false);
+    expect(state.currentState).toBe(SecurityState.HOME);
+  });
+
+  it('applies state immediately on same-target re-call when not arming', async () => {
+    const state = makeState({ currentState: SecurityState.OFF, targetState: SecurityState.HOME, isArming: false });
+    const log = makeMockLog();
+    const bus = new EventBusService();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sensor = makeMockSensor() as any;
+    const timers = makeTimers();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
+
+    const result = handler.updateTargetState(SecurityState.HOME, OriginType.EXTERNAL, 0);
+    expect(result.success).toBe(true);
+    expect(timers.clearArmTimer).not.toHaveBeenCalled();
+    expect(state.currentState).toBe(SecurityState.HOME);
   });
 
   it('transitions to a new armed mode', async () => {
