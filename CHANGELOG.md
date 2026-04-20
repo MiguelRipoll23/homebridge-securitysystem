@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.1.0-beta.1 - 2026-04-20
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.1.0-beta.1 -->
+
+## What's Changed
+### ✨ Enhancements
+* fix: make PUT /mode/update idempotent for same-target re-calls by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/775
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.0.0...v11.1.0-beta.1
+
+
 ## v11.0.0 - 2026-04-19
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.0.0 -->
