@@ -1,5 +1,21 @@
 # Changelog
 
+## v11.1.0 - 2026-04-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.1.0 -->
+
+## What's Changed
+### ✨ Enhancements
+* fix: make PUT /mode/update idempotent for same-target re-calls by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/775
+### 📦 Dependencies
+* build(deps-dev): bump homebridge from 2.0.0-beta.89 to 2.0.0-beta.98 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/774
+* build(deps-dev): bump typescript-eslint from 8.58.2 to 8.59.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/772
+* build(deps-dev): bump eslint from 10.2.0 to 10.2.1 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/773
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.0.0...v11.1.0
+
+
 ## v11.1.0-beta.1 - 2026-04-20
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.1.0-beta.1 -->
