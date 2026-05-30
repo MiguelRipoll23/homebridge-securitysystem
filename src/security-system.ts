@@ -14,6 +14,7 @@ import { StorageService } from './services/storage-service.js';
 import { AudioService } from './services/audio-service.js';
 import { WebhookService } from './services/webhook-service.js';
 import { CommandService } from './services/command-service.js';
+import { MqttService } from './services/mqtt-service.js';
 import { ServerService } from './services/server-service.js';
 import { StateHandler } from './handlers/state-handler.js';
 import { TripHandler } from './handlers/trip-handler.js';
@@ -101,6 +102,9 @@ export class SecuritySystem implements AccessoryPlugin {
     const commandSvc = new CommandService(log, this.options, this.state);
     webhookSvc.attachToBus(this.bus);
     commandSvc.attachToBus(this.bus);
+    const mqttSvc = new MqttService(log, this.options, this.state);
+    mqttSvc.attachToBus(this.bus);
+    this.api.on('shutdown', () => mqttSvc.disconnect());
 
     // Register HomeKit characteristic handlers.
     new HomeKitRegistrar(this.api, this.log, this.svcs, this.state, this.stateHandler, this.tripHandler, this.switchHandler)

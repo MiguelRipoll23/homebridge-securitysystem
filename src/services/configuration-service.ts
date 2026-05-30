@@ -203,6 +203,13 @@ export class ConfigurationService {
       webhookCurrentOff: this.str(raw, 'webhook_current_off'),
       webhookCurrentWarning: this.str(raw, 'webhook_current_warning'),
       webhookCurrentTriggered: this.str(raw, 'webhook_current_triggered'),
+
+      // MQTT
+      mqttBroker: this.str(raw, 'mqtt_broker'),
+      mqttUsername: this.str(raw, 'mqtt_username'),
+      mqttPassword: this.str(raw, 'mqtt_password'),
+      mqttTopic: this.str(raw, 'mqtt_topic') ?? DEFAULTS.MQTT_TOPIC,
+      mqttClientId: this.str(raw, 'mqtt_client_id'),
     };
   }
 
@@ -216,6 +223,10 @@ export class ConfigurationService {
 
     if (opts.serverPort !== null && (opts.serverPort < 0 || opts.serverPort > 65535)) {
       this.log.error('\'server_port\' must be between 0 and 65535.');
+    }
+
+    if (opts.mqttBroker !== null && !/^mqtts?:\/\//.test(opts.mqttBroker)) {
+      this.log.warn('\'mqtt_broker\' should start with mqtt:// or mqtts://');
     }
   }
 
