@@ -127,4 +127,11 @@ export interface SecuritySystemOptions {
   webhookCurrentOff: string | null;
   webhookCurrentWarning: string | null;
   webhookCurrentTriggered: string | null;
+
+  // MQTT
+  mqttBroker: string | null;
+  mqttUsername: string | null;
+  mqttPassword: string | null;
+  mqttTopic: string;
+  mqttClientId: string | null;
 }

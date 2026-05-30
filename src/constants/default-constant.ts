@@ -25,4 +25,7 @@ export const DEFAULTS = {
   MODE_AWAY_EXTENDED_SWITCH_NAME: 'Mode Away Extended',
   MODE_PAUSE_SWITCH_NAME: 'Mode Pause',
   AUDIO_SWITCH_NAME: 'Audio',
+
+  // MQTT
+  MQTT_TOPIC: 'security-system/state',
 } as const;
