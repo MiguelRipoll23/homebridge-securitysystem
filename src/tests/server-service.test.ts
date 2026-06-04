@@ -72,7 +72,6 @@ async function makeService(
   const tripHandler = makeTripHandler(tripHandlerResult);
   const switchHandler = makeSwitchHandler(switchHandlerResult);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const service = new ServerService(log as any, options, state, stateHandler as any, tripHandler as any, switchHandler as any);
 
   return { service, stateHandler, tripHandler, switchHandler, state };

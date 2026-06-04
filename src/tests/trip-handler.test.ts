@@ -92,7 +92,6 @@ describe('TripHandler', async () => {
   let state: SystemState;
   let services: ServiceRegistry;
   let bus: InstanceType<typeof EventBusService>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let tripHandler: any;
   const mockSensorHandler = {
     pulseTrippedMotionSensor: vi.fn(),
@@ -104,7 +103,6 @@ describe('TripHandler', async () => {
     setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
     setDoubleKnockTimer: vi.fn(), clearDoubleKnockTimer: vi.fn(),
     clearAll: vi.fn(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
 
   beforeEach(() => {
@@ -113,7 +111,6 @@ describe('TripHandler', async () => {
     services = makeServices();
     bus = new EventBusService();
     const mockLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockAudio as any, mockSensorHandler as any, mockTimers);
   });
 
@@ -164,7 +161,6 @@ describe('TripHandler', async () => {
 
   it('emits TRIP_CANCELLED with stateChanged=false when trip cancelled while triggered', () => {
     state.currentState = SecurityState.TRIGGERED;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let payload: any;
     bus.on(EventType.TRIP_CANCELLED, (p) => {
       payload = p;
@@ -178,7 +174,6 @@ describe('TripHandler', async () => {
 
   it('emits TRIP_CANCELLED with stateChanged=true when state has changed', () => {
     state.currentState = SecurityState.TRIGGERED;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let payload: any;
     bus.on(EventType.TRIP_CANCELLED, (p) => {
       payload = p;
@@ -207,7 +202,7 @@ describe('TripHandler', async () => {
 
   describe('resetTripSwitches', () => {
     it('resets global trip switch', () => {
-      const globalChar = services.tripSwitchService.getCharacteristic();
+      const globalChar = services.tripSwitchService.getCharacteristic('On' as any)!;
       globalChar.value = true;
 
       tripHandler.resetTripSwitches();
@@ -216,10 +211,10 @@ describe('TripHandler', async () => {
     });
 
     it('resets mode-specific trip switches', () => {
-      const homeChar = services.tripHomeSwitchService.getCharacteristic();
-      const awayChar = services.tripAwaySwitchService.getCharacteristic();
-      const nightChar = services.tripNightSwitchService.getCharacteristic();
-      const overrideChar = services.tripOverrideSwitchService.getCharacteristic();
+      const homeChar = services.tripHomeSwitchService.getCharacteristic('On' as any)!;
+      const awayChar = services.tripAwaySwitchService.getCharacteristic('On' as any)!;
+      const nightChar = services.tripNightSwitchService.getCharacteristic('On' as any)!;
+      const overrideChar = services.tripOverrideSwitchService.getCharacteristic('On' as any)!;
       homeChar.value = true;
       awayChar.value = true;
       nightChar.value = true;
@@ -234,7 +229,7 @@ describe('TripHandler', async () => {
     });
 
     it('does not touch switches that are already off', () => {
-      const globalChar = services.tripSwitchService.getCharacteristic();
+      const globalChar = services.tripSwitchService.getCharacteristic('On' as any)!;
       globalChar.value = false;
 
       tripHandler.resetTripSwitches();
