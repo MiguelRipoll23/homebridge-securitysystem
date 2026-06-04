@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.2.0-beta.3 - 2026-06-04
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.2.0-beta.3 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: add missing argument to getCharacteristic calls and run tsc in CI by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/864
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.2.0-beta.2...v11.2.0-beta.3
+
+
 ## v11.2.0-beta.2 - 2026-06-04
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.2.0-beta.2 -->
