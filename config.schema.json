@@ -619,6 +619,38 @@
         "required": false,
         "placeholder": "echo current triggered"
       },
+      "mqtt_broker": {
+        "title": "MQTT Broker URL",
+        "description": "",
+        "type": "string",
+        "required": false,
+        "placeholder": "mqtt://localhost:1883"
+      },
+      "mqtt_username": {
+        "title": "MQTT Username",
+        "description": "",
+        "type": "string",
+        "required": false
+      },
+      "mqtt_password": {
+        "title": "MQTT Password",
+        "description": "",
+        "type": "string",
+        "required": false
+      },
+      "mqtt_topic": {
+        "title": "MQTT Topic",
+        "description": "",
+        "type": "string",
+        "default": "security-system/state",
+        "required": false
+      },
+      "mqtt_client_id": {
+        "title": "MQTT Client ID",
+        "description": "",
+        "type": "string",
+        "required": false
+      },
       "log_directory": {
         "title": "Log Directory Path",
         "description": "",
@@ -970,6 +1002,20 @@
         "command_current_off",
         "command_current_warning",
         "command_current_triggered"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "MQTT",
+      "description": "Publish state updates to an MQTT broker.",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "mqtt_broker",
+        "mqtt_username",
+        "mqtt_password",
+        "mqtt_topic",
+        "mqtt_client_id"
       ]
     },
     {

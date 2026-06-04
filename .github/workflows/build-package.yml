@@ -37,6 +37,7 @@ jobs:
         run: |
           npm ci
           npm run lint
+          npm run build
           npm pack
 
       - name: Attest build provenance
