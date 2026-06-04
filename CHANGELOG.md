@@ -1,5 +1,24 @@
 # Changelog
 
+## v11.2.0-beta.2 - 2026-06-04
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.2.0-beta.2 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: reset global trip switch when system is disarmed by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/861
+### 📦 Dependencies
+* build(deps): bump @hono/zod-openapi from 1.3.0 to 1.4.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/818
+* build(deps): bump hono from 4.12.22 to 4.12.23 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/845
+* build(deps): bump github/gh-aw-actions from 0.74.4 to 0.77.4 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/853
+* build(deps): bump github/gh-aw-actions from 0.77.4 to 0.78.1 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/858
+### 🛠️ Other Changes
+* chore: update dependencies and engine requirements by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/862
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.2.0-beta.1...v11.2.0-beta.2
+
+
 ## v11.2.0-beta.1 - 2026-05-30
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.2.0-beta.1 -->
