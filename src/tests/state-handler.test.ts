@@ -109,7 +109,6 @@ function makeTimers() {
     setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
     setTriggeredInterval: vi.fn(), clearTriggeredInterval: vi.fn(),
     clearAll: vi.fn(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
 }
 
@@ -139,9 +138,7 @@ describe('StateHandler.getArmingSeconds', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensor = makeMockSensor() as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
   });
 
@@ -171,10 +168,8 @@ describe('StateHandler.updateTargetState', async () => {
     const state = makeState({ currentState: SecurityState.HOME, targetState: SecurityState.HOME });
     const log = makeMockLog();
     const bus = new EventBusService();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensor = makeMockSensor() as any;
     const timers = makeTimers();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
@@ -186,10 +181,8 @@ describe('StateHandler.updateTargetState', async () => {
     const state = makeState({ currentState: SecurityState.OFF, targetState: SecurityState.HOME, isArming: true });
     const log = makeMockLog();
     const bus = new EventBusService();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensor = makeMockSensor() as any;
     const timers = makeTimers();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.EXTERNAL, 0);
@@ -203,10 +196,8 @@ describe('StateHandler.updateTargetState', async () => {
     const state = makeState({ currentState: SecurityState.OFF, targetState: SecurityState.HOME, isArming: false });
     const log = makeMockLog();
     const bus = new EventBusService();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensor = makeMockSensor() as any;
     const timers = makeTimers();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.EXTERNAL, 0);
@@ -219,9 +210,7 @@ describe('StateHandler.updateTargetState', async () => {
     const state = makeState({ currentState: SecurityState.OFF, targetState: SecurityState.OFF });
     const log = makeMockLog();
     const bus = new EventBusService();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sensor = makeMockSensor() as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.REGULAR_SWITCH, 0);
