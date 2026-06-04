@@ -203,6 +203,46 @@ describe('TripHandler', async () => {
     expect(result.reason).toBe('mode not set');
   });
 
+  // ── resetTripSwitches tests ────────────────────────────────────────────────
+
+  describe('resetTripSwitches', () => {
+    it('resets global trip switch', () => {
+      const globalChar = services.tripSwitchService.getCharacteristic();
+      globalChar.value = true;
+
+      tripHandler.resetTripSwitches();
+
+      expect(globalChar.updateValue).toHaveBeenCalledWith(false);
+    });
+
+    it('resets mode-specific trip switches', () => {
+      const homeChar = services.tripHomeSwitchService.getCharacteristic();
+      const awayChar = services.tripAwaySwitchService.getCharacteristic();
+      const nightChar = services.tripNightSwitchService.getCharacteristic();
+      const overrideChar = services.tripOverrideSwitchService.getCharacteristic();
+      homeChar.value = true;
+      awayChar.value = true;
+      nightChar.value = true;
+      overrideChar.value = true;
+
+      tripHandler.resetTripSwitches();
+
+      expect(homeChar.updateValue).toHaveBeenCalledWith(false);
+      expect(awayChar.updateValue).toHaveBeenCalledWith(false);
+      expect(nightChar.updateValue).toHaveBeenCalledWith(false);
+      expect(overrideChar.updateValue).toHaveBeenCalledWith(false);
+    });
+
+    it('does not touch switches that are already off', () => {
+      const globalChar = services.tripSwitchService.getCharacteristic();
+      globalChar.value = false;
+
+      tripHandler.resetTripSwitches();
+
+      expect(globalChar.updateValue).not.toHaveBeenCalled();
+    });
+  });
+
   // ── Custom trip switch tests ───────────────────────────────────────────────
 
   describe('Custom Trip Switches', () => {

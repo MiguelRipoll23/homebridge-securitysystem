@@ -121,6 +121,7 @@ export class TripHandler {
 
   resetTripSwitches(): void {
     const switches: Array<[SingleServiceKey, string]> = [
+      ['tripSwitchService', 'Trip'],
       ['tripHomeSwitchService', 'Trip Home'],
       ['tripAwaySwitchService', 'Trip Away'],
       ['tripNightSwitchService', 'Trip Night'],
