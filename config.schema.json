@@ -26,11 +26,11 @@
         "description": "",
         "type": "array",
         "required": false,
+        "uniqueItems": true,
         "items": {
           "title": "Mode",
           "type": "string",
-          "enum": ["Home", "Away", "Night"],
-          "uniqueItems": true
+          "enum": ["Home", "Away", "Night"]
         }
       },
       "default_mode": {
@@ -51,7 +51,7 @@
       },
       "trigger_seconds": {
         "title": "Trigger Delay (seconds)",
-        "description": "Give yourself time to disable the sytem when you get home.",
+        "description": "Give yourself time to disable the system when you get home.",
         "type": "integer",
         "default": 0,
         "required": false,
@@ -106,7 +106,7 @@
         "title": "Show Off-Mode Switch",
         "description": "Adds a switch to disarm the security system (only if \"Show Mode Switches\" is also enabled).",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "required": false,
         "condition": {
           "functionBody": "return model.mode_switches === true;"
@@ -240,7 +240,7 @@
         "default": "Trip Home",
         "required": false,
         "condition": {
-          "functionBody": "return !model.disabled_modes.includes('Home') && model.trip_mode_switches === true;"
+          "functionBody": "return !(model.disabled_modes || []).includes('Home') && model.trip_mode_switches === true;"
         }
       },
       "trip_away_switch_name": {
@@ -673,7 +673,7 @@
         "required": false
       },
       "home_arm_seconds": {
-        "title": "Home Arming Delay Seconds",
+        "title": "Home Arming Delay (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -683,7 +683,7 @@
         }
       },
       "away_arm_seconds": {
-        "title": "Away Arming Delay Seconds",
+        "title": "Away Arming Delay (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -693,7 +693,7 @@
         }
       },
       "night_arm_seconds": {
-        "title": "Night Arming Delay Seconds",
+        "title": "Night Arming Delay (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -703,7 +703,7 @@
         }
       },
       "home_trigger_seconds": {
-        "title": "Home Trigger Delay Seconds",
+        "title": "Home Trigger Delay (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -713,7 +713,7 @@
         }
       },
       "away_trigger_seconds": {
-        "title": "Away Trigger Delay Seconds",
+        "title": "Away Trigger Delay (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -723,7 +723,7 @@
         }
       },
       "night_trigger_seconds": {
-        "title": "Night Trigger Delay Seconds",
+        "title": "Night Trigger Delay (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -761,7 +761,7 @@
         "required": false
       },
       "double_knock_seconds": {
-        "title": "Time Window Seconds",
+        "title": "Time Window (seconds)",
         "description": "",
         "type": "integer",
         "default": 90,
@@ -772,7 +772,7 @@
         }
       },
       "home_double_knock_seconds": {
-        "title": "Home Double-Knock Seconds",
+        "title": "Home Double-Knock Window (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -782,7 +782,7 @@
         }
       },
       "away_double_knock_seconds": {
-        "title": "Away Double-Knock Seconds",
+        "title": "Away Double-Knock Window (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -792,7 +792,7 @@
         }
       },
       "night_double_knock_seconds": {
-        "title": "Night Double-Knock Seconds",
+        "title": "Night Double-Knock Window (seconds)",
         "description": "",
         "type": "integer",
         "required": false,
@@ -807,11 +807,11 @@
         "type": "array",
         "default": [],
         "required": false,
+        "uniqueItems": true,
         "items": {
           "title": "Mode",
           "type": "string",
-          "enum": ["Home", "Away", "Night"],
-          "uniqueItems": true
+          "enum": ["Home", "Away", "Night"]
         },
         "condition": {
           "functionBody": "return model.double_knock === true;"
