@@ -119,7 +119,7 @@
         "default": "Set Off-Mode",
         "required": false,
         "condition": {
-          "functionBody": "return model.mode_off_switch === true;"
+          "functionBody": "return model.mode_switches === true && model.mode_off_switch === true;"
         }
       },
       "mode_away_extended_switch": {
