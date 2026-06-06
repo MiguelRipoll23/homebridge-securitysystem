@@ -211,7 +211,7 @@
       },
       "trip_override_switch": {
         "title": "Show Trip Override Switch",
-        "description": "Adds a special switch that will trigger the security system bypassing the conditions set.",
+        "description": "Adds a switch that will immediately and unconditionally trigger the security system, even if it is disarmed (e.g. for use as an SOS/Panic switch).",
         "type": "boolean",
         "default": false,
         "required": false
@@ -674,7 +674,7 @@
       },
       "home_arm_seconds": {
         "title": "Home Arming Delay (seconds)",
-        "description": "",
+        "description": "Overrides the global Arming Delay if set.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -684,7 +684,7 @@
       },
       "away_arm_seconds": {
         "title": "Away Arming Delay (seconds)",
-        "description": "",
+        "description": "Overrides the global Arming Delay if set.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -694,7 +694,7 @@
       },
       "night_arm_seconds": {
         "title": "Night Arming Delay (seconds)",
-        "description": "",
+        "description": "Overrides the global Arming Delay if set.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -704,7 +704,7 @@
       },
       "home_trigger_seconds": {
         "title": "Home Trigger Delay (seconds)",
-        "description": "",
+        "description": "Overrides the global Trigger Delay if set.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -714,7 +714,7 @@
       },
       "away_trigger_seconds": {
         "title": "Away Trigger Delay (seconds)",
-        "description": "",
+        "description": "Overrides the global Trigger Delay if set.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -724,7 +724,7 @@
       },
       "night_trigger_seconds": {
         "title": "Night Trigger Delay (seconds)",
-        "description": "",
+        "description": "Overrides the global Trigger Delay if set.",
         "type": "integer",
         "required": false,
         "minimum": 0,
@@ -755,7 +755,7 @@
       },
       "double_knock": {
         "title": "Use Double-Knock",
-        "description": "Needs the Trip switch to be turn on twice within a time window.",
+        "description": "Needs the global Trip switch to be turned on twice within a time window.",
         "type": "boolean",
         "default": false,
         "required": false
