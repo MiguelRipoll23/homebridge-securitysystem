@@ -35,7 +35,7 @@ jobs:
           node-version: ${{ vars.NPM_VERSION }}
 
       - name: Get next version
-        uses: MiguelRipoll23/get-next-version@v3.1.0
+        uses: MiguelRipoll23/get-next-version@v3.2.0
         id: get-next-version
         with:
           channel: ${{ inputs.channel }}
