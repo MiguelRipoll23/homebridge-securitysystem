@@ -67,7 +67,7 @@
       },
       "mode_switches": {
         "title": "Show Mode Switches",
-        "description": "Adds switches for setting and reading the security system's active mode (bypassing homekit confirmations).",
+        "description": "Adds switches for setting and reading the security system's active mode (bypassing HomeKit confirmations).",
         "type": "boolean",
         "default": false,
         "required": false
@@ -755,7 +755,7 @@
       },
       "double_knock": {
         "title": "Use Double-Knock",
-        "description": "Needs the global Trip switch to be turned on twice within a time window.",
+        "description": "Requires Trip switches to be turned on twice within a time window for the system to be triggered.",
         "type": "boolean",
         "default": false,
         "required": false
