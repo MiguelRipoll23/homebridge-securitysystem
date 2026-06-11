@@ -1,7 +1,7 @@
 {
   "pluginAlias": "security-system",
   "pluginType": "accessory",
-  "headerDisplay": "Create a security system accessory that can be triggered by HomeKit sensors.",
+  "headerDisplay": "Create a fully-featured security system accessory for HomeKit.  Exposes switches, sensors, and interfaces that work with the four built-in Homekit security modes: 'Off', 'Home', 'Away', and 'Night'",
   "footerDisplay": "[Need help?](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://buymeacoffee.com/miguelripoll23)",
   "schema": {
     "title": "Security System",
@@ -9,7 +9,7 @@
     "properties": {
       "name": {
         "title": "Name",
-        "description": "",
+        "description": "Name for your security system that shows up in Homekit.",
         "type": "string",
         "default": "Security System",
         "required": true
@@ -21,353 +21,162 @@
         "default": "S3CUR1TYSYST3M",
         "required": true
       },
+      "disabled_modes": {
+        "title": "Disabled Modes",
+        "description": "",
+        "type": "array",
+        "required": false,
+        "uniqueItems": true,
+        "items": {
+          "title": "Mode",
+          "type": "string",
+          "enum": ["Home", "Away", "Night"]
+        }
+      },
       "default_mode": {
         "title": "Default Mode",
         "description": "",
         "type": "string",
         "default": "Off",
         "required": true,
-        "enum": ["Off", "Home", "Night", "Away"]
+        "enum": ["Off", "Home", "Away", "Night"]
       },
       "arm_seconds": {
-        "title": "Arming Delay Seconds",
-        "description": "",
+        "title": "Arming Delay (seconds)",
+        "description": "Give yourself time to leave before the system is armed.",
         "type": "integer",
         "default": 0,
         "required": false,
         "minimum": 0
       },
       "trigger_seconds": {
-        "title": "Trigger Delay Seconds",
-        "description": "",
+        "title": "Trigger Delay (seconds)",
+        "description": "Give yourself time to disable the system when you get home.",
         "type": "integer",
         "default": 0,
         "required": false,
         "minimum": 0
       },
       "reset_minutes": {
-        "title": "Reset Delay Minutes",
-        "description": "",
+        "title": "Reset Delay (minutes)",
+        "description": "The system will remain triggered for this long (unless otherwise reset).",
         "type": "integer",
         "default": 10,
         "required": false,
         "minimum": 1
       },
-      "save_state": {
-        "title": "Save Data Using Storage",
-        "description": "Persists the previous state after shutdowns and reboots.",
+      "mode_switches": {
+        "title": "Show Mode Switches",
+        "description": "Adds switches for setting and reading the security system's active mode (bypassing HomeKit confirmations).",
         "type": "boolean",
         "default": false,
-        "required": false
-      },
-      "proxy_mode": {
-        "title": "Enable Proxy Mode",
-        "description": "Ignores webhooks/commands for server requests.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "test_mode": {
-        "title": "Enable Test Mode",
-        "description": "Ignores the webhook and command when the security system triggers.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "trip_switch_name": {
-        "title": "Trip Switch Name",
-        "description": "",
-        "type": "string",
-        "default": "Trip",
-        "required": false
-      },
-      "trip_home_switch_name": {
-        "title": "Trip Home Switch Name",
-        "description": "",
-        "type": "string",
-        "default": "Trip Home",
-        "required": false
-      },
-      "trip_away_switch_name": {
-        "title": "Trip Away Switch Name",
-        "description": "",
-        "type": "string",
-        "default": "Trip Away",
-        "required": false
-      },
-      "trip_night_switch_name": {
-        "title": "Trip Night Switch Name",
-        "description": "",
-        "type": "string",
-        "default": "Trip Night",
-        "required": false
-      },
-      "trip_override_switch_name": {
-        "title": "Trip Override Switch Name",
-        "description": "",
-        "type": "string",
-        "default": "Trip Override",
         "required": false
       },
       "mode_home_switch_name": {
-        "title": "Mode Home Switch Name",
-        "description": "",
+        "title": "Home-Mode Switch Name",
+        "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Mode Home",
-        "required": false
+        "default": "Set Home-Mode",
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Home') && model.mode_switches === true;"
+        }
       },
       "mode_away_switch_name": {
-        "title": "Mode Away Switch Name",
-        "description": "",
+        "title": "Away-Mode Switch Name",
+        "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Mode Away",
-        "required": false
+        "default": "Set Away-Mode",
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Away') && model.mode_switches === true;"
+        }
       },
       "mode_night_switch_name": {
-        "title": "Mode Night Switch Name",
-        "description": "",
+        "title": "Night-Mode Switch Name",
+        "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Mode Night",
-        "required": false
+        "default": "Set Night-Mode",
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Night') && model.mode_switches === true;"
+        }
+      },
+      "mode_off_switch": {
+        "title": "Show Off-Mode Switch",
+        "description": "Adds a switch to disarm the security system (only if \"Show Mode Switches\" is also enabled).",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "condition": {
+          "functionBody": "return model.mode_switches === true;"
+        }
       },
       "mode_off_switch_name": {
-        "title": "Mode Off Switch Name",
-        "description": "",
+        "title": "Off-Mode Switch Name",
+        "description": "\"Set-only\" switch; trying to turn it off does nothing.  Turning this switch ON disarms the security system.",
         "type": "string",
-        "default": "Mode Off",
+        "default": "Set Off-Mode",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.mode_switches === true && model.mode_off_switch === true;"
+        }
+      },
+      "mode_away_extended_switch": {
+        "title": "Show Extended Away-Mode Switch",
+        "description": "Adds an additional Away-Mode switch that can be used in automations (e.g. for extended time away such as vacation).",
+        "type": "boolean",
+        "default": false,
         "required": false
       },
+      "mode_away_extended_switch_trigger_seconds": {
+        "title": "Extended Away-Mode Set Delay (seconds)",
+        "description": "Give yourself time to leave before the system is armed.",
+        "type": "integer",
+        "default": 0,
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return model.mode_away_extended_switch === true;"
+        }
+      },
       "mode_away_extended_switch_name": {
-        "title": "Mode Away Extended Switch Name",
-        "description": "",
+        "title": "Extended Away-Mode Switch Name",
+        "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Mode Away Extended",
+        "default": "Set Extended Away-Mode",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.mode_away_extended_switch === true;"
+        }
+      },
+      "mode_pause_switch": {
+        "title": "Show Mode Pause Switch",
+        "description": "Adds a switch that will disarm the security system for a set period of time.",
+        "type": "boolean",
+        "default": false,
         "required": false
+      },
+      "pause_minutes": {
+        "title": "Pause Time (minutes)",
+        "description": "Set to 0 to pause indefinitely.",
+        "type": "integer",
+        "default": 0,
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return model.mode_pause_switch === true;"
+        }
       },
       "mode_pause_switch_name": {
         "title": "Mode Pause Name",
         "description": "",
         "type": "string",
         "default": "Mode Pause",
-        "required": false
-      },
-      "audio_switch_name": {
-        "title": "Audio Name",
-        "description": "",
-        "type": "string",
-        "default": "Audio",
-        "required": false
-      },
-      "log_directory": {
-        "title": "Log Directory Path",
-        "description": "",
-        "type": "string",
         "required": false,
-        "placeholder": "/home/user/logs"
-      },
-      "home_arm_seconds": {
-        "title": "Home Arming Delay Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "night_arm_seconds": {
-        "title": "Night Arming Delay Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "away_arm_seconds": {
-        "title": "Away Arming Delay Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "home_trigger_seconds": {
-        "title": "Home Trigger Delay Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "night_trigger_seconds": {
-        "title": "Night Trigger Delay Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "away_trigger_seconds": {
-        "title": "Away Trigger Delay Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "mode_away_extended_switch_trigger_seconds": {
-        "title": "Away Extended Delay Trigger Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "override_off": {
-        "title": "Trigger During Off Mode",
-        "description": "Allows the security system to be triggered while disarmed.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "reset_off_flow": {
-        "title": "Reset Using Off Mode",
-        "description": "Resets the security system when triggered by passing through the Off mode.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "double_knock": {
-        "title": "Use Double-Knock",
-        "description": "Needs the Trip switch to be turn on twice within a time window.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "double_knock_seconds": {
-        "title": "Time Window Seconds",
-        "description": "",
-        "type": "integer",
-        "default": 90,
-        "required": false,
-        "minimum": 0
-      },
-      "home_double_knock_seconds": {
-        "title": "Home Double-Knock Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "away_double_knock_seconds": {
-        "title": "Away Double-Knock Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "night_double_knock_seconds": {
-        "title": "Night Double-Knock Seconds",
-        "description": "",
-        "type": "integer",
-        "required": false,
-        "minimum": 0
-      },
-      "double_knock_modes": {
-        "title": "Double-Knock Modes",
-        "description": "",
-        "type": "array",
-        "default": [],
-        "required": false,
-        "items": {
-          "title": "Mode",
-          "type": "string",
-          "enum": ["Home", "Night", "Away"],
-          "uniqueItems": true
+        "condition": {
+          "functionBody": "return model.mode_pause_switch === true;"
         }
-      },
-      "disabled_modes": {
-        "title": "Disabled Modes",
-        "description": "",
-        "type": "array",
-        "required": false,
-        "items": {
-          "title": "Mode",
-          "type": "string",
-          "enum": ["Home", "Night", "Away"],
-          "uniqueItems": true
-        }
-      },
-      "arming_sensor": {
-        "title": "Show Arming Sensor",
-        "description": "Adds a sensor that triggers when the security system is being armed.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "tripped_sensor": {
-        "title": "Show Tripped Sensor",
-        "description": "Adds a sensor that triggers multiple times when any of the Trip switches have been turned on.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "tripped_sensor_seconds": {
-        "title": "Tripped Sensor Seconds",
-        "description": "",
-        "type": "integer",
-        "default": 5,
-        "required": false,
-        "minimum": 0
-      },
-      "triggered_sensor": {
-        "title": "Show Triggered Sensor",
-        "description": "Adds a sensor that triggers multiple times when the security system has been triggered.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "triggered_sensor_seconds": {
-        "title": "Triggered Sensor Seconds",
-        "description": "",
-        "type": "integer",
-        "default": 5,
-        "required": false,
-        "minimum": 0
-      },
-      "reset_sensor": {
-        "title": "Show Triggered Reset Sensor",
-        "description": "Adds a sensor that triggers when the security system has reset after being triggered.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "mode_switches": {
-        "title": "Show Mode Switches",
-        "description": "Adds switches for every mode in order to create automations based on a mode change or bypass confirmations.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "mode_off_switch": {
-        "title": "Show Mode Off Switch",
-        "description": "Adds a switch to disarm the security system if the \"Show Mode Switches\" option is enabled.",
-        "type": "boolean",
-        "default": true,
-        "required": false
-      },
-      "mode_away_extended_switch": {
-        "title": "Show Mode Away Extended Switch",
-        "description": "Adds a switch that sets the Away mode and can be used as a condition in automations.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "mode_pause_switch": {
-        "title": "Show Mode Pause Switch",
-        "description": "Adds a switch that will temporarily or indefinitely (if minutes is to zero) disarm the security system.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "pause_minutes": {
-        "title": "Pause Minutes",
-        "description": "",
-        "type": "integer",
-        "default": 0,
-        "required": false,
-        "minimum": 0
       },
       "arming_lock_switch": {
         "title": "Show Arming Lock Switch (experimental)",
@@ -384,29 +193,79 @@
         "required": false
       },
       "trip_switch": {
-        "title": "Show Trip Switch",
-        "description": "Adds a global switch that will trip the security system.",
+        "title": "Show Global Trip Switch",
+        "description": "Adds a global switch that will trip the security system if any mode other than \"Off\" is active.",
         "type": "boolean",
         "default": false,
         "required": false
+      },
+      "trip_switch_name": {
+        "title": "Global Trip Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Global Trip",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.trip_switch === true;"
+        }
       },
       "trip_override_switch": {
         "title": "Show Trip Override Switch",
-        "description": "Adds a special switch that will trigger the security system bypassing the conditions set.",
+        "description": "Adds a switch that will immediately and unconditionally trigger the security system, even if it is disarmed (e.g. for use as an SOS/Panic switch).",
         "type": "boolean",
         "default": false,
         "required": false
       },
+      "trip_override_switch_name": {
+        "title": "Trip Override Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Trip Override",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.trip_override_switch === true;"
+        }
+      },
       "trip_mode_switches": {
         "title": "Show Trip Mode Switches",
-        "description": "Adds switches that will trigger the security system when their mode is set.",
+        "description": "Adds switches for each mode that will trigger the security system if their respective mode is active.",
         "type": "boolean",
         "default": true,
         "required": false
       },
+      "trip_home_switch_name": {
+        "title": "Trip Home Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Trip Home",
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Home') && model.trip_mode_switches === true;"
+        }
+      },
+      "trip_away_switch_name": {
+        "title": "Trip Away Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Trip Away",
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Away') && model.trip_mode_switches === true;"
+        }
+      },
+      "trip_night_switch_name": {
+        "title": "Trip Night Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Trip Night",
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Night') && model.trip_mode_switches === true;"
+        }
+      },
       "trip_home_switches": {
         "title": "Custom Trip Home Switches",
-        "description": "Additional trip switches for Home mode. Final name is \"Home <Label>\".",
+        "description": "Additional trip switches for Home mode. Name will be prepended with \"Trip Home\".",
         "type": "array",
         "items": {
           "title": "Switch",
@@ -419,11 +278,14 @@
             }
           }
         },
-        "required": false
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Home');"
+        }
       },
       "trip_away_switches": {
         "title": "Custom Trip Away Switches",
-        "description": "Additional trip switches for Away mode. Final name is \"Away <Label>\".",
+        "description": "Additional trip switches for Away mode. Name will be prepended with \"Trip Away\".",
         "type": "array",
         "items": {
           "title": "Switch",
@@ -436,11 +298,14 @@
             }
           }
         },
-        "required": false
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Away');"
+        }
       },
       "trip_night_switches": {
         "title": "Custom Trip Night Switches",
-        "description": "Additional trip switches for Night mode. Final name is \"Night <Label>\".",
+        "description": "Additional trip switches for Night mode. Name will be prepended with \"Trip Night\".",
         "type": "array",
         "items": {
           "title": "Switch",
@@ -453,11 +318,74 @@
             }
           }
         },
-        "required": false
+        "required": false,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Night');"
+        }
       },
       "audio_switch": {
-        "title": "Show Audio Switch",
+        "title": "Show Audio Enable Switch",
         "description": "Adds a global switch to enable or disable audio except for alarm triggered.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "audio_switch_name": {
+        "title": "Audio Enable Switch Name",
+        "description": "",
+        "type": "string",
+        "default": "Enable Audio",
+        "required": false,
+        "condition": {
+          "functionBody": "return model.audio_switch === true;"
+        }
+      },
+      "arming_sensor": {
+        "title": "Show Arming Sensor",
+        "description": "Adds a sensor that asserts when the security system is being armed.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "tripped_sensor": {
+        "title": "Show Tripped Sensor",
+        "description": "Adds a sensor that pulses at the set rate when any of the Trip switches have been turned on.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "tripped_sensor_seconds": {
+        "title": "Tripped Sensor Pulse Rate (seconds)",
+        "description": "",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return model.tripped_sensor === true;"
+        }
+      },
+      "triggered_sensor": {
+        "title": "Show Triggered Sensor",
+        "description": "Adds a sensor that pulses at the set rate when the security system has been triggered.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "triggered_sensor_seconds": {
+        "title": "Triggered Sensor Pulse Rate (seconds)",
+        "description": "",
+        "type": "integer",
+        "default": 5,
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return model.triggered_sensor === true;"
+        }
+      },
+      "reset_sensor": {
+        "title": "Show Triggered Reset Sensor",
+        "description": "Adds a sensor that asserts when the security system has reset after being triggered.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -635,19 +563,19 @@
         "required": false,
         "placeholder": "echo target away"
       },
-      "command_target_off": {
-        "title": "Target Mode: Off",
-        "description": "",
-        "type": "string",
-        "required": false,
-        "placeholder": "echo target off"
-      },
       "command_target_night": {
         "title": "Target Mode: Night",
         "description": "",
         "type": "string",
         "required": false,
         "placeholder": "echo target night"
+      },
+      "command_target_off": {
+        "title": "Target Mode: Off",
+        "description": "",
+        "type": "string",
+        "required": false,
+        "placeholder": "echo target off"
       },
       "command_current_home": {
         "title": "Current Mode: Home",
@@ -722,12 +650,179 @@
         "description": "",
         "type": "string",
         "required": false
+      },
+      "log_directory": {
+        "title": "Log Directory Path",
+        "description": "",
+        "type": "string",
+        "required": false,
+        "placeholder": "/home/user/logs"
+      },
+      "save_state": {
+        "title": "Save Data Using Storage",
+        "description": "Persists the previous state after shutdowns and reboots.",
+        "type": "boolean",
+        "default": true,
+        "required": false
+      },
+      "test_mode": {
+        "title": "Enable Test Mode",
+        "description": "Ignores the webhook and command when the security system triggers.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "home_arm_seconds": {
+        "title": "Home Arming Delay (seconds)",
+        "description": "Overrides the global Arming Delay if set.",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Home');"
+        }
+      },
+      "away_arm_seconds": {
+        "title": "Away Arming Delay (seconds)",
+        "description": "Overrides the global Arming Delay if set.",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Away');"
+        }
+      },
+      "night_arm_seconds": {
+        "title": "Night Arming Delay (seconds)",
+        "description": "Overrides the global Arming Delay if set.",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Night');"
+        }
+      },
+      "home_trigger_seconds": {
+        "title": "Home Trigger Delay (seconds)",
+        "description": "Overrides the global Trigger Delay if set.",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Home');"
+        }
+      },
+      "away_trigger_seconds": {
+        "title": "Away Trigger Delay (seconds)",
+        "description": "Overrides the global Trigger Delay if set.",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Away');"
+        }
+      },
+      "night_trigger_seconds": {
+        "title": "Night Trigger Delay (seconds)",
+        "description": "Overrides the global Trigger Delay if set.",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Night');"
+        }
+      },
+      "override_off": {
+        "title": "Trigger During Off Mode",
+        "description": "Allows the security system to be triggered while disarmed.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "reset_off_flow": {
+        "title": "Reset Using Off Mode",
+        "description": "Resets the security system when triggered by passing through the Off mode.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "proxy_mode": {
+        "title": "Enable Proxy Mode",
+        "description": "Ignores webhooks/commands for server requests.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "double_knock": {
+        "title": "Use Double-Knock",
+        "description": "Requires Trip switches to be turned on twice within a time window for the system to be triggered.",
+        "type": "boolean",
+        "default": false,
+        "required": false
+      },
+      "double_knock_seconds": {
+        "title": "Time Window (seconds)",
+        "description": "",
+        "type": "integer",
+        "default": 90,
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return model.double_knock === true;"
+        }
+      },
+      "home_double_knock_seconds": {
+        "title": "Home Double-Knock Window (seconds)",
+        "description": "",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Home') && model.double_knock === true;"
+        }
+      },
+      "away_double_knock_seconds": {
+        "title": "Away Double-Knock Window (seconds)",
+        "description": "",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Away') && model.double_knock === true;"
+        }
+      },
+      "night_double_knock_seconds": {
+        "title": "Night Double-Knock Window (seconds)",
+        "description": "",
+        "type": "integer",
+        "required": false,
+        "minimum": 0,
+        "condition": {
+          "functionBody": "return !(model.disabled_modes || []).includes('Night') && model.double_knock === true;"
+        }
+      },
+      "double_knock_modes": {
+        "title": "Double-Knock Modes",
+        "description": "",
+        "type": "array",
+        "default": [],
+        "required": false,
+        "uniqueItems": true,
+        "items": {
+          "title": "Mode",
+          "type": "string",
+          "enum": ["Home", "Away", "Night"]
+        },
+        "condition": {
+          "functionBody": "return model.double_knock === true;"
+        }
       }
     }
   },
   "layout": [
     "name",
     "serial_number",
+    "disabled_modes",
     "default_mode",
     {
       "type": "div",
@@ -735,80 +830,6 @@
       "flex-flow": "row wrap",
       "flex-direction": "row",
       "items": ["arm_seconds", "trigger_seconds", "reset_minutes"]
-    },
-    "save_state",
-    "test_mode",
-    {
-      "type": "fieldset",
-      "title": "Accessory Names",
-      "description": "Change the accessory names provided by your own.",
-      "expandable": true,
-      "expanded": false,
-      "items": [
-        "trip_switch_name",
-        "trip_home_switch_name",
-        "trip_away_switch_name",
-        "trip_night_switch_name",
-        "trip_override_switch_name",
-        "mode_home_switch_name",
-        "mode_away_switch_name",
-        "mode_night_switch_name",
-        "mode_off_switch_name",
-        "mode_away_extended_switch_name",
-        "mode_pause_switch_name",
-        "audio_switch_name"
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Advanced Options",
-      "description": "Need more options? You know what do do.",
-      "expandable": true,
-      "expanded": false,
-      "items": [
-        "log_directory",
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row wrap",
-          "flex-direction": "row",
-          "items": ["home_arm_seconds", "away_arm_seconds", "night_arm_seconds"]
-        },
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row wrap",
-          "flex-direction": "row",
-          "items": [
-            "home_trigger_seconds",
-            "away_trigger_seconds",
-            "night_trigger_seconds"
-          ]
-        },
-        "override_off",
-        "reset_off_flow",
-        "proxy_mode",
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row wrap",
-          "flex-direction": "row",
-          "items": ["double_knock", "double_knock_seconds"]
-        },
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row wrap",
-          "flex-direction": "row",
-          "items": [
-            "home_double_knock_seconds",
-            "away_double_knock_seconds",
-            "night_double_knock_seconds"
-          ]
-        },
-        "double_knock_modes",
-        "disabled_modes"
-      ]
     },
     {
       "type": "fieldset",
@@ -818,16 +839,24 @@
       "expanded": false,
       "items": [
         "mode_switches",
+        "mode_home_switch_name",
+        "mode_away_switch_name",
+        "mode_night_switch_name",
         "mode_off_switch",
+        "mode_off_switch_name",
         {
           "type": "div",
           "displayFlex": true,
-          "flex-flow": "row",
+          "flex-flow": "row wrap",
           "flex-direction": "row",
           "items": [
             "mode_away_extended_switch",
-            "mode_away_extended_switch_trigger_seconds"
-          ]
+            "mode_away_extended_switch_trigger_seconds",
+            "mode_away_extended_switch_name"
+          ],
+          "condition": {
+            "functionBody": "return !(model.disabled_modes || []).includes('Away');"
+          }
         },
         {
           "type": "div",
@@ -836,11 +865,17 @@
           "flex-direction": "row",
           "items": ["mode_pause_switch", "pause_minutes"]
         },
+        "mode_pause_switch_name",
         "arming_lock_switch",
         "arming_lock_switches",
         "trip_switch",
+        "trip_switch_name",
         "trip_override_switch",
+        "trip_override_switch_name",
         "trip_mode_switches",
+        "trip_home_switch_name",
+        "trip_away_switch_name",
+        "trip_night_switch_name",
         {
           "key": "trip_home_switches",
           "type": "tabarray",
@@ -859,7 +894,8 @@
           "title": "{{ value.label || 'Night Switch' }}",
           "items": ["trip_night_switches[].label"]
         },
-        "audio_switch"
+        "audio_switch",
+        "audio_switch_name"
       ]
     },
     {
@@ -870,14 +906,19 @@
       "expanded": false,
       "items": [
         "arming_sensor",
-        "tripped_sensor",
-        "triggered_sensor",
         {
           "type": "div",
           "displayFlex": true,
-          "flex-flow": "row wrap",
+          "flex-flow": "row",
           "flex-direction": "row",
-          "items": ["tripped_sensor_seconds", "triggered_sensor_seconds"]
+          "items": ["tripped_sensor", "tripped_sensor_seconds"]
+        },
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-flow": "row",
+          "flex-direction": "row",
+          "items": ["triggered_sensor", "triggered_sensor_seconds"]
         },
         "reset_sensor"
       ]
@@ -975,6 +1016,58 @@
         "mqtt_password",
         "mqtt_topic",
         "mqtt_client_id"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Advanced Options",
+      "description": "",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "log_directory",
+        "save_state",
+        "test_mode",
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-flow": "row wrap",
+          "flex-direction": "row",
+          "items": ["home_arm_seconds", "away_arm_seconds", "night_arm_seconds"]
+        },
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-flow": "row wrap",
+          "flex-direction": "row",
+          "items": [
+            "home_trigger_seconds",
+            "away_trigger_seconds",
+            "night_trigger_seconds"
+          ]
+        },
+        "override_off",
+        "reset_off_flow",
+        "proxy_mode",
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-flow": "row wrap",
+          "flex-direction": "row",
+          "items": ["double_knock", "double_knock_seconds"]
+        },
+        {
+          "type": "div",
+          "displayFlex": true,
+          "flex-flow": "row wrap",
+          "flex-direction": "row",
+          "items": [
+            "home_double_knock_seconds",
+            "away_double_knock_seconds",
+            "night_double_knock_seconds"
+          ]
+        },
+        "double_knock_modes"
       ]
     }
   ]
