@@ -1,5 +1,24 @@
 # Changelog
 
+## v11.3.0-beta.1 - 2026-06-11
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.0-beta.1 -->
+
+## What's Changed
+### ✨ Enhancements
+* Config schema update by @jeffreyfrei in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/868
+### 📦 Dependencies
+* build(deps-dev): bump homebridge from 2.0.2 to 2.1.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/867
+* build(deps): bump MiguelRipoll23/get-next-version from 3.0.0 to 3.1.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/869
+* build(deps): bump MiguelRipoll23/get-next-version from 3.1.0 to 3.2.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/870
+* build(deps): bump github/gh-aw-actions from 0.78.1 to 0.78.3 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/871
+
+## New Contributors
+* @jeffreyfrei made their first contribution in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/868
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.2.0...v11.3.0-beta.1
+
+
 ## v11.2.0 - 2026-06-04
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.2.0 -->
