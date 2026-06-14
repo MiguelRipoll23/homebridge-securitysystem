@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.3.1 - 2026-06-14
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: sync mode switches on startup (fixes #889) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/890
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.0...v11.3.1
+
+
 ## v11.3.1-beta.1 - 2026-06-14
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.3.1-beta.1 -->
