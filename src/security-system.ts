@@ -116,12 +116,20 @@ export class SecuritySystem implements AccessoryPlugin {
     // Startup tasks.
     this.logStartup();
 
+    const syncModeSwitches = (): void => {
+      this.bus.emit(EventType.RESET_MODE_SWITCHES, {});
+      this.bus.emit(EventType.UPDATE_MODE_SWITCHES, {});
+    };
+
     if (this.options.saveState) {
       this.storageService.init().then(() => this.storageService.load(this.state).then(() => {
         this.svcs.mainService.updateCharacteristic(Char.SecuritySystemTargetState, this.state.targetState);
         this.svcs.mainService.updateCharacteristic(Char.SecuritySystemCurrentState, this.state.currentState);
         this.stateHandler.logMode('Current', this.state.currentState);
+        syncModeSwitches();
       }));
+    } else {
+      syncModeSwitches();
     }
 
     if (this.options.audioPath) {
