@@ -12,33 +12,75 @@ Homebridge plugin that creates a security system accessory that can be triggered
 
 In the Homebridge UI, go to the plugins section, click the search button, then search for `homebridge-securitysystem`, and click the install button.
 
-## Demo
+## Overview
 
-<div align="left">
-  <img align="right" width="205" height="445" src="./.github/demo.jpg">
-  <p>Want to know how it looks like? It's pretty customizable, you can configure it to show as many switches as you like.</p>
-  <p>What you are seeing at your right is <b>the friendliest</b> configuration that you can start with. Each <code>Trip</code> switch that you see can only trip the security system if the mode is currently set. This allows you to create logic-less automations from the very Home app that comes already installed on iOS.</p>
-  <p>There are also <code>Mode</code> switches which let you run automations that interact with your accessories when a mode is changed or set modes bypassing HomeKit confirmation dialogs.</p>
-  <p>A web server, webhooks or even shell commands are available to integrate the security system with other devices or services plus a plenty of more settings to make this plugin your own DIY security system.</p>
-  <p>Homebridge / HOOBS UI is recommended to configure the plugin, for additional help please check the <a href="https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki">Wiki</a> page.</p>
-</div>
+This plugin implements a fully-featured security system for HomeKit.  Within HomeKit, you can choose one of up to four system modes: <code>Off</code>, <code>Home</code>, <code>Away</code>, or <code>Night</code>.  For example, you may want to trip your system on different inputs or alarm in different ways depending on whether you're away as opposed to asleep at home.  The system can then be in any of five states: <i>Disarmed</i>, <i>Armed Home</i>, <i>Armed Away</i>, <i>Armed Night</i>, or <i>Triggered</i>.  You will need to create your own automations in HomeKit to trip the security system, and you will need to create your own automations to perform any actions (such as sounding/silencing a siren) when the system triggers/resets.
 
-## Automations
+## Available Functionality
+The security system is extensively configurable.  There are:
+  * Multiple switches available which let you change security modes (bypassing HomeKit confirmations), trip under different configurations, and place safeguards, which are great for use in automations.
+  * Sensors asserting for Armed, Tripped/Triggered, and Reset, which is useful for automations and notifications on your phone.
+  * Audio options for audible events on connected speakers.
+  * Remote access web server options.
+  * Webhooks for interacting with other devices and web services during events.
+  * Options for executing event-based shell commands.
+  * Options for publishing state information to an MQTT broker.
 
-Using the `Home` app is recommended for regular users, for more advanced users the `Eve` or a similar app will let you make use of the custom options that the security system itself exposes.
+For configuring the plugin, Homebridge / HOOBS UI is recommended, and additional help is available in the <a href="https://github.com/MiguelRipoll23/homebridge-securitysystem/wiki">Wiki</a> page.
+Using the `Home` app will suffice for most users, however, third-party apps such as `Eve` will let you make use of more custom options that the security system exposes.
 
-Here are some examples of automations that can be created:
+## A Simple Example
+### Configuring the plugin in HomeBridge
+At its very simplest, you will need to enable at least one arming mode (in this case <code>Away</code>), and at least one trip switch (in this case <code>Trip Away</code>, which we'll name "Trip if Away" for extra clarity).  You may set this up in the plugin config or use the following json config:
+```json
+{
+    "accessory": "security-system",
+    "name": "HB Security",
+    "serial_number": "S3CUR1TYSYST3M",
+    "disabled_modes": [
+        "Home",
+        "Night"
+    ],
+    "trip_mode_switches": true,
+    "trip_away_switch_name": "Trip if Away"
+}
+```
+### Configuring HomeKit in Apple Home
+For this example, you will need to create three automations:
+  1. Trip the security system when a sensor detects something
+  2. Turn on an alarm device when the sytem is tripped
+  3. Turn off the alarm device when the system is reset/disarmed
 
-| Trigger                  | Actions                       |
-| ------------------------ | ----------------------------- |
-| Motion is Detected       | Turn on `Trip Night`          |
-| Door is Opened           | Turn on `Trip Away`           |
-| NFC Tag is Detected (1)  | Set Security system to `Home` |
-| Security System Triggers | Play Audio (2)                |
+Automation 1: Create an automation for when a sensor (in this case the back door) detects something.  Choose a sensor to trigger the system, and set it to turn on the <code>Trip Away</code> switch.  In the native Apple Home app you need to create an automation like this for every sensor.  Third party apps like <code>Eve</code> allow you to select multiple sensor inputs in a single automation.
+<p align="center">
+    <img src="./.github/img/Trip1.jpg" width="24%" align="top">
+    <img src="./.github/img/Trip2.jpg" width="24%" align="top">
+    <img src="./.github/img/Trip3.jpg" width="24%" align="top">
+    <img src="./.github/img/Trip4.jpg" width="24%" align="top">
+</p>
+Automation 2: Create an Automation to turn on an accessory or accessories (e.g. alarm, light, or outlet) when the system has been triggered, initiated by the <code>Trip Away</code> switch.
+<p align="center">
+    <img src="./.github/img/AlarmOn1.jpg" width="24%" align="top">
+    <img src="./.github/img/AlarmOn2.jpg" width="24%" align="top">
+    <img src="./.github/img/AlarmOn3.jpg" width="24%" align="top">
+    <img src="./.github/img/AlarmOn4.jpg" width="24%" align="top">
+</p>
+Automation 3: Create an automation to turn off the above accessory or accessories when the system is reset/disarmed using the <i>disarmed</i> state of the security system.
+<p align="center">
+    <img src="./.github/img/AlarmOff1.jpg" width="24%" align="top">
+    <img src="./.github/img/AlarmOff2.jpg" width="24%" align="top">
+    <img src="./.github/img/AlarmOff3.jpg" width="24%" align="top">
+    <img src="./.github/img/AlarmOff4.jpg" width="24%" align="top">
+</p>
 
-(1) Shortcuts app is required to create this automation.
-
-(2) AirPlay 2 speaker and Apple Music subscription are required.
+### Usage
+To arm this system, set the active mode to <code>Away</code>.  If the sensor asserts, it will trip the system and activate the alarm device.  To reset/disarm the sytem, set the active mode back to <code>Off</code>.
+<p align="center">
+    <img src="./.github/img/Usage1.jpg" width="24%" align="top">
+    <img src="./.github/img/Usage2.jpg" width="24%" align="top">
+    <img src="./.github/img/Usage3.jpg" width="24%" align="top">
+    <img src="./.github/img/Usage4.jpg" width="24%" align="top">
+</p>
 
 ## Contributions
 
