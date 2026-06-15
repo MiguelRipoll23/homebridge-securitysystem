@@ -19,7 +19,7 @@ This plugin implements a fully-featured security system for HomeKit.  Within Hom
 ## Available Functionality
 The security system is extensively configurable.  There are:
   * Multiple switches available which let you change security modes (bypassing HomeKit confirmations), trip under different configurations, and place safeguards, which are great for use in automations.
-  * Sensors asserting for Armed, Tripped/Triggered, and Reset, which is useful for automations and notifications on your phone.
+  * Sensors asserting for Armed, Tripped/Triggered, and Reset, which are useful for automations and notifications on your phone.
   * Audio options for audible events on connected speakers.
   * Remote access web server options.
   * Webhooks for interacting with other devices and web services during events.
@@ -51,7 +51,7 @@ For this example, you will need to create three automations:
   2. Turn on an alarm device when the sytem is tripped
   3. Turn off the alarm device when the system is reset/disarmed
 
-Automation 1: Create an automation for when a sensor (in this case the back door) detects something.  Choose a sensor to trigger the system, and set it to turn on the <code>Trip Away</code> switch.  In the native Apple Home app you need to create an automation like this for every sensor.  Third party apps like <code>Eve</code> allow you to select multiple sensor inputs in a single automation.
+Automation 1: Create an automation for when a sensor (in this case the back door) detects something.  Choose a sensor to trigger the system, and set it to turn on the <code>Trip Away</code> switch.  In the native Apple Home app you need to create an automation like this for every sensor.  Third-party apps like <code>Eve</code> allow you to select multiple sensor inputs in a single automation.
 <p align="center">
     <img src="./.github/img/Trip1.jpg" width="24%" align="top">
     <img src="./.github/img/Trip2.jpg" width="24%" align="top">
