@@ -1,5 +1,19 @@
 # Changelog
 
+## v11.3.2-beta.1 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.2-beta.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: reset trip state properly when system is disarmed (fixes #905) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/906
+### 🛠️ Other Changes
+* chore: remove stale issue-response-migration-assistant files by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/907
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.1...v11.3.2-beta.1
+
+
 ## v11.3.1 - 2026-06-14
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.3.1 -->
