@@ -32,7 +32,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ vars.NPM_VERSION }}
+          node-version: 24
 
       - name: Get next version
         uses: MiguelRipoll23/get-next-version@v3.2.0
