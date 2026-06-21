@@ -167,7 +167,11 @@ export class TripHandler {
     this.log.info('Security System (Tripped)');
 
     if (this.options.trippedMotionSensor) {
-      this.startTrippedMotionSensor();
+      this.sensorHandler.pulseTrippedMotionSensor();
+      this.timers.setTrippedInterval(
+        this.options.trippedMotionSensorSeconds * 1000,
+        () => this.sensorHandler.pulseTrippedMotionSensor(),
+      );
     }
 
     const triggerSeconds = this.resolveTriggerSeconds();
@@ -181,19 +185,6 @@ export class TripHandler {
 
     if (triggerSeconds > 0) {
       this.bus.emit(EventType.WARNING, { origin, triggerSeconds });
-    }
-  }
-
-  private startTrippedMotionSensor(): void {
-    const seconds = this.options.trippedMotionSensorSeconds;
-    if (seconds === 0) {
-      this.sensorHandler.setTrippedMotionSensor(true);
-    } else {
-      this.sensorHandler.pulseTrippedMotionSensor();
-      this.timers.setTrippedInterval(
-        seconds * 1000,
-        () => this.sensorHandler.pulseTrippedMotionSensor(),
-      );
     }
   }
 

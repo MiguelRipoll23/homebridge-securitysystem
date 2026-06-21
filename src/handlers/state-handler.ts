@@ -191,7 +191,6 @@ export class StateHandler {
     // Notify handlers to reset their displayed state (bus is synchronous).
     this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.sensorHandler.resetTrippedMotionSensor();
-    this.sensorHandler.resetTriggeredMotionSensor();
     this.bus.emit(EventType.RESET_MODE_SWITCHES, {});
     this.bus.emit(EventType.UPDATE_MODE_SWITCHES, {});
 
@@ -224,8 +223,13 @@ export class StateHandler {
 
   private handleTriggeredState(): void {
     this.timers.clearTrippedInterval();
-    this.sensorHandler.resetTrippedMotionSensor();
-    this.startTriggeredMotionSensor();
+
+    if (this.options.triggeredMotionSensor) {
+      this.timers.setTriggeredInterval(
+        this.options.triggeredMotionSensorSeconds * 1000,
+        () => this.sensorHandler.pulseTriggeredMotionSensor(),
+      );
+    }
 
     this.timers.setResetTimer(this.options.resetMinutes * 60 * 1000, () => {
       this.log.info('Reset (Finished)');
@@ -237,18 +241,6 @@ export class StateHandler {
         this.setCurrentState(this.state.targetState, OriginType.EXTERNAL);
       }
     });
-  }
-
-  private startTriggeredMotionSensor(): void {
-    const seconds = this.options.triggeredMotionSensorSeconds;
-    if (seconds === 0) {
-      this.sensorHandler.setTriggeredMotionSensor(true);
-    } else {
-      this.timers.setTriggeredInterval(
-        seconds * 1000,
-        () => this.sensorHandler.pulseTriggeredMotionSensor(),
-      );
-    }
   }
 
   private handleArmingState(): void {

@@ -35,15 +35,11 @@ export class SensorHandler {
   // ── Tripped sensor ─────────────────────────────────────────────────────────
 
   pulseTrippedMotionSensor(): void {
-    this.setTrippedMotionSensor(true);
-    this.scheduleReset(this.services.trippedMotionSensorService);
-  }
-
-  setTrippedMotionSensor(value: boolean): void {
     this.services.trippedMotionSensorService.updateCharacteristic(
       this.Characteristic.MotionDetected,
-      value,
+      true,
     );
+    this.scheduleReset(this.services.trippedMotionSensorService);
   }
 
   resetTrippedMotionSensor(): void {
@@ -57,23 +53,11 @@ export class SensorHandler {
   // ── Triggered sensor ───────────────────────────────────────────────────────
 
   pulseTriggeredMotionSensor(): void {
-    this.setTriggeredMotionSensor(true);
-    this.scheduleReset(this.services.triggeredMotionSensorService);
-  }
-
-  setTriggeredMotionSensor(value: boolean): void {
     this.services.triggeredMotionSensorService.updateCharacteristic(
       this.Characteristic.MotionDetected,
-      value,
+      true,
     );
-  }
-
-  resetTriggeredMotionSensor(): void {
-    const char = this.services.triggeredMotionSensorService
-      .getCharacteristic(this.Characteristic.MotionDetected);
-    if (char.value) {
-      char.updateValue(false);
-    }
+    this.scheduleReset(this.services.triggeredMotionSensorService);
   }
 
   // ── Reset sensor ───────────────────────────────────────────────────────────

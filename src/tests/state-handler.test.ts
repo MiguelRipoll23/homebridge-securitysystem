@@ -116,11 +116,7 @@ function makeTimers() {
 function makeMockSensor() {
   return {
     resetArmingMotionSensor: vi.fn(),
-    setTrippedMotionSensor: vi.fn(),
     resetTrippedMotionSensor: vi.fn(),
-    pulseTriggeredMotionSensor: vi.fn(),
-    setTriggeredMotionSensor: vi.fn(),
-    resetTriggeredMotionSensor: vi.fn(),
     pulseResetMotionSensor: vi.fn(),
     updateArmingMotionSensor: vi.fn(),
   };
@@ -303,67 +299,5 @@ describe('StateHandler.updateTargetState - isTripping reset', async () => {
     handler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
 
     expect(state.isTripping).toBe(false);
-  });
-});
-
-// ── Triggered motion sensor behavior ─────────────────────────────────────────
-
-describe('StateHandler.setCurrentState - triggered motion sensor', async () => {
-  const { StateHandler } = await import('../handlers/state-handler.js');
-  const { EventBusService } = await import('../services/event-bus-service.js');
-
-  it('starts triggered sensor steady-on when triggeredMotionSensorSeconds = 0', () => {
-    const state = makeState({ currentState: SecurityState.NIGHT });
-    const bus = new EventBusService();
-    const sensor = makeMockSensor() as any;
-    const timers = makeTimers();
-
-    const handler = new StateHandler(
-      makeServices(), state,
-      makeOptions({ triggeredMotionSensor: true, triggeredMotionSensorSeconds: 0 }),
-      {} as any, makeMockLog() as any, bus, makeStorage(), makeAudio(),
-      timers, sensor,
-    );
-
-    handler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-
-    expect(sensor.setTriggeredMotionSensor).toHaveBeenCalledWith(true);
-    expect(sensor.pulseTriggeredMotionSensor).not.toHaveBeenCalled();
-    expect(timers.setTriggeredInterval).not.toHaveBeenCalled();
-  });
-
-  it('pulses triggered sensor with interval when triggeredMotionSensorSeconds > 0', () => {
-    const state = makeState({ currentState: SecurityState.NIGHT });
-    const bus = new EventBusService();
-    const sensor = makeMockSensor() as any;
-    const timers = makeTimers();
-
-    const handler = new StateHandler(
-      makeServices(), state,
-      makeOptions({ triggeredMotionSensor: true, triggeredMotionSensorSeconds: 10 }),
-      {} as any, makeMockLog() as any, bus, makeStorage(), makeAudio(),
-      timers, sensor,
-    );
-
-    handler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-
-    expect(timers.setTriggeredInterval).toHaveBeenCalledWith(10000, expect.any(Function));
-    expect(sensor.setTriggeredMotionSensor).not.toHaveBeenCalled();
-  });
-
-  it('resets tripped motion sensor when entering TRIGGERED', () => {
-    const state = makeState({ currentState: SecurityState.NIGHT });
-    const bus = new EventBusService();
-    const sensor = makeMockSensor() as any;
-
-    const handler = new StateHandler(
-      makeServices(), state, makeOptions(), {} as any,
-      makeMockLog() as any, bus, makeStorage(), makeAudio(),
-      makeTimers(), sensor,
-    );
-
-    handler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-
-    expect(sensor.resetTrippedMotionSensor).toHaveBeenCalled();
   });
 });
