@@ -1,5 +1,20 @@
 # Changelog
 
+## v11.3.2-beta.3 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.2-beta.3 -->
+
+## What's Changed
+### 📦 Dependencies
+* build(deps): bump MiguelRipoll23/get-next-version from 3.2.0 to 3.2.1 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/912
+* build(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/903
+### 🛠️ Other Changes
+* fix: hardcode node version to 24 in publish workflow by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/914
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.2-beta.2...v11.3.2-beta.3
+
+
 ## v11.3.2-beta.2 - 2026-06-21
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.3.2-beta.2 -->
