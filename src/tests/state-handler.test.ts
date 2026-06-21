@@ -6,6 +6,7 @@ import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
 import type { StorageService } from '../services/storage-service.js';
 import type { AudioService } from '../services/audio-service.js';
+import { EventType } from '../types/event-type.js';
 
 // ── Minimal mocks ─────────────────────────────────────────────────────────────
 
@@ -216,5 +217,87 @@ describe('StateHandler.updateTargetState', async () => {
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.REGULAR_SWITCH, 0);
     expect(result.success).toBe(true);
     expect(state.targetState).toBe(SecurityState.HOME);
+  });
+});
+
+// ── Regression: RESET_TRIP_SWITCHES on TRIGGERED ───────────────────────────────
+// Issue 905: Trip Switch was being reset to OFF when the alarm triggered,
+// hiding the active sensor from the user.
+
+describe('StateHandler.setCurrentState - RESET_TRIP_SWITCHES', async () => {
+  const { StateHandler } = await import('../handlers/state-handler.js');
+  const { EventBusService } = await import('../services/event-bus-service.js');
+
+  it('does not emit RESET_TRIP_SWITCHES when entering TRIGGERED', () => {
+    const state = makeState({ currentState: SecurityState.NIGHT });
+    const bus = new EventBusService();
+    const spy = vi.fn();
+    bus.on(EventType.RESET_TRIP_SWITCHES, spy);
+
+    const handler = new StateHandler(
+      makeServices(), state, makeOptions(), {} as any,
+      makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      makeTimers(), makeMockSensor() as any,
+    );
+
+    handler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('still emits RESET_TRIP_SWITCHES when entering a non-TRIGGERED state', () => {
+    const state = makeState({ currentState: SecurityState.TRIGGERED });
+    const bus = new EventBusService();
+    const spy = vi.fn();
+    bus.on(EventType.RESET_TRIP_SWITCHES, spy);
+
+    const handler = new StateHandler(
+      makeServices(), state, makeOptions(), {} as any,
+      makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      makeTimers(), makeMockSensor() as any,
+    );
+
+    handler.setCurrentState(SecurityState.NIGHT, OriginType.EXTERNAL);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Regression: isTripping reset on target state change ───────────────────────
+// Issue 905: isTripping was not being reset when the user changed the target
+// mode, causing stale trip state after OFF disarm + re-arm.
+
+describe('StateHandler.updateTargetState - isTripping reset', async () => {
+  const { StateHandler } = await import('../handlers/state-handler.js');
+  const { EventBusService } = await import('../services/event-bus-service.js');
+
+  it('resets isTripping to false when target state changes to a different mode', () => {
+    const state = makeState({ currentState: SecurityState.HOME, isTripping: true });
+    const handler = new StateHandler(
+      makeServices(), state, makeOptions(), {} as any,
+      makeMockLog() as any, new EventBusService(), makeStorage(), makeAudio(),
+      makeTimers(), makeMockSensor() as any,
+    );
+
+    handler.updateTargetState(SecurityState.AWAY, OriginType.INTERNAL, 0);
+
+    expect(state.isTripping).toBe(false);
+  });
+
+  it('resets isTripping to false when disarming from TRIGGERED to OFF', () => {
+    const state = makeState({
+      currentState: SecurityState.TRIGGERED,
+      targetState: SecurityState.NIGHT,
+      isTripping: true,
+    });
+    const handler = new StateHandler(
+      makeServices(), state, makeOptions(), {} as any,
+      makeMockLog() as any, new EventBusService(), makeStorage(), makeAudio(),
+      makeTimers(), makeMockSensor() as any,
+    );
+
+    handler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
+
+    expect(state.isTripping).toBe(false);
   });
 });
