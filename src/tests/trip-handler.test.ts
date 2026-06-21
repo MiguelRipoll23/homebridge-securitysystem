@@ -95,6 +95,7 @@ describe('TripHandler', async () => {
   let tripHandler: any;
   const mockSensorHandler = {
     pulseTrippedMotionSensor: vi.fn(),
+    setTrippedMotionSensor: vi.fn(),
     resetTrippedMotionSensor: vi.fn(),
   };
   const mockAudio = { stop: vi.fn(), play: vi.fn(), attachToBus: vi.fn() };
@@ -147,6 +148,51 @@ describe('TripHandler', async () => {
     state.currentState = SecurityState.HOME;
     const result = tripHandler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
     expect(result.success).toBe(true);
+  });
+
+  describe('tripped motion sensor', () => {
+    it('starts steady-on when trippedMotionSensorSeconds = 0', () => {
+      const handler = new TripHandler(
+        services, state,
+        makeOptions({ trippedMotionSensor: true, trippedMotionSensorSeconds: 0 }),
+        {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+        bus, mockAudio as any, mockSensorHandler as any, mockTimers,
+      );
+
+      handler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
+
+      expect(mockSensorHandler.setTrippedMotionSensor).toHaveBeenCalledWith(true);
+      expect(mockSensorHandler.pulseTrippedMotionSensor).not.toHaveBeenCalled();
+      expect(mockTimers.setTrippedInterval).not.toHaveBeenCalled();
+    });
+
+    it('pulses with interval when trippedMotionSensorSeconds > 0', () => {
+      const handler = new TripHandler(
+        services, state,
+        makeOptions({ trippedMotionSensor: true, trippedMotionSensorSeconds: 10 }),
+        {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+        bus, mockAudio as any, mockSensorHandler as any, mockTimers,
+      );
+
+      handler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
+
+      expect(mockSensorHandler.pulseTrippedMotionSensor).toHaveBeenCalled();
+      expect(mockTimers.setTrippedInterval).toHaveBeenCalledWith(10000, expect.any(Function));
+      expect(mockSensorHandler.setTrippedMotionSensor).not.toHaveBeenCalled();
+    });
+
+    it('resets tripped sensor on cancelTrip', () => {
+      const handler = new TripHandler(
+        services, state,
+        makeOptions({ trippedMotionSensor: true }),
+        {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+        bus, mockAudio as any, mockSensorHandler as any, mockTimers,
+      );
+
+      handler.updateTripSwitch(false, OriginType.REGULAR_SWITCH, false);
+
+      expect(mockSensorHandler.resetTrippedMotionSensor).toHaveBeenCalled();
+    });
   });
 
   it('cancels trip and stops audio', () => {
