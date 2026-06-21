@@ -200,6 +200,7 @@ export class StateHandler {
       this.sensorHandler.pulseResetMotionSensor();
     }
 
+    this.state.isTripping = false;
     this.state.isKnocked = false;
   }
 
@@ -210,10 +211,13 @@ export class StateHandler {
       if (this.options.testMode) {
         return;
       }
+    } else {
+      // Notify TripHandler to reset trip switches on any non-triggered state change.
+      // (Do not reset when entering TRIGGERED — the trip switch should remain ON
+      // to reflect the active sensor / cause of the alarm.)
+      this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     }
 
-    // Notify TripHandler to reset trip switches on any state change.
-    this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.bus.emit(EventType.CURRENT_CHANGED, { state: this.state.currentState, origin });
   }
 
