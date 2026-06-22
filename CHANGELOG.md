@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.4.0 - 2026-06-22
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.4.0 -->
+
+## What's Changed
+### 🎉 New Features
+* feat: steady-on trip/trigger sensor when seconds = 0 by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/917
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.2...v11.4.0
+
+
 ## v11.4.0-beta.1 - 2026-06-21
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.4.0-beta.1 -->
