@@ -1,5 +1,153 @@
 # Changelog
 
+## v11.4.0 - 2026-06-22
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.4.0 -->
+
+## What's Changed
+### 🎉 New Features
+* feat: steady-on trip/trigger sensor when seconds = 0 by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/917
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.2...v11.4.0
+
+
+## v11.4.0-beta.1 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.4.0-beta.1 -->
+
+## What's Changed
+### 🎉 New Features
+* feat: steady-on trip/trigger sensor when seconds = 0 by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/917
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.2...v11.4.0-beta.1
+
+
+## v11.3.2 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.2 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: reset trip state properly when system is disarmed (fixes #905) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/906
+### 📦 Dependencies
+* build(deps): bump MiguelRipoll23/get-next-version from 3.2.0 to 3.2.1 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/912
+* build(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/903
+### 🛠️ Other Changes
+* chore: remove stale issue-response-migration-assistant files by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/907
+* Hardcode node-version to 24 in bump-version workflow by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/909
+* chore: update all dependencies to latest versions by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/910
+* fix: hardcode node version to 24 in publish workflow by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/914
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.1...v11.3.2
+
+
+## v11.3.2-beta.3 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.2-beta.3 -->
+
+## What's Changed
+### 📦 Dependencies
+* build(deps): bump MiguelRipoll23/get-next-version from 3.2.0 to 3.2.1 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/912
+* build(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/903
+### 🛠️ Other Changes
+* fix: hardcode node version to 24 in publish workflow by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/914
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.2-beta.2...v11.3.2-beta.3
+
+
+## v11.3.2-beta.2 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.2-beta.2 -->
+
+## What's Changed
+### 🛠️ Other Changes
+* Hardcode node-version to 24 in bump-version workflow by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/909
+* chore: update all dependencies to latest versions by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/910
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.2-beta.1...v11.3.2-beta.2
+
+
+## v11.3.2-beta.1 - 2026-06-21
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.2-beta.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: reset trip state properly when system is disarmed (fixes #905) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/906
+### 🛠️ Other Changes
+* chore: remove stale issue-response-migration-assistant files by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/907
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.1...v11.3.2-beta.1
+
+
+## v11.3.1 - 2026-06-14
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: sync mode switches on startup (fixes #889) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/890
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.0...v11.3.1
+
+
+## v11.3.1-beta.1 - 2026-06-14
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.1-beta.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: sync mode switches on startup (fixes #889) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/890
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.3.0...v11.3.1-beta.1
+
+
+## v11.3.0 - 2026-06-12
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.0 -->
+
+## What's Changed
+### ✨ Enhancements
+* Config schema update by @jeffreyfrei in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/868
+### 📦 Dependencies
+* build(deps-dev): bump homebridge from 2.0.2 to 2.1.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/867
+* build(deps): bump MiguelRipoll23/get-next-version from 3.0.0 to 3.1.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/869
+* build(deps): bump MiguelRipoll23/get-next-version from 3.1.0 to 3.2.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/870
+* build(deps): bump github/gh-aw-actions from 0.78.1 to 0.78.3 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/871
+
+## New Contributors
+* @jeffreyfrei made their first contribution in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/868
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.2.0...v11.3.0
+
+
+## v11.3.0-beta.1 - 2026-06-11
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.3.0-beta.1 -->
+
+## What's Changed
+### ✨ Enhancements
+* Config schema update by @jeffreyfrei in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/868
+### 📦 Dependencies
+* build(deps-dev): bump homebridge from 2.0.2 to 2.1.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/867
+* build(deps): bump MiguelRipoll23/get-next-version from 3.0.0 to 3.1.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/869
+* build(deps): bump MiguelRipoll23/get-next-version from 3.1.0 to 3.2.0 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/870
+* build(deps): bump github/gh-aw-actions from 0.78.1 to 0.78.3 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/871
+
+## New Contributors
+* @jeffreyfrei made their first contribution in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/868
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.2.0...v11.3.0-beta.1
+
+
 ## v11.2.0 - 2026-06-04
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.2.0 -->

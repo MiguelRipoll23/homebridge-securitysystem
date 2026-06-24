@@ -191,6 +191,7 @@ export class StateHandler {
     // Notify handlers to reset their displayed state (bus is synchronous).
     this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.sensorHandler.resetTrippedMotionSensor();
+    this.sensorHandler.resetTriggeredMotionSensor();
     this.bus.emit(EventType.RESET_MODE_SWITCHES, {});
     this.bus.emit(EventType.UPDATE_MODE_SWITCHES, {});
 
@@ -200,6 +201,7 @@ export class StateHandler {
       this.sensorHandler.pulseResetMotionSensor();
     }
 
+    this.state.isTripping = false;
     this.state.isKnocked = false;
   }
 
@@ -210,22 +212,20 @@ export class StateHandler {
       if (this.options.testMode) {
         return;
       }
+    } else {
+      // Notify TripHandler to reset trip switches on any non-triggered state change.
+      // (Do not reset when entering TRIGGERED — the trip switch should remain ON
+      // to reflect the active sensor / cause of the alarm.)
+      this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     }
 
-    // Notify TripHandler to reset trip switches on any state change.
-    this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});
     this.bus.emit(EventType.CURRENT_CHANGED, { state: this.state.currentState, origin });
   }
 
   private handleTriggeredState(): void {
     this.timers.clearTrippedInterval();
-
-    if (this.options.triggeredMotionSensor) {
-      this.timers.setTriggeredInterval(
-        this.options.triggeredMotionSensorSeconds * 1000,
-        () => this.sensorHandler.pulseTriggeredMotionSensor(),
-      );
-    }
+    this.sensorHandler.resetTrippedMotionSensor();
+    this.startTriggeredMotionSensor();
 
     this.timers.setResetTimer(this.options.resetMinutes * 60 * 1000, () => {
       this.log.info('Reset (Finished)');
@@ -237,6 +237,18 @@ export class StateHandler {
         this.setCurrentState(this.state.targetState, OriginType.EXTERNAL);
       }
     });
+  }
+
+  private startTriggeredMotionSensor(): void {
+    const seconds = this.options.triggeredMotionSensorSeconds;
+    if (seconds === 0) {
+      this.sensorHandler.setTriggeredMotionSensor(true);
+    } else {
+      this.timers.setTriggeredInterval(
+        seconds * 1000,
+        () => this.sensorHandler.pulseTriggeredMotionSensor(),
+      );
+    }
   }
 
   private handleArmingState(): void {
