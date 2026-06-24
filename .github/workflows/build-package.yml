@@ -23,13 +23,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup node
         uses: actions/setup-node@v6
 
         with:
-          node-version: ${{ vars.NPM_VERSION }}
+          node-version: 24
           cache: "npm"
           registry-url: https://registry.npmjs.org/
 
