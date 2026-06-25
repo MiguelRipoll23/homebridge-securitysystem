@@ -356,7 +356,7 @@
       },
       "tripped_sensor_seconds": {
         "title": "Tripped Sensor Pulse Rate (seconds)",
-        "description": "",
+        "description": "Set to 0 for steady on.",
         "type": "integer",
         "default": 5,
         "required": false,
@@ -374,7 +374,7 @@
       },
       "triggered_sensor_seconds": {
         "title": "Triggered Sensor Pulse Rate (seconds)",
-        "description": "",
+        "description": "Set to 0 for steady on.",
         "type": "integer",
         "default": 5,
         "required": false,
