@@ -31,8 +31,8 @@
     "build": "rimraf ./dist && tsc",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
-    "prepublishOnly": "npm run lint && npm run build",
-    "watch": "npm run build && npm link && nodemon"
+    "prepublishOnly": "pnpm run lint && pnpm run build",
+    "watch": "pnpm run build && pnpm link && nodemon"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.5",

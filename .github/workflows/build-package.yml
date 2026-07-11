@@ -25,20 +25,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.0.9
+        with:
+          version: latest
+
       - name: Setup node
         uses: actions/setup-node@v6
-
         with:
-          node-version: 24
-          cache: "npm"
+          cache: "pnpm"
           registry-url: https://registry.npmjs.org/
 
       - name: Build package
         run: |
-          npm ci
-          npm run lint
-          npm run build
-          npm pack
+          pnpm install --frozen-lockfile
+          pnpm run lint
+          pnpm run build
+          pnpm pack
 
       - name: Attest build provenance
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
