@@ -1,5 +1,17 @@
 # Changelog
 
+## v11.4.1-beta.2 - 2026-07-11
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.4.1-beta.2 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* fix: update publish workflow to use pnpm by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/945
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.4.1-beta.1...v11.4.1-beta.2
+
+
 ## v11.4.1-beta.1 - 2026-07-11
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.4.1-beta.1 -->
