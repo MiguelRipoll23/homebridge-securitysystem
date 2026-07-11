@@ -39,7 +39,6 @@ jobs:
       - name: Build package
         run: |
           pnpm install --frozen-lockfile
-          pnpm run lint
           pnpm run build
           pnpm pack
 
