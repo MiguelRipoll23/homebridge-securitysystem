@@ -1,5 +1,20 @@
 # Changelog
 
+## v11.4.1-beta.1 - 2026-07-11
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.4.1-beta.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* chore: update deps to latest, remove eslint (broken with TS 7) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/943
+### 🛠️ Other Changes
+* Config schema update by @jeffreyfrei in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/925
+* migrate from npm to pnpm by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/942
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.4.0...v11.4.1-beta.1
+
+
 ## v11.4.0 - 2026-06-22
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.4.0 -->
