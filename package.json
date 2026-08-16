@@ -29,24 +29,27 @@
   },
   "scripts": {
     "build": "rimraf ./dist && tsc",
+    "lint": "oxlint",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build",
     "watch": "pnpm run build && pnpm link && nodemon"
   },
   "dependencies": {
-    "@hono/node-server": "^2.0.8",
-    "@hono/zod-openapi": "^1.4.0",
-    "@scalar/hono-api-reference": "^0.11.9",
-    "hono": "^4.12.29",
+    "@hono/node-server": "^2.1.1",
+    "@hono/zod-openapi": "^1.6.0",
+    "@scalar/hono-api-reference": "^0.11.14",
+    "hono": "^4.13.2",
     "mqtt": "^5.15.2",
     "node-persist": "^4.0.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.2.0",
     "@types/node-persist": "^3.1.8",
-    "homebridge": "^2.1.0",
+    "homebridge": "^2.3.1",
     "nodemon": "^3.1.14",
+    "oxlint": "^1.78.0",
     "rimraf": "^6.1.3",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
