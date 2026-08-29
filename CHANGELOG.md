@@ -1,5 +1,17 @@
 # Changelog
 
+## v12.0.0-beta.2 - 2026-08-29
+
+<!-- Release notes generated using configuration in .github/release.yml at v12.0.0-beta.2 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* feat: use full URL per webhook event (remove base URL) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/992
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v12.0.0-beta.1...v12.0.0-beta.2
+
+
 ## v12.0.0-beta.1 - 2026-08-29
 
 <!-- Release notes generated using configuration in .github/release.yml at v12.0.0-beta.1 -->
