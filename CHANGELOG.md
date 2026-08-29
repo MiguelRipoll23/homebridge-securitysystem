@@ -1,5 +1,27 @@
 # Changelog
 
+## v11.4.1 - 2026-08-29
+
+<!-- Release notes generated using configuration in .github/release.yml at v11.4.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* chore: update deps to latest, remove eslint (broken with TS 7) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/943
+* fix: update publish workflow to use pnpm by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/945
+* chore: update all dependencies to latest by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/976
+### 📦 Dependencies
+* build(deps): bump actions/stale from 10 to 11 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/962
+* build(deps): bump pnpm/action-setup from 6.0.9 to 6.0.10 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/966
+* build(deps): bump actions/setup-node from 6 to 7 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/950
+### 🛠️ Other Changes
+* Config schema update by @jeffreyfrei in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/925
+* migrate from npm to pnpm by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/942
+* chore: add oxlint and typecheck scripts by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/975
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.4.0...v11.4.1
+
+
 ## v11.4.1-beta.3 - 2026-08-16
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.4.1-beta.3 -->
