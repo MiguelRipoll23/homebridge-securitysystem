@@ -104,7 +104,6 @@ export class ConfigurationService {
       audioSwitchName: this.str(raw, 'audio_switch_name') ?? DEFAULTS.AUDIO_SWITCH_NAME,
 
       // Behaviour toggles
-      logDirectory: this.str(raw, 'log_directory'),
       overrideOff: this.bool(raw, 'override_off', false),
       resetOffFlow: this.bool(raw, 'reset_off_flow', false),
       disabledModes: this.strArr(raw, 'disabled_modes'),

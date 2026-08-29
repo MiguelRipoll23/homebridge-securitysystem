@@ -651,13 +651,6 @@
         "type": "string",
         "required": false
       },
-      "log_directory": {
-        "title": "Log Directory Path",
-        "description": "",
-        "type": "string",
-        "required": false,
-        "placeholder": "/home/user/logs"
-      },
       "save_state": {
         "title": "Save Data Using Storage",
         "description": "Persists the previous state after shutdowns and reboots.",
@@ -1025,7 +1018,6 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "log_directory",
         "save_state",
         "test_mode",
         {

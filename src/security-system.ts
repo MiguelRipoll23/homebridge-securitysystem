@@ -3,7 +3,6 @@ import type { CharacteristicConstructor } from './interfaces/hap-types-interface
 import { SecurityState } from './types/security-state-type.js';
 import { OriginType } from './types/origin-type.js';
 import { ConfigurationService } from './services/configuration-service.js';
-import { attachFileLogger } from './utils/log-util.js';
 import { stateToMode, modeToState } from './utils/state-util.js';
 import type { SecuritySystemOptions } from './interfaces/options-interface.js';
 import type { SystemState } from './interfaces/system-state-interface.js';
@@ -47,7 +46,6 @@ export class SecuritySystem implements AccessoryPlugin {
     const Svc = api.hap.Service as typeof Service;
 
     this.options = new ConfigurationService(log, config).options;
-    attachFileLogger(log, this.options);
 
     const defaultState = modeToState(this.options.defaultMode);
     this.state = this.buildState(defaultState === (-1 as SecurityState) ? SecurityState.OFF : defaultState);
