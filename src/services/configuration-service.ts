@@ -18,6 +18,7 @@ export class ConfigurationService {
     this.options = this.parse(raw);
     this.validate(this.options);
     this.normalize(this.options);
+    this.warnDeprecations(this.options);
     log.info('Options', JSON.stringify(this.options));
   }
 
@@ -227,6 +228,14 @@ export class ConfigurationService {
 
     if (opts.mqttBroker !== null && !/^mqtts?:\/\//.test(opts.mqttBroker)) {
       this.log.warn('\'mqtt_broker\' should start with mqtt:// or mqtts://');
+    }
+  }
+
+  // ── Post-parse deprecation warnings ─────────────────────────────────────────
+
+  private warnDeprecations(opts: SecuritySystemOptions): void {
+    if (opts.triggeredMotionSensor) {
+      this.log.warn('Config: the triggered sensor is deprecated, Apple already provides emergency alerts for security system accessories.');
     }
   }
 
