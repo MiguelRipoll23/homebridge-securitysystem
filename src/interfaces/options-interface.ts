@@ -36,7 +36,6 @@ export interface SecuritySystemOptions {
   audioSwitchName: string;
 
   // Behaviour toggles
-  logDirectory: string | null;
   overrideOff: boolean;
   resetOffFlow: boolean;
   disabledModes: string[];
