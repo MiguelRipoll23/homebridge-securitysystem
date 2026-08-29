@@ -18,6 +18,7 @@ export class ConfigurationService {
     this.options = this.parse(raw);
     this.validate(this.options);
     this.normalize(this.options);
+    this.warnDeprecations(this.options);
     log.info('Options', JSON.stringify(this.options));
   }
 
@@ -226,6 +227,17 @@ export class ConfigurationService {
 
     if (opts.mqttBroker !== null && !/^mqtts?:\/\//.test(opts.mqttBroker)) {
       this.log.warn('\'mqtt_broker\' should start with mqtt:// or mqtts://');
+    }
+  }
+
+  // ── Post-parse deprecation warnings ─────────────────────────────────────────
+
+  private warnDeprecations(opts: SecuritySystemOptions): void {
+    const audioConfigured = opts.audio || opts.audioPath !== null || opts.audioSwitch ||
+      opts.audioVolume !== null || opts.audioArmingLooped || opts.audioAlertLooped ||
+      opts.audioExtraVariables.length > 0;
+    if (audioConfigured) {
+      this.log.warn('Config: audio playback is deprecated, use command hooks (command_current_*) to play audio instead.');
     }
   }
 

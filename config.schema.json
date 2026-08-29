@@ -324,14 +324,14 @@
         }
       },
       "audio_switch": {
-        "title": "Show Audio Enable Switch",
-        "description": "Adds a global switch to enable or disable audio except for alarm triggered.",
+        "title": "Show Audio Enable Switch (Deprecated)",
+        "description": "Adds a global switch to enable or disable audio except for alarm triggered. Deprecated — audio playback is deprecated, use command hooks instead.",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "audio_switch_name": {
-        "title": "Audio Enable Switch Name",
+        "title": "Audio Enable Switch Name (Deprecated)",
         "description": "",
         "type": "string",
         "default": "Enable Audio",
@@ -391,8 +391,8 @@
         "required": false
       },
       "audio": {
-        "title": "Play Sounds (local-only, ffmpeg required)",
-        "description": "Warns of pending or current events by playing sounds.",
+        "title": "Play Sounds (Deprecated, local-only, ffmpeg required)",
+        "description": "Warns of pending or current events by playing sounds. Deprecated — use command hooks (command_current_*) to play audio instead, which is more flexible.",
         "type": "boolean",
         "default": false,
         "required": false
@@ -918,8 +918,8 @@
     },
     {
       "type": "fieldset",
-      "title": "Audio",
-      "description": "Play sounds on your connected speakers to notify events.",
+      "title": "Audio (Deprecated)",
+      "description": "Play sounds on your connected speakers to notify events. Deprecated — use command hooks to play audio instead, which is more flexible.",
       "expandable": true,
       "expanded": false,
       "items": [
