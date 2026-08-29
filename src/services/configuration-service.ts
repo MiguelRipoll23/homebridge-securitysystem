@@ -192,7 +192,6 @@ export class ConfigurationService {
       commandCurrentTriggered: this.str(raw, 'command_current_triggered'),
 
       // Webhooks
-      webhookUrl: this.str(raw, 'webhook_url'),
       webhookTargetHome: this.str(raw, 'webhook_target_home'),
       webhookTargetAway: this.str(raw, 'webhook_target_away'),
       webhookTargetNight: this.str(raw, 'webhook_target_night'),

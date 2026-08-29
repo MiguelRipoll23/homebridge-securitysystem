@@ -471,83 +471,85 @@
         "required": false,
         "placeholder": "your-api-key"
       },
-      "webhook_url": {
-        "title": "Base URL",
-        "description": "",
-        "type": "string",
-        "required": false,
-        "format": "uri",
-        "placeholder": "http://localhost"
-      },
       "webhook_target_home": {
         "title": "Target Mode: Home",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/target/home"
+        "format": "uri",
+        "placeholder": "http://localhost/target/home"
       },
       "webhook_target_away": {
         "title": "Target Mode: Away",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/target/away"
+        "format": "uri",
+        "placeholder": "http://localhost/target/away"
       },
       "webhook_target_night": {
         "title": "Target Mode: Night",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/target/night"
+        "format": "uri",
+        "placeholder": "http://localhost/target/night"
       },
       "webhook_target_off": {
         "title": "Target Mode: Off",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/target/off"
+        "format": "uri",
+        "placeholder": "http://localhost/target/off"
       },
       "webhook_current_home": {
         "title": "Current Mode: Home",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/current/home"
+        "format": "uri",
+        "placeholder": "http://localhost/current/home"
       },
       "webhook_current_away": {
         "title": "Current Mode: Away",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/current/away"
+        "format": "uri",
+        "placeholder": "http://localhost/current/away"
       },
       "webhook_current_night": {
         "title": "Current Mode: Night",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/current/night"
+        "format": "uri",
+        "placeholder": "http://localhost/current/night"
       },
       "webhook_current_off": {
         "title": "Current Mode: Off",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/current/off"
+        "format": "uri",
+        "placeholder": "http://localhost/current/off"
       },
       "webhook_current_warning": {
         "title": "Current Event: Warning",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/current/warning"
+        "format": "uri",
+        "placeholder": "http://localhost/current/warning"
       },
       "webhook_current_triggered": {
         "title": "Current Mode: Triggered",
         "description": "",
         "type": "string",
         "required": false,
-        "placeholder": "/current/triggered"
+        "format": "uri",
+        "placeholder": "http://localhost/current/triggered"
       },
       "command_target_home": {
         "title": "Target Mode: Home",
@@ -965,7 +967,6 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "webhook_url",
         "webhook_target_home",
         "webhook_target_away",
         "webhook_target_night",
