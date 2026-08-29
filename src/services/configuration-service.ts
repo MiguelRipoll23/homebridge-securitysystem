@@ -239,6 +239,10 @@ export class ConfigurationService {
     if (audioConfigured) {
       this.log.warn('Config: audio playback is deprecated, use command hooks (command_current_*) to play audio instead.');
     }
+
+    if (opts.triggeredMotionSensor) {
+      this.log.warn('Config: the triggered sensor is deprecated, Apple already provides emergency alerts for security system accessories.');
+    }
   }
 
   // ── Post-parse normalisation ────────────────────────────────────────────────
