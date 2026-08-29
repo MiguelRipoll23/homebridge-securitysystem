@@ -104,7 +104,6 @@ export class ConfigurationService {
       audioSwitchName: this.str(raw, 'audio_switch_name') ?? DEFAULTS.AUDIO_SWITCH_NAME,
 
       // Behaviour toggles
-      logDirectory: this.str(raw, 'log_directory'),
       overrideOff: this.bool(raw, 'override_off', false),
       resetOffFlow: this.bool(raw, 'reset_off_flow', false),
       disabledModes: this.strArr(raw, 'disabled_modes'),
@@ -234,6 +233,13 @@ export class ConfigurationService {
   // ── Post-parse deprecation warnings ─────────────────────────────────────────
 
   private warnDeprecations(opts: SecuritySystemOptions): void {
+    const audioConfigured = opts.audio || opts.audioPath !== null || opts.audioSwitch ||
+      opts.audioVolume !== null || opts.audioArmingLooped || opts.audioAlertLooped ||
+      opts.audioExtraVariables.length > 0;
+    if (audioConfigured) {
+      this.log.warn('Config: audio playback is deprecated, use command hooks (command_current_*) to play audio instead.');
+    }
+
     if (opts.triggeredMotionSensor) {
       this.log.warn('Config: the triggered sensor is deprecated, Apple already provides emergency alerts for security system accessories.');
     }
