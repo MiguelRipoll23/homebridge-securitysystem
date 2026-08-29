@@ -1,5 +1,20 @@
 # Changelog
 
+## v12.0.0-beta.1 - 2026-08-29
+
+<!-- Release notes generated using configuration in .github/release.yml at v12.0.0-beta.1 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* Remove file logging by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/988
+### 🛠️ Other Changes
+* Deprecate audio playback by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/989
+* Deprecate triggered sensor by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/990
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.4.1...v12.0.0-beta.1
+
+
 ## v11.4.1 - 2026-08-29
 
 <!-- Release notes generated using configuration in .github/release.yml at v11.4.1 -->
