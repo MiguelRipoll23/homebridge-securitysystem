@@ -1,4 +1,4 @@
-import type { API, AccessoryPlugin, Logging, Service } from 'homebridge';
+import type { API, Logging, PlatformAccessory, Service } from 'homebridge';
 import type { CharacteristicConstructor } from './interfaces/hap-types-interface.js';
 import { SecurityState } from './types/security-state-type.js';
 import { OriginType } from './types/origin-type.js';
@@ -23,7 +23,7 @@ import { buildServiceRegistry, buildServiceList } from './homekit/service-factor
 import { HomeKitRegistrar } from './homekit/homekit-registrar.js';
 import { TimerManager } from './timers/timer-manager.js';
 
-export class SecuritySystem implements AccessoryPlugin {
+export class SecuritySystem {
   private readonly options: SecuritySystemOptions;
   private readonly state: SystemState;
   private readonly svcs: ServiceRegistry;
@@ -41,6 +41,7 @@ export class SecuritySystem implements AccessoryPlugin {
     private readonly log: Logging,
     config: Record<string, unknown>,
     private readonly api: API,
+    private readonly accessory: PlatformAccessory,
   ) {
     const Char = api.hap.Characteristic as CharacteristicConstructor;
     const Svc = api.hap.Service as typeof Service;
@@ -108,8 +109,10 @@ export class SecuritySystem implements AccessoryPlugin {
     new HomeKitRegistrar(this.api, this.log, this.svcs, this.state, this.stateHandler, this.tripHandler, this.switchHandler)
       .register(Char);
 
-    // Build the exposed service list.
+    // Build the exposed service list and host it on the platform accessory.
     this.serviceList = buildServiceList(this.svcs, this.options, this.state);
+    this.populateAccessory(Svc);
+    this.accessory.on('identify', () => this.log.info('Identify'));
 
     // Startup tasks.
     this.logStartup();
@@ -139,15 +142,19 @@ export class SecuritySystem implements AccessoryPlugin {
     }
   }
 
-  getServices(): Service[] {
-    return this.serviceList;
-  }
-
-  identify(): void {
-    this.log.info('Identify');
-  }
-
   // ── Private helpers ────────────────────────────────────────────────────────
+
+  /** Replaces the accessory's auto-created information service and adds all exposed services. */
+  private populateAccessory(Svc: typeof Service): void {
+    const existingInfoService = this.accessory.getService(Svc.AccessoryInformation);
+    if (existingInfoService) {
+      this.accessory.removeService(existingInfoService);
+    }
+    this.accessory.updateDisplayName(this.options.name);
+    for (const service of this.serviceList) {
+      this.accessory.addService(service);
+    }
+  }
 
   private buildState(defaultState: SecurityState): SystemState {
     return {

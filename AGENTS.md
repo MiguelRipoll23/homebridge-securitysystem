@@ -33,8 +33,9 @@ src/
   timers/            Centralised timer/interval ownership (TimerManager)
   types/             TypeScript enums and type aliases
   utils/             Pure utility functions
-  index.ts           Homebridge plugin entry point
-  security-system.ts Root AccessoryPlugin class
+  index.ts                    Homebridge plugin entry point
+  security-system.ts          Root security-system class (hosts services on a PlatformAccessory)
+  security-system-platform.ts Dynamic platform plugin (DynamicPlatformPlugin)
 ```
 
 ---
@@ -75,6 +76,7 @@ All filenames use **kebab-case** with a mandatory suffix describing their kind:
 | HomeKit registrar class | `-registrar.ts` | `homekit-registrar.ts` |
 | Factory function | `-factory.ts` | `service-factory.ts` |
 | Timer manager class | `-manager.ts` | `timer-manager.ts` |
+| Platform class | `-platform.ts` | `security-system-platform.ts` |
 | Test suite | `.test.ts` | `conditions.test.ts` |
 
 ---

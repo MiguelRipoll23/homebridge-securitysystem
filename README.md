@@ -12,6 +12,8 @@ Homebridge plugin that creates a security system accessory that can be triggered
 
 In the Homebridge UI, go to the plugins section, click the search button, then search for `homebridge-securitysystem`, and click the install button.
 
+This plugin is a **dynamic platform plugin**: its configuration block lives under the `platforms` section of `config.json` (the Homebridge UI handles this automatically) and uses `"platform": "security-system"`. If you are migrating from an older version, move your configuration block from the `accessories` section to the `platforms` section, change `"accessory": "security-system"` to `"platform": "security-system"`, and remove and re-add the accessory in the Home app (the old accessory is no longer provided and the new one has a different identifier).
+
 ## Demo
 
 <div align="left">

@@ -1,12 +1,23 @@
 {
   "pluginAlias": "security-system",
-  "pluginType": "accessory",
+  "pluginType": "platform",
   "headerDisplay": "Create a fully-featured security system accessory for HomeKit.  Exposes switches, sensors, and interfaces that work with the four built-in Homekit security modes: 'Off', 'Home', 'Away', and 'Night'",
   "footerDisplay": "[Need help?](https://github.com/MiguelRipoll23/homebridge-securitysystem/issues) | [Donate](https://buymeacoffee.com/miguelripoll23)",
   "schema": {
     "title": "Security System",
     "type": "object",
     "properties": {
+      "platform": {
+        "title": "Platform",
+        "type": "string",
+        "oneOf": [
+          {
+            "title": "security-system",
+            "enum": ["security-system"]
+          }
+        ],
+        "required": true
+      },
       "name": {
         "title": "Name",
         "description": "Name for your security system that shows up in Homekit.",

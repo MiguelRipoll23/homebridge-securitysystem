@@ -29,6 +29,7 @@ export function buildServiceRegistry(
   mainSvc.addCharacteristic(Char.ConfiguredName);
 
   const infoSvc = new Svc.AccessoryInformation();
+  infoSvc.setCharacteristic(Char.Name, options.name);
   infoSvc.setCharacteristic(Char.Identify, true);
   infoSvc.setCharacteristic(Char.Manufacturer, 'MiguelRipoll23');
   infoSvc.setCharacteristic(Char.Model, 'DIY');
