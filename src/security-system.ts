@@ -182,8 +182,5 @@ export class SecuritySystem implements AccessoryPlugin {
     if (this.options.proxyMode) {
       this.log.info('Proxy mode (Enabled)');
     }
-    if (this.options.webhookUrl) {
-      this.log.info(`Webhook (${this.options.webhookUrl})`);
-    }
   }
 }

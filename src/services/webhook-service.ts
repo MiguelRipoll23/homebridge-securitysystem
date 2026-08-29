@@ -28,25 +28,19 @@ export class WebhookService {
   }
 
   send(type: string, stateOrMode: SecurityState | string, origin: OriginType): void {
-    if (!this.options.webhookUrl) {
-      this.log.debug('Webhook base URL not set.');
-      return;
-    }
-
     if (this.options.proxyMode && origin === OriginType.EXTERNAL) {
       this.log.debug('Webhook bypassed (proxy mode).');
       return;
     }
 
-    const urlPath = this.resolvePath(type, stateOrMode);
-    if (!urlPath) {
-      this.log.debug(`Webhook path for ${type}/${stateOrMode} not set.`);
+    const urlTemplate = this.resolveUrl(type, stateOrMode);
+    if (!urlTemplate) {
+      this.log.debug(`Webhook URL for ${type}/${stateOrMode} not set.`);
       return;
     }
 
     const currentMode = stateToMode(this.state.currentState);
-    const finalPath = urlPath.replace('${currentMode}', currentMode);
-    const url = this.options.webhookUrl + finalPath;
+    const url = urlTemplate.replace('${currentMode}', currentMode);
 
     fetch(url)
       .then(res => {
@@ -56,12 +50,12 @@ export class WebhookService {
         this.log.info('Webhook event (Sent)');
       })
       .catch(err => {
-        this.log.error(`Webhook request failed (${finalPath})`);
+        this.log.error(`Webhook request failed (${url})`);
         this.log.error(String(err));
       });
   }
 
-  private resolvePath(type: string, stateOrMode: SecurityState | string): string | null {
+  private resolveUrl(type: string, stateOrMode: SecurityState | string): string | null {
     const s = stateOrMode;
     const o = this.options;
 

@@ -115,7 +115,6 @@ export interface SecuritySystemOptions {
   commandCurrentTriggered: string | null;
 
   // Webhooks
-  webhookUrl: string | null;
   webhookTargetHome: string | null;
   webhookTargetAway: string | null;
   webhookTargetNight: string | null;
