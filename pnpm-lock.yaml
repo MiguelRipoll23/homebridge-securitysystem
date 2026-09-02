@@ -37,8 +37,8 @@ importers:
         specifier: ^3.1.8
         version: 3.1.8
       homebridge:
-        specifier: ^2.3.1
-        version: 2.3.1(supports-color@5.5.0)
+        specifier: ^2.4.1-beta.11
+        version: 2.4.1-beta.11(supports-color@5.5.0)
       nodemon:
         specifier: ^3.1.14
         version: 3.1.14
@@ -83,8 +83,8 @@ packages:
     resolution: {integrity: sha512-PFOeWyXfH2eoM4o6Zmj9PzCUDlrrbtrbAJVzHYXpXK5rh/dz84Ygu79WHKK3DWW2/oXieYPV6up+i1izSPbc3g==}
     hasBin: true
 
-  '@homebridge/hap-nodejs@2.2.0':
-    resolution: {integrity: sha512-AOx7zlGDI2xIihXjTMf5DqkbIaN8/njAVWhN9GSy0tjUvUYtkq1L3sdTOxzAVIg/XKVFSWDp82UZ6e8IEBr9Rw==}
+  '@homebridge/hap-nodejs@2.2.3':
+    resolution: {integrity: sha512-7aML96ZSjHcUunb5d3mYRIzoH4m//hb7NBT6LXNqAWHnHRjlVEbqIiV2knjYrNrFOvD4ib8+f4fXhJ4a3fFupw==}
     engines: {node: ^22 || ^24 || ^26}
 
   '@hono/node-server@2.1.1':
@@ -112,27 +112,27 @@ packages:
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
 
-  '@matter/general@0.17.9':
-    resolution: {integrity: sha512-NMAhD/EKpfTb1e0UllUJLdWgViw+Jp41PoY6s4yVGAiuo0sot6CYSdQauXelQPldhonrn2bLSKAa2mQUKWdhLQ==}
+  '@matter/general@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-NXgCfrDiWo5Z0+4euNFgGIABfORLrBnPY9k0AFb2F8IU0p7SLzhpGqC9nFJiRjfaV/zBgjZEvEYt3yBIpPzV2g==}
 
-  '@matter/main@0.17.9':
-    resolution: {integrity: sha512-YFBpU1AquN6sLC466xcOslAaERtlBnofHfuvDyY9B8UHZZJwFUfsDT7gMWVYkU5J/S9vc7lslL9TMvvns8Biaw==}
+  '@matter/main@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-Ye60V9Qm4phKHYKgszctHGJvJIzvNh+zfSfgDWV5I7fyY/QWIhJ8YjBREQ2ucNMSZDrgm6ZHHV5teGQaZoQa7g==}
 
-  '@matter/model@0.17.9':
-    resolution: {integrity: sha512-NICGlK8ubD2an1eKIhEX2osZRl5JjnZE3Z8CJGnWItyVU5MbX1ta/EdCx/eBGy8WQPTxpYu93keW3L6qTUMOlg==}
+  '@matter/model@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-SeE6iRDBr+CVrI+vSz9XlValTLC40sxD7pMVX5jonRrQLbaC7v5CsdeGEXh/XHzz9orWT4Xc9S1n7dPigHs2vg==}
 
-  '@matter/node@0.17.9':
-    resolution: {integrity: sha512-5AT6NYfIlLaILHAgVQoNZkuobff+CR7Ewkdj14YkENx77rRlujgDlDpXRiJkAHc+EUvRkwr5zA9ZL70XkwHkEw==}
+  '@matter/node@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-xEebAqmvnNKXz+G3wk+GqAUT6IFe0/c7CdxB/yYw6EJ9ucuClRFkU4XHHccOyfZdWCNRZsmSoFthqcX5noFkyg==}
 
-  '@matter/nodejs@0.17.9':
-    resolution: {integrity: sha512-2C3J89qeLyknLtbe/ls46dmjs/eN8LmMSKpGl90mC2ut8471z4rkpFYNE+MTJLFg8yzC+R86yi35Y3lBzioEwA==}
-    engines: {node: '>=20.19.0 <22.0.0 || >=22.13.0'}
+  '@matter/nodejs@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-tG2lv5phkEkEAxvlPtfu4Re3G2qGR/bhLzFH5OvFAl/s2w4FAMj2++kwpjj13gWIVYsOB+1Ztg8ziAlxyVR5ow==}
+    engines: {node: '>=20.19.0 <21.0.0 || >=22.13.0'}
 
-  '@matter/protocol@0.17.9':
-    resolution: {integrity: sha512-BZg1BWwm3rHsFxyQm17VjpTNO3kwd+AIjI9dtfnPFkH5CeS7r6Ebd/9j8L0zxeVPotciMcSW8H5W+3kCcuB2HQ==}
+  '@matter/protocol@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-ARJPUUAJ4OF80L2CFPCBfhPzWUhYGQl0YX2fEsmFM6u8zBsipn3BD4AkDodi7WUnNIkyybLdhBQ6wtP7iFBH5g==}
 
-  '@matter/types@0.17.9':
-    resolution: {integrity: sha512-Tdb08WzfM2Ma962NTtNrHTA3S26eBGCj5/kpnpl9LS5Twpw78Rgk/jogOIM/HDVCbu/M/ZSQPmdBN/q3vWEXAw==}
+  '@matter/types@0.18.0-alpha.0-20260829-8a1db3e6b':
+    resolution: {integrity: sha512-Ai0GEw3gAvZ5W4tcf7DJQfc6HI/Wu1TjM9Nxx54QImO9sLUAr3wf2B+6hWLFB2seMw/j5JTfxJn87sjwxRtAPA==}
 
   '@napi-rs/wasm-runtime@1.1.6':
     resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
@@ -749,8 +749,8 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  homebridge@2.3.1:
-    resolution: {integrity: sha512-oRnuQx07Ht7ImyyT12L6Dq0LW3I6c6lQ0VgCI43GnxGGHmmTCsIcNLTQgr9E89zrAqAYbgI+Kui0wb7mvYvPIQ==}
+  homebridge@2.4.1-beta.11:
+    resolution: {integrity: sha512-sHB8EFX+gCLhDmMI6akhLdA3oCZF6Wvt+vHMS5nU6oI7VW3PBhzVL3M0H0ZfH2ngb5LTt2q8vL0GoDefWPXJRw==}
     engines: {node: ^22 || ^24 || ^26}
     hasBin: true
 
@@ -1330,7 +1330,7 @@ snapshots:
       safe-buffer: 5.2.1
       xml2js: 0.6.2
 
-  '@homebridge/hap-nodejs@2.2.0(supports-color@5.5.0)':
+  '@homebridge/hap-nodejs@2.2.3(supports-color@5.5.0)':
     dependencies:
       '@homebridge/ciao': 1.3.12(supports-color@5.5.0)
       '@homebridge/dbus-native': 0.7.9
@@ -1365,49 +1365,49 @@ snapshots:
 
   '@leichtgewicht/ip-codec@2.0.5': {}
 
-  '@matter/general@0.17.9':
+  '@matter/general@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
       '@noble/curves': 2.3.0
 
-  '@matter/main@0.17.9':
+  '@matter/main@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
-      '@matter/general': 0.17.9
-      '@matter/model': 0.17.9
-      '@matter/node': 0.17.9
-      '@matter/protocol': 0.17.9
-      '@matter/types': 0.17.9
+      '@matter/general': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/model': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/node': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/protocol': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/types': 0.18.0-alpha.0-20260829-8a1db3e6b
     optionalDependencies:
-      '@matter/nodejs': 0.17.9
+      '@matter/nodejs': 0.18.0-alpha.0-20260829-8a1db3e6b
 
-  '@matter/model@0.17.9':
+  '@matter/model@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
-      '@matter/general': 0.17.9
+      '@matter/general': 0.18.0-alpha.0-20260829-8a1db3e6b
 
-  '@matter/node@0.17.9':
+  '@matter/node@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
-      '@matter/general': 0.17.9
-      '@matter/model': 0.17.9
-      '@matter/protocol': 0.17.9
-      '@matter/types': 0.17.9
+      '@matter/general': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/model': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/protocol': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/types': 0.18.0-alpha.0-20260829-8a1db3e6b
 
-  '@matter/nodejs@0.17.9':
+  '@matter/nodejs@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
-      '@matter/general': 0.17.9
-      '@matter/node': 0.17.9
-      '@matter/protocol': 0.17.9
-      '@matter/types': 0.17.9
+      '@matter/general': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/node': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/protocol': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/types': 0.18.0-alpha.0-20260829-8a1db3e6b
     optional: true
 
-  '@matter/protocol@0.17.9':
+  '@matter/protocol@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
-      '@matter/general': 0.17.9
-      '@matter/model': 0.17.9
-      '@matter/types': 0.17.9
+      '@matter/general': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/model': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/types': 0.18.0-alpha.0-20260829-8a1db3e6b
 
-  '@matter/types@0.17.9':
+  '@matter/types@0.18.0-alpha.0-20260829-8a1db3e6b':
     dependencies:
-      '@matter/general': 0.17.9
-      '@matter/model': 0.17.9
+      '@matter/general': 0.18.0-alpha.0-20260829-8a1db3e6b
+      '@matter/model': 0.18.0-alpha.0-20260829-8a1db3e6b
 
   '@napi-rs/wasm-runtime@1.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:
@@ -1857,10 +1857,10 @@ snapshots:
 
   hexy@0.4.0: {}
 
-  homebridge@2.3.1(supports-color@5.5.0):
+  homebridge@2.4.1-beta.11(supports-color@5.5.0):
     dependencies:
-      '@homebridge/hap-nodejs': 2.2.0(supports-color@5.5.0)
-      '@matter/main': 0.17.9
+      '@homebridge/hap-nodejs': 2.2.3(supports-color@5.5.0)
+      '@matter/main': 0.18.0-alpha.0-20260829-8a1db3e6b
       chalk: 6.0.0
       commander: 15.0.0
       fs-extra: 11.4.0
