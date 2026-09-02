@@ -38,7 +38,7 @@ importers:
         version: 3.1.8
       homebridge:
         specifier: ^2.3.1
-        version: 2.3.1(supports-color@5.5.0)
+        version: 2.4.0(supports-color@5.5.0)
       nodemon:
         specifier: ^3.1.14
         version: 3.1.14
@@ -83,8 +83,8 @@ packages:
     resolution: {integrity: sha512-PFOeWyXfH2eoM4o6Zmj9PzCUDlrrbtrbAJVzHYXpXK5rh/dz84Ygu79WHKK3DWW2/oXieYPV6up+i1izSPbc3g==}
     hasBin: true
 
-  '@homebridge/hap-nodejs@2.2.0':
-    resolution: {integrity: sha512-AOx7zlGDI2xIihXjTMf5DqkbIaN8/njAVWhN9GSy0tjUvUYtkq1L3sdTOxzAVIg/XKVFSWDp82UZ6e8IEBr9Rw==}
+  '@homebridge/hap-nodejs@2.2.2':
+    resolution: {integrity: sha512-drTJSn63wGn5R6sDLmgjJdIW7G1awn1CxEEW1Jn+t3oCTMGSlk7lBZjGYbOpeL6acjiBqXNdo79NWcXn7s4CnQ==}
     engines: {node: ^22 || ^24 || ^26}
 
   '@hono/node-server@2.1.1':
@@ -140,12 +140,12 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@noble/curves@2.3.0':
-    resolution: {integrity: sha512-v7cY+4oWYPQszRj6ZFGzTVL7uP2TaLo1xMhWHzYC5wj0ZhOXQ5x+sBre8rF3hi8cAoi0bh1qXoovoOkdFtvqEg==}
+  '@noble/curves@2.4.0':
+    resolution: {integrity: sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==}
     engines: {node: '>= 20.19.0'}
 
-  '@noble/hashes@2.3.0':
-    resolution: {integrity: sha512-oN+QwyX7VSHotibwubG3kpzbwKrfnyR6OOO+3Nk/53ADL7FmgHHz4TgrbaYKvvOw09u6QTx0oiH1cNCIOuN0CQ==}
+  '@noble/hashes@2.4.0':
+    resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
     engines: {node: '>= 20.19.0'}
 
   '@oxc-project/types@0.139.0':
@@ -749,8 +749,8 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  homebridge@2.3.1:
-    resolution: {integrity: sha512-oRnuQx07Ht7ImyyT12L6Dq0LW3I6c6lQ0VgCI43GnxGGHmmTCsIcNLTQgr9E89zrAqAYbgI+Kui0wb7mvYvPIQ==}
+  homebridge@2.4.0:
+    resolution: {integrity: sha512-yAc/jGC04h6LqcZTiO6aubzKmCulWGIdYUx3lj8r/aJQbAL5EZta9aX71LWnko3bChhTaD7sS7LLJ5Hqu4DbVA==}
     engines: {node: ^22 || ^24 || ^26}
     hasBin: true
 
@@ -1330,7 +1330,7 @@ snapshots:
       safe-buffer: 5.2.1
       xml2js: 0.6.2
 
-  '@homebridge/hap-nodejs@2.2.0(supports-color@5.5.0)':
+  '@homebridge/hap-nodejs@2.2.2(supports-color@5.5.0)':
     dependencies:
       '@homebridge/ciao': 1.3.12(supports-color@5.5.0)
       '@homebridge/dbus-native': 0.7.9
@@ -1367,7 +1367,7 @@ snapshots:
 
   '@matter/general@0.17.9':
     dependencies:
-      '@noble/curves': 2.3.0
+      '@noble/curves': 2.4.0
 
   '@matter/main@0.17.9':
     dependencies:
@@ -1416,11 +1416,11 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@noble/curves@2.3.0':
+  '@noble/curves@2.4.0':
     dependencies:
-      '@noble/hashes': 2.3.0
+      '@noble/hashes': 2.4.0
 
-  '@noble/hashes@2.3.0': {}
+  '@noble/hashes@2.4.0': {}
 
   '@oxc-project/types@0.139.0': {}
 
@@ -1857,9 +1857,9 @@ snapshots:
 
   hexy@0.4.0: {}
 
-  homebridge@2.3.1(supports-color@5.5.0):
+  homebridge@2.4.0(supports-color@5.5.0):
     dependencies:
-      '@homebridge/hap-nodejs': 2.2.0(supports-color@5.5.0)
+      '@homebridge/hap-nodejs': 2.2.2(supports-color@5.5.0)
       '@matter/main': 0.17.9
       chalk: 6.0.0
       commander: 15.0.0
