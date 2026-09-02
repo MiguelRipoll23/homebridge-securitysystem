@@ -1,5 +1,6 @@
 import type { SecurityState } from './security-state-type.js';
 import type { OriginType } from './origin-type.js';
+import type { SensorKind } from './sensor-kind-type.js';
 
 /** All domain events emitted on the EventBusService. */
 export enum EventType {
@@ -13,6 +14,10 @@ export enum EventType {
   RESET_TRIP_SWITCHES = 'reset-trip-switches',
   RESET_MODE_SWITCHES = 'reset-mode-switches',
   UPDATE_MODE_SWITCHES = 'update-mode-switches',
+
+  // Emitted by SensorHandler whenever a motion sensor value changes;
+  // consumed by MatterService to push occupancy state to Matter.
+  SENSOR_STATE_CHANGED = 'sensor-state-changed',
 
   // Emitted by TripHandler; consumed by SecuritySystem which calls into StateHandler.
   TRIGGER_FIRED = 'trigger-fired',
@@ -45,6 +50,11 @@ export interface TriggerFiredPayload {
 export interface TripCancelledPayload {
   origin: OriginType;
   stateChanged: boolean;
+}
+
+export interface SensorStateChangedPayload {
+  sensor: SensorKind;
+  value: boolean;
 }
 
 /** Empty payload for internal coordination events. */

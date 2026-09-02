@@ -8,6 +8,7 @@ import { NotArmedCondition } from '../conditions/not-armed-condition.js';
 import { ArmingInProgressCondition } from '../conditions/arming-in-progress-condition.js';
 import { AlreadyTriggeredCondition } from '../conditions/already-triggered-condition.js';
 import { DoubleKnockCondition } from '../conditions/double-knock-condition.js';
+import { ArmingLockCondition } from '../conditions/arming-lock-condition.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,8 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
+    armingLocks: { global: false, home: false, away: false, night: false },
+    modeAwayExtended: false,
     ...overrides,
   };
 }
@@ -46,8 +49,40 @@ function makeLog() {
 }
 
 function makeCtx(state: SystemState, options: SecuritySystemOptions, value: boolean, origin = OriginType.REGULAR_SWITCH): ConditionContext {
-  return { state, services: {} as ConditionContext['services'], options, value, origin, log: makeLog() as unknown as ConditionContext['log'] };
+  return { state, options, value, origin, log: makeLog() as unknown as ConditionContext['log'] };
 }
+
+// ── ArmingLockCondition ───────────────────────────────────────────────────────
+
+describe('ArmingLockCondition', () => {
+  const cond = new ArmingLockCondition();
+
+  it('blocks when the global lock is active and arming to an armed mode', () => {
+    const state = makeState({ armingLocks: { global: true, home: false, away: false, night: false } });
+    expect(cond.evaluate(makeCtx(state, makeOptions({ armingLockSwitch: true }), true))).toBe(true);
+    expect(cond.failureReason).toBe('arming is blocked by the global arming lock switch');
+  });
+
+  it('blocks when the matching mode lock is active', () => {
+    const state = makeState({ targetState: SecurityState.AWAY, armingLocks: { global: false, home: false, away: true, night: false } });
+    expect(cond.evaluate(makeCtx(state, makeOptions({ armingLockSwitches: true }), true))).toBe(true);
+  });
+
+  it('does not block when the lock feature is disabled', () => {
+    const state = makeState({ armingLocks: { global: true, home: false, away: false, night: false } });
+    expect(cond.evaluate(makeCtx(state, makeOptions(), true))).toBe(false);
+  });
+
+  it('does not block disarming', () => {
+    const state = makeState({ targetState: SecurityState.OFF, armingLocks: { global: true, home: false, away: false, night: false } });
+    expect(cond.evaluate(makeCtx(state, makeOptions({ armingLockSwitch: true }), true))).toBe(false);
+  });
+
+  it('allows when no lock is active', () => {
+    const state = makeState();
+    expect(cond.evaluate(makeCtx(state, makeOptions({ armingLockSwitch: true }), true))).toBe(false);
+  });
+});
 
 // ── NotArmedCondition ─────────────────────────────────────────────────────────
 

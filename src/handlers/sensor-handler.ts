@@ -1,34 +1,35 @@
-import type { Logging, Service } from 'homebridge';
+import type { Logging } from 'homebridge';
 import { SENSOR_PULSE_MS } from '../constants/homekit-constant.js';
-import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
-import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
+import type { EventBusService } from '../services/event-bus-service.js';
+import { EventType } from '../types/event-type.js';
+import type { SensorKind } from '../types/sensor-kind-type.js';
 
-/** Manages all motion sensor characteristic updates. */
+/**
+ * Owns the current state of every motion sensor and publishes changes over the
+ * bus (SENSOR_STATE_CHANGED), which MatterService pushes to Matter. Sensors are
+ * Matter-only, so no HomeKit characteristics are touched here.
+ */
 export class SensorHandler {
+  private readonly currentValueByKind: Record<SensorKind, boolean> = {
+    arming: false,
+    tripped: false,
+    reset: false,
+  };
+
   constructor(
-    private readonly services: ServiceRegistry,
-    private readonly Characteristic: CharacteristicConstructor,
     private readonly log: Logging,
+    private readonly bus: EventBusService,
   ) {}
 
   // ── Arming sensor ──────────────────────────────────────────────────────────
 
   updateArmingMotionSensor(value: boolean): void {
-    this.services.armingMotionSensorService.updateCharacteristic(
-      this.Characteristic.MotionDetected,
-      value,
-    );
+    this.setSensorValue('arming', value);
   }
 
   resetArmingMotionSensor(): void {
-    const current = this.services.armingMotionSensorService
-      .getCharacteristic(this.Characteristic.MotionDetected).value;
-
-    if (current) {
-      this.services.armingMotionSensorService.updateCharacteristic(
-        this.Characteristic.MotionDetected,
-        false,
-      );
+    if (this.currentValueByKind.arming) {
+      this.setSensorValue('arming', false);
     }
   }
 
@@ -36,40 +37,42 @@ export class SensorHandler {
 
   pulseTrippedMotionSensor(): void {
     this.setTrippedMotionSensor(true);
-    this.scheduleReset(this.services.trippedMotionSensorService);
+    this.scheduleReset('tripped');
   }
 
   setTrippedMotionSensor(value: boolean): void {
-    this.services.trippedMotionSensorService.updateCharacteristic(
-      this.Characteristic.MotionDetected,
-      value,
-    );
+    this.setSensorValue('tripped', value);
   }
 
   resetTrippedMotionSensor(): void {
-    const char = this.services.trippedMotionSensorService
-      .getCharacteristic(this.Characteristic.MotionDetected);
-    if (char.value) {
-      char.updateValue(false);
+    if (this.currentValueByKind.tripped) {
+      this.setSensorValue('tripped', false);
     }
   }
 
   // ── Reset sensor ───────────────────────────────────────────────────────────
 
   pulseResetMotionSensor(): void {
-    this.services.triggeredResetMotionSensorService.updateCharacteristic(
-      this.Characteristic.MotionDetected,
-      true,
-    );
-    this.scheduleReset(this.services.triggeredResetMotionSensorService);
+    this.setSensorValue('reset', true);
+    this.scheduleReset('reset');
     this.log.debug('Reset sensor (Triggered)');
+  }
+
+  /** Returns the current value of the given sensor, for Matter startup sync. */
+  getMotionState(kind: SensorKind): boolean {
+    return this.currentValueByKind[kind];
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private scheduleReset(service: Service): void {
+  private setSensorValue(kind: SensorKind, value: boolean): void {
+    this.currentValueByKind[kind] = value;
+    this.bus.emit(EventType.SENSOR_STATE_CHANGED, { sensor: kind, value });
+  }
+
+  private scheduleReset(kind: SensorKind): void {
     setTimeout(() => {
-      service.updateCharacteristic(this.Characteristic.MotionDetected, false);
+      this.setSensorValue(kind, false);
     }, SENSOR_PULSE_MS);
   }
-}
+}

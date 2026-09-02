@@ -20,7 +20,9 @@
     "homekit",
     "security system",
     "alarm",
-    "category-security"
+    "category-security",
+    "supports-hap",
+    "supports-matter"
   ],
   "main": "dist/index.js",
   "engines": {

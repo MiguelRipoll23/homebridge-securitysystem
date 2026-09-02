@@ -1,8 +1,6 @@
 import type { Logging } from 'homebridge';
-import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
 import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
-import type { ServiceRegistry, SingleServiceKey } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { EventBusService } from '../services/event-bus-service.js';
@@ -27,10 +25,8 @@ export class TripHandler {
   private readonly conditions: readonly Condition[];
 
   constructor(
-    private readonly services: ServiceRegistry,
     private readonly state: SystemState,
     private readonly options: SecuritySystemOptions,
-    private readonly Characteristic: CharacteristicConstructor,
     private readonly log: Logging,
     private readonly bus: EventBusService,
     private readonly sensorHandler: SensorHandler,
@@ -90,10 +86,6 @@ export class TripHandler {
     }
 
     // Sync trip switch characteristic when origin is not a direct switch press.
-    if (origin === OriginType.INTERNAL || origin === OriginType.EXTERNAL) {
-      this.services.tripSwitchService.updateCharacteristic(this.Characteristic.On, value);
-    }
-
     return { success: true };
   }
 
@@ -117,43 +109,9 @@ export class TripHandler {
     return this.updateTripSwitch(value, OriginType.REGULAR_SWITCH, false);
   }
 
-  resetTripSwitches(): void {
-    const switches: Array<[SingleServiceKey, string]> = [
-      ['tripSwitchService', 'Trip'],
-      ['tripHomeSwitchService', 'Trip Home'],
-      ['tripAwaySwitchService', 'Trip Away'],
-      ['tripNightSwitchService', 'Trip Night'],
-      ['tripOverrideSwitchService', 'Trip Override'],
-    ];
-
-    for (const [key, label] of switches) {
-      const char = this.services[key].getCharacteristic(this.Characteristic.On);
-      if (char.value) {
-        char.updateValue(false);
-        this.log.debug(`${label} Switch (Off)`);
-      }
-    }
-
-    const customGroups = [
-      this.services.customTripHomeSwitchServices,
-      this.services.customTripAwaySwitchServices,
-      this.services.customTripNightSwitchServices,
-    ];
-
-    for (const group of customGroups) {
-      for (const svc of group) {
-        const char = svc.getCharacteristic(this.Characteristic.On);
-        if (char.value) {
-          char.updateValue(false);
-        }
-      }
-    }
-  }
-
   private makeContext(value: boolean, origin: OriginType): ConditionContext {
     return {
       state: this.state,
-      services: this.services,
       options: this.options,
       value,
       origin,
@@ -217,10 +175,7 @@ export class TripHandler {
     }
 
     if (cur === SecurityState.AWAY) {
-      const extChar = this.services.modeAwayExtendedSwitchService
-        .getCharacteristic(this.Characteristic.On);
-
-      if (this.options.modeAwayExtendedSwitchTriggerSeconds !== null && extChar.value) {
+      if (this.options.modeAwayExtendedSwitchTriggerSeconds !== null && this.state.modeAwayExtended) {
         return this.options.modeAwayExtendedSwitchTriggerSeconds;
       }
 

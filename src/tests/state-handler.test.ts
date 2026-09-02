@@ -56,6 +56,8 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
+    armingLocks: { global: false, home: false, away: false, night: false },
+    modeAwayExtended: false,
     ...overrides,
   };
 }
@@ -291,6 +293,57 @@ describe('StateHandler.updateTargetState - isTripping reset', async () => {
     handler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
 
     expect(state.isTripping).toBe(false);
+  });
+});
+
+// ── Arming locks read from SystemState (switches are Matter-only) ─────────────
+
+describe('StateHandler.isArmingLocked', async () => {
+  const { StateHandler } = await import('../handlers/state-handler.js');
+  const { EventBusService } = await import('../services/event-bus-service.js');
+
+  function makeHandler(state: SystemState) {
+    return new StateHandler(
+      makeServices(), state, makeOptions({ armingLockSwitch: true }), {} as any,
+      makeMockLog() as any, new EventBusService(), makeStorage(),
+      makeTimers(), makeMockSensor() as any,
+    );
+  }
+
+  it('blocks when the global arming lock is active', () => {
+    const state = makeState({ armingLocks: { global: true, home: false, away: false, night: false } });
+    expect(makeHandler(state).isArmingLocked(SecurityState.HOME)).toBe(true);
+  });
+
+  it('blocks when the matching mode lock is active', () => {
+    const state = makeState({ armingLocks: { global: false, home: false, away: true, night: false } });
+    expect(makeHandler(state).isArmingLocked(SecurityState.AWAY)).toBe(true);
+    expect(makeHandler(state).isArmingLocked(SecurityState.HOME)).toBe(false);
+  });
+
+  it('never blocks disarming', () => {
+    const state = makeState({ armingLocks: { global: true, home: false, away: false, night: false } });
+    expect(makeHandler(state).isArmingLocked(SecurityState.OFF)).toBe(false);
+  });
+});
+
+// ── Away-extended flag is cleared on any target change ───────────────────────
+
+describe('StateHandler.updateTargetState - modeAwayExtended reset', async () => {
+  const { StateHandler } = await import('../handlers/state-handler.js');
+  const { EventBusService } = await import('../services/event-bus-service.js');
+
+  it('clears modeAwayExtended when the target changes', () => {
+    const state = makeState({ currentState: SecurityState.OFF, modeAwayExtended: true });
+    const handler = new StateHandler(
+      makeServices(), state, makeOptions(), {} as any,
+      makeMockLog() as any, new EventBusService(), makeStorage(),
+      makeTimers(), makeMockSensor() as any,
+    );
+
+    handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
+
+    expect(state.modeAwayExtended).toBe(false);
   });
 });
 

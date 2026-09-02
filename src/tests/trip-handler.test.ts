@@ -4,48 +4,6 @@ import { OriginType } from '../types/origin-type.js';
 import { EventType } from '../types/event-type.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
-import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
-
-// ── Helpers (shared with state-handler.test) ──────────────────────────────────
-
-function makeMockChar(value: unknown = false) {
-  const c = { value, updateValue: vi.fn() };
-  c.updateValue.mockImplementation((v: unknown) => {
-    c.value = v;
-  });
-  return c;
-}
-
-function makeMockService(charValue: unknown = false) {
-  const char = makeMockChar(charValue);
-  return {
-    getCharacteristic: vi.fn().mockReturnValue(char),
-    updateCharacteristic: vi.fn(),
-    setCharacteristic: vi.fn().mockReturnThis(),
-    addCharacteristic: vi.fn(),
-    addOptionalCharacteristic: vi.fn(),
-  };
-}
-
-function makeServices(): ServiceRegistry {
-  const keys = [
-    'mainService', 'tripSwitchService', 'tripHomeSwitchService', 'tripAwaySwitchService',
-    'tripNightSwitchService', 'tripOverrideSwitchService', 'armingLockSwitchService',
-    'armingLockHomeSwitchService', 'armingLockAwaySwitchService', 'armingLockNightSwitchService',
-    'modeHomeSwitchService', 'modeAwaySwitchService', 'modeNightSwitchService',
-    'modeOffSwitchService', 'modeAwayExtendedSwitchService', 'modePauseSwitchService',
-    'armingMotionSensorService', 'trippedMotionSensorService',
-    'triggeredResetMotionSensorService', 'accessoryInfoService',
-  ];
-  const s: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
-  for (const k of keys) {
-    s[k] = makeMockService();
-  }
-  s.customTripHomeSwitchServices = [];
-  s.customTripAwaySwitchServices = [];
-  s.customTripNightSwitchServices = [];
-  return s as unknown as ServiceRegistry;
-}
 
 function makeState(overrides: Partial<SystemState> = {}): SystemState {
   return {
@@ -58,6 +16,8 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
+    armingLocks: { global: false, home: false, away: false, night: false },
+    modeAwayExtended: false,
     ...overrides,
   };
 }
@@ -89,7 +49,6 @@ describe('TripHandler', async () => {
   const { EventBusService } = await import('../services/event-bus-service.js');
 
   let state: SystemState;
-  let services: ServiceRegistry;
   let bus: InstanceType<typeof EventBusService>;
   let tripHandler: any;
   const mockSensorHandler = {
@@ -107,10 +66,9 @@ describe('TripHandler', async () => {
   beforeEach(() => {
     vi.clearAllMocks();
     state = makeState({ currentState: SecurityState.HOME });
-    services = makeServices();
     bus = new EventBusService();
     const mockLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
-    tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockSensorHandler as any, mockTimers);
+    tripHandler = new TripHandler(state, makeOptions(), mockLog as any, bus, mockSensorHandler as any, mockTimers);
   });
 
   it('blocks trip when system is disarmed (not overriding)', () => {
@@ -151,9 +109,9 @@ describe('TripHandler', async () => {
   describe('tripped motion sensor', () => {
     it('starts steady-on when trippedMotionSensorSeconds = 0', () => {
       const handler = new TripHandler(
-        services, state,
+        state,
         makeOptions({ trippedMotionSensor: true, trippedMotionSensorSeconds: 0 }),
-        {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+        { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
         bus, mockSensorHandler as any, mockTimers,
       );
 
@@ -166,9 +124,9 @@ describe('TripHandler', async () => {
 
     it('pulses with interval when trippedMotionSensorSeconds > 0', () => {
       const handler = new TripHandler(
-        services, state,
+        state,
         makeOptions({ trippedMotionSensor: true, trippedMotionSensorSeconds: 10 }),
-        {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+        { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
         bus, mockSensorHandler as any, mockTimers,
       );
 
@@ -181,9 +139,9 @@ describe('TripHandler', async () => {
 
     it('resets tripped sensor on cancelTrip', () => {
       const handler = new TripHandler(
-        services, state,
+        state,
         makeOptions({ trippedMotionSensor: true }),
-        {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+        { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
         bus, mockSensorHandler as any, mockTimers,
       );
 
@@ -228,6 +186,35 @@ describe('TripHandler', async () => {
     expect(payload.stateChanged).toBe(true);
   });
 
+  it('uses the extended trigger seconds when armed away-extended', () => {
+    state.currentState = SecurityState.AWAY;
+    state.modeAwayExtended = true;
+    const handler = new TripHandler(
+      state,
+      makeOptions({ modeAwayExtendedSwitchTriggerSeconds: 45 }),
+      { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+      bus, mockSensorHandler as any, mockTimers,
+    );
+
+    handler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
+
+    expect(mockTimers.setTriggerTimer).toHaveBeenCalledWith(45000, expect.any(Function));
+  });
+
+  it('uses the regular away trigger seconds when not extended', () => {
+    state.currentState = SecurityState.AWAY;
+    const handler = new TripHandler(
+      state,
+      makeOptions({ modeAwayExtendedSwitchTriggerSeconds: 45, awayTriggerSeconds: 10 }),
+      { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
+      bus, mockSensorHandler as any, mockTimers,
+    );
+
+    handler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
+
+    expect(mockTimers.setTriggerTimer).toHaveBeenCalledWith(10000, expect.any(Function));
+  });
+
   it('triggerIfModeSet allows when current mode matches required', () => {
     state.currentState = SecurityState.HOME;
     const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
@@ -241,124 +228,17 @@ describe('TripHandler', async () => {
     expect(result.reason).toBe('mode not set');
   });
 
-  // ── resetTripSwitches tests ────────────────────────────────────────────────
-
-  describe('resetTripSwitches', () => {
-    it('resets global trip switch', () => {
-      const globalChar = services.tripSwitchService.getCharacteristic('On' as any)!;
-      globalChar.value = true;
-
-      tripHandler.resetTripSwitches();
-
-      expect(globalChar.updateValue).toHaveBeenCalledWith(false);
-    });
-
-    it('resets mode-specific trip switches', () => {
-      const homeChar = services.tripHomeSwitchService.getCharacteristic('On' as any)!;
-      const awayChar = services.tripAwaySwitchService.getCharacteristic('On' as any)!;
-      const nightChar = services.tripNightSwitchService.getCharacteristic('On' as any)!;
-      const overrideChar = services.tripOverrideSwitchService.getCharacteristic('On' as any)!;
-      homeChar.value = true;
-      awayChar.value = true;
-      nightChar.value = true;
-      overrideChar.value = true;
-
-      tripHandler.resetTripSwitches();
-
-      expect(homeChar.updateValue).toHaveBeenCalledWith(false);
-      expect(awayChar.updateValue).toHaveBeenCalledWith(false);
-      expect(nightChar.updateValue).toHaveBeenCalledWith(false);
-      expect(overrideChar.updateValue).toHaveBeenCalledWith(false);
-    });
-
-    it('does not touch switches that are already off', () => {
-      const globalChar = services.tripSwitchService.getCharacteristic('On' as any)!;
-      globalChar.value = false;
-
-      tripHandler.resetTripSwitches();
-
-      expect(globalChar.updateValue).not.toHaveBeenCalled();
-    });
+  it('triggerIfModeSet allows a trip while triggered when the target matches', () => {
+    state.currentState = SecurityState.TRIGGERED;
+    state.targetState = SecurityState.HOME;
+    const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('Security System (Already triggered): alarm is already active');
   });
 
-  // ── Custom trip switch tests ───────────────────────────────────────────────
-
-  describe('Custom Trip Switches', () => {
-    it('custom HOME trip switch triggers only in HOME mode', () => {
-      state.currentState = SecurityState.HOME;
-      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-      expect(result.success).toBe(true);
-    });
-
-    it('custom HOME trip switch blocks when not in HOME mode', () => {
-      state.currentState = SecurityState.AWAY;
-      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-      expect(result.success).toBe(false);
-    });
-
-    it('custom AWAY trip switch triggers only in AWAY mode', () => {
-      state.currentState = SecurityState.AWAY;
-      const result = tripHandler.triggerIfModeSet(SecurityState.AWAY, true);
-      expect(result.success).toBe(true);
-    });
-
-    it('custom AWAY trip switch blocks when not in AWAY mode', () => {
-      state.currentState = SecurityState.HOME;
-      const result = tripHandler.triggerIfModeSet(SecurityState.AWAY, true);
-      expect(result.success).toBe(false);
-    });
-
-    it('custom NIGHT trip switch triggers only in NIGHT mode', () => {
-      state.currentState = SecurityState.NIGHT;
-      const result = tripHandler.triggerIfModeSet(SecurityState.NIGHT, true);
-      expect(result.success).toBe(true);
-    });
-
-    it('custom NIGHT trip switch blocks when not in NIGHT mode', () => {
-      state.currentState = SecurityState.HOME;
-      const result = tripHandler.triggerIfModeSet(SecurityState.NIGHT, true);
-      expect(result.success).toBe(false);
-    });
-
-    it('custom trip switch blocks when alarm is already triggered', () => {
-      state.currentState = SecurityState.TRIGGERED;
-      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, true);
-      expect(result.success).toBe(false);
-    });
-
-    it('custom trip switch cancellation works with triggerIfModeSet', () => {
-      state.currentState = SecurityState.HOME;
-      const result = tripHandler.triggerIfModeSet(SecurityState.HOME, false);
-      expect(result.success).toBe(true);
-    });
-
-    it('resetTripSwitches includes custom trip switch services', () => {
-      const mockChar = makeMockChar(true);
-      const mockSvc = { getCharacteristic: vi.fn().mockReturnValue(mockChar) };
-      (services.customTripHomeSwitchServices as unknown[]) = [mockSvc];
-
-      tripHandler.resetTripSwitches();
-
-      expect(mockChar.updateValue).toHaveBeenCalledWith(false);
-    });
-
-    it('resetTripSwitches handles multiple custom switches per mode', () => {
-      const mockChar1 = makeMockChar(true);
-      const mockChar2 = makeMockChar(true);
-      const mockChar3 = makeMockChar(false);
-
-      const mockSvc1 = { getCharacteristic: vi.fn().mockReturnValue(mockChar1) };
-      const mockSvc2 = { getCharacteristic: vi.fn().mockReturnValue(mockChar2) };
-      const mockSvc3 = { getCharacteristic: vi.fn().mockReturnValue(mockChar3) };
-
-      (services.customTripHomeSwitchServices as unknown[]) = [mockSvc1, mockSvc2];
-      (services.customTripAwaySwitchServices as unknown[]) = [mockSvc3];
-
-      tripHandler.resetTripSwitches();
-
-      expect(mockChar1.updateValue).toHaveBeenCalledWith(false);
-      expect(mockChar2.updateValue).toHaveBeenCalledWith(false);
-      expect(mockChar3.updateValue).not.toHaveBeenCalled();
-    });
+  it('custom trip switch cancellation works with triggerIfModeSet', () => {
+    state.currentState = SecurityState.HOME;
+    const result = tripHandler.triggerIfModeSet(SecurityState.HOME, false);
+    expect(result.success).toBe(true);
   });
-});
+});

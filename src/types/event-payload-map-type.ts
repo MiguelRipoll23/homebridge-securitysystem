@@ -6,6 +6,7 @@ import type {
   WarningPayload,
   TriggerFiredPayload,
   TripCancelledPayload,
+  SensorStateChangedPayload,
   EmptyPayload,
 } from './event-type.js';
 
@@ -18,6 +19,7 @@ export type EventPayloadMap = {
   [EventType.RESET_TRIP_SWITCHES]: EmptyPayload;
   [EventType.RESET_MODE_SWITCHES]: EmptyPayload;
   [EventType.UPDATE_MODE_SWITCHES]: EmptyPayload;
+  [EventType.SENSOR_STATE_CHANGED]: SensorStateChangedPayload;
   [EventType.TRIGGER_FIRED]: TriggerFiredPayload;
   [EventType.TRIP_CANCELLED]: TripCancelledPayload;
 };

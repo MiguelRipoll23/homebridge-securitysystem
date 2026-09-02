@@ -22,6 +22,8 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
+    armingLocks: { global: false, home: false, away: false, night: false },
+    modeAwayExtended: false,
     ...overrides,
   };
 }

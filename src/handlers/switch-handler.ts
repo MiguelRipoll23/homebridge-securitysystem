@@ -1,78 +1,68 @@
 import type { Logging } from 'homebridge';
-import type { CharacteristicConstructor } from '../interfaces/hap-types-interface.js';
 import { SecurityState } from '../types/security-state-type.js';
-import { HK_NOT_ALLOWED_IN_CURRENT_STATE } from '../constants/homekit-constant.js';
-import type { ServiceRegistry, SingleServiceKey } from '../interfaces/service-registry-interface.js';
+import { OriginType } from '../types/origin-type.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { StateHandler } from './state-handler.js';
-import { OriginType } from '../types/origin-type.js';
 import { capitalise } from '../utils/state-util.js';
 import type { TimerManager } from '../timers/timer-manager.js';
-import type { EventBusService } from '../services/event-bus-service.js';
-import { EventType } from '../types/event-type.js';
 import type { ServiceResult } from '../types/service-result-type.js';
 
 /**
  * Handles all mode switches and the pause/extended switches.
- * Calls StateHandler directly (one-way dependency — no cycle).
- * Subscribes to bus events emitted by StateHandler to reset its own display state.
+ * Switches are published over Matter only; the HAP layer no longer carries them,
+ * so every method reports outcomes as ServiceResult which MatterService maps to
+ * Matter status errors. The switch display state is pushed to Matter via bus
+ * events handled by MatterService.
  */
 export class SwitchHandler {
   constructor(
-    private readonly services: ServiceRegistry,
     private readonly state: SystemState,
     private readonly options: SecuritySystemOptions,
-    private readonly Characteristic: CharacteristicConstructor,
     private readonly log: Logging,
     private readonly timers: TimerManager,
     private readonly stateHandler: StateHandler,
   ) {}
 
-  /** Register bus listeners so StateHandler can signal display resets without importing this class. */
-  subscribeToStateEvents(bus: EventBusService): void {
-    bus.on(EventType.RESET_MODE_SWITCHES, () => this.resetModeSwitches());
-    bus.on(EventType.UPDATE_MODE_SWITCHES, () => this.updateModeSwitches());
-  }
-
   // ── Mode switches ──────────────────────────────────────────────────────────
 
-  setModeSwitch(mode: SecurityState, value: boolean): number | null {
+  setModeSwitch(mode: SecurityState, value: boolean): ServiceResult {
     if (!value) {
-      return HK_NOT_ALLOWED_IN_CURRENT_STATE;
+      return { success: false, reason: 'a mode switch can only be turned on' };
     }
     const delay = this.stateHandler.getArmingSeconds(mode);
-    this.stateHandler.updateTargetState(mode, OriginType.INTERNAL, delay);
-    return null;
+    return this.stateHandler.updateTargetState(mode, OriginType.INTERNAL, delay);
   }
 
-  setModeOffSwitch(value: boolean): number | null {
+  setModeOffSwitch(value: boolean): ServiceResult {
     if (!value) {
-      return HK_NOT_ALLOWED_IN_CURRENT_STATE;
+      return { success: false, reason: 'a mode switch can only be turned on' };
     }
-    this.stateHandler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
-    return null;
+    return this.stateHandler.updateTargetState(SecurityState.OFF, OriginType.INTERNAL, 0);
   }
 
-  setModeAwayExtendedSwitch(value: boolean): number | null {
+  setModeAwayExtendedSwitch(value: boolean): ServiceResult {
     if (!value) {
-      return HK_NOT_ALLOWED_IN_CURRENT_STATE;
+      return { success: false, reason: 'the away-extended switch can only be turned on' };
     }
     const delay = this.stateHandler.getArmingSeconds(SecurityState.AWAY);
-    this.stateHandler.updateTargetState(SecurityState.AWAY, OriginType.INTERNAL, delay);
-    return null;
+    const result = this.stateHandler.updateTargetState(SecurityState.AWAY, OriginType.INTERNAL, delay);
+    if (result.success) {
+      this.state.modeAwayExtended = true;
+    }
+    return result;
   }
 
-  setModePauseSwitch(value: boolean): number | null {
+  setModePauseSwitch(value: boolean): ServiceResult {
     if (this.state.currentState === SecurityState.TRIGGERED) {
       this.log.warn('Mode pause (Alarm is triggered)');
-      return HK_NOT_ALLOWED_IN_CURRENT_STATE;
+      return { success: false, reason: 'mode pause is not allowed while the alarm is triggered' };
     }
 
     if (value) {
       if (this.state.currentState === SecurityState.OFF) {
         this.log.warn('Mode pause (Not armed)');
-        return HK_NOT_ALLOWED_IN_CURRENT_STATE;
+        return { success: false, reason: 'mode pause is not allowed while disarmed' };
       }
 
       this.log.info('Mode pause (Started)');
@@ -94,7 +84,7 @@ export class SwitchHandler {
       this.stateHandler.updateTargetState(prev, OriginType.INTERNAL, this.stateHandler.getArmingSeconds(prev));
     }
 
-    return null;
+    return { success: true };
   }
 
   // ── Arming lock switches ───────────────────────────────────────────────────
@@ -102,56 +92,20 @@ export class SwitchHandler {
   updateArmingLock(mode: string, value: boolean): ServiceResult {
     this.logArmingLock(mode, value);
 
-    const map: Record<string, SingleServiceKey> = {
-      global: 'armingLockSwitchService',
-      home: 'armingLockHomeSwitchService',
-      away: 'armingLockAwaySwitchService',
-      night: 'armingLockNightSwitchService',
-    };
+    const locks = this.state.armingLocks;
+    const key: keyof typeof locks | undefined = ['global', 'home', 'away', 'night']
+      .find(candidate => candidate === mode) as keyof typeof locks | undefined;
 
-    const key = map[mode];
     if (!key) {
       this.log.debug(`Unknown arming lock mode (${mode})`);
       return { success: false, reason: `unknown arming lock mode: ${mode}` };
     }
 
-    this.services[key].getCharacteristic(this.Characteristic.On).updateValue(value);
+    locks[key] = value;
     return { success: true };
-  }
-
-  // ── Mode switch display ────────────────────────────────────────────────────
-
-  resetModeSwitches(): void {
-    const switches: Array<SingleServiceKey> = [
-      'modeHomeSwitchService', 'modeAwaySwitchService', 'modeNightSwitchService',
-      'modeOffSwitchService', 'modeAwayExtendedSwitchService', 'modePauseSwitchService',
-    ];
-
-    for (const key of switches) {
-      const char = this.services[key].getCharacteristic(this.Characteristic.On);
-      if (char.value) {
-        char.updateValue(false);
-        this.log.debug(`${key} (Off)`);
-      }
-    }
-  }
-
-  updateModeSwitches(): void {
-    const modeMap: Partial<Record<SecurityState, SingleServiceKey>> = {
-      [SecurityState.HOME]: 'modeHomeSwitchService',
-      [SecurityState.AWAY]: 'modeAwaySwitchService',
-      [SecurityState.NIGHT]: 'modeNightSwitchService',
-      [SecurityState.OFF]: 'modeOffSwitchService',
-    };
-
-    const key = modeMap[this.state.targetState];
-    if (key) {
-      this.services[key].updateCharacteristic(this.Characteristic.On, true);
-      this.log.debug(`${key} (On)`);
-    }
   }
 
   private logArmingLock(mode: string, value: boolean): void {
     this.log.info(`Arming lock [${capitalise(mode)}] (${value ? 'On' : 'Off'})`);
   }
-}
+}

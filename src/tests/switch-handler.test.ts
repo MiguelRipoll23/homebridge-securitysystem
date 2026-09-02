@@ -1,53 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SecurityState } from '../types/security-state-type.js';
+import { OriginType } from '../types/origin-type.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
-import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
+import { SwitchHandler } from '../handlers/switch-handler.js';
 
 // ── Minimal mocks ─────────────────────────────────────────────────────────────
-
-function makeMockCharacteristic(value: unknown = false) {
-  const characteristic = { value, updateValue: vi.fn(), setProps: vi.fn() };
-  characteristic.updateValue.mockImplementation((v: unknown) => {
-    characteristic.value = v;
-  });
-  return characteristic;
-}
-
-function makeMockService(characteristicValue: unknown = false) {
-  const characteristic = makeMockCharacteristic(characteristicValue);
-  const service = {
-    getCharacteristic: vi.fn().mockReturnValue(characteristic),
-    updateCharacteristic: vi.fn((_name: unknown, value: unknown) => {
-      characteristic.value = value;
-      return service;
-    }),
-    setCharacteristic: vi.fn().mockReturnThis(),
-    addCharacteristic: vi.fn(),
-    addOptionalCharacteristic: vi.fn(),
-  };
-  return service;
-}
-
-function makeServices(): ServiceRegistry {
-  const keys = [
-    'mainService', 'accessoryInfoService', 'tripSwitchService', 'tripHomeSwitchService',
-    'tripAwaySwitchService', 'tripNightSwitchService', 'tripOverrideSwitchService',
-    'armingLockSwitchService', 'armingLockHomeSwitchService', 'armingLockAwaySwitchService',
-    'armingLockNightSwitchService', 'modeHomeSwitchService', 'modeAwaySwitchService',
-    'modeNightSwitchService', 'modeOffSwitchService', 'modeAwayExtendedSwitchService',
-    'modePauseSwitchService', 'armingMotionSensorService',
-    'trippedMotionSensorService', 'triggeredResetMotionSensorService',
-  ];
-  const registry: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
-  for (const key of keys) {
-    registry[key] = makeMockService();
-  }
-  registry.customTripHomeSwitchServices = [];
-  registry.customTripAwaySwitchServices = [];
-  registry.customTripNightSwitchServices = [];
-  return registry as unknown as ServiceRegistry;
-}
 
 function makeState(overrides: Partial<SystemState> = {}): SystemState {
   return {
@@ -60,6 +18,8 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
+    armingLocks: { global: false, home: false, away: false, night: false },
+    modeAwayExtended: false,
     ...overrides,
   };
 }
@@ -102,7 +62,7 @@ function makeMockLog() {
 
 function makeMockStateHandler() {
   return {
-    updateTargetState: vi.fn(),
+    updateTargetState: vi.fn().mockReturnValue({ success: true }),
     getArmingSeconds: vi.fn().mockReturnValue(0),
   };
 }
@@ -119,233 +79,156 @@ function makeMockTimers() {
   } as any;
 }
 
+function makeHandler(state: SystemState, options = makeOptions()) {
+  const stateHandler = makeMockStateHandler();
+  const log = makeMockLog();
+  const timers = makeMockTimers();
+  const handler = new SwitchHandler(state, options, log as any, timers, stateHandler as any);
+  return { handler, stateHandler, log, timers };
+}
+
 // ── SwitchHandler tests ───────────────────────────────────────────────────────
 
-describe('SwitchHandler.updateModeSwitches', async () => {
-  const { SwitchHandler } = await import('../handlers/switch-handler.js');
-
-  it('sets mode OFF switch ON when targetState is OFF', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.OFF });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-    const offCharacteristic = services.modeOffSwitchService.getCharacteristic('On' as any)!;
-
-    handler.updateModeSwitches();
-
-    expect(offCharacteristic.value).toBe(true);
-  });
-
-  it('sets mode HOME switch ON when targetState is HOME', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.HOME });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-
-    handler.updateModeSwitches();
-
-    expect(services.modeHomeSwitchService.getCharacteristic('On' as any).value).toBe(true);
-  });
-
-  it('sets mode AWAY switch ON when targetState is AWAY', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.AWAY });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-
-    handler.updateModeSwitches();
-
-    expect(services.modeAwaySwitchService.getCharacteristic('On' as any).value).toBe(true);
-  });
-
-  it('sets mode NIGHT switch ON when targetState is NIGHT', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.NIGHT });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-
-    handler.updateModeSwitches();
-
-    expect(services.modeNightSwitchService.getCharacteristic('On' as any).value).toBe(true);
-  });
-
-  it('does not turn on any mode switch when targetState is TRIGGERED', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.TRIGGERED });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-    const modeServices = [
-      services.modeHomeSwitchService, services.modeAwaySwitchService,
-      services.modeNightSwitchService, services.modeOffSwitchService,
-      services.modeAwayExtendedSwitchService, services.modePauseSwitchService,
-    ];
-
-    handler.updateModeSwitches();
-
-    for (const service of modeServices) {
-      expect(service.updateCharacteristic).not.toHaveBeenCalled();
-    }
-  });
-
-  it('updates characteristic via updateCharacteristic (HomeKit compliant)', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.OFF });
-    const Characteristic = { On: 'On' };
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), Characteristic as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-
-    handler.updateModeSwitches();
-
-    expect(services.modeOffSwitchService.updateCharacteristic).toHaveBeenCalledWith('On', true);
-  });
-});
-
-describe('SwitchHandler.resetModeSwitches', async () => {
-  const { SwitchHandler } = await import('../handlers/switch-handler.js');
-
-  it('turns OFF all mode switches that are ON', () => {
-    const services = makeServices();
+describe('SwitchHandler', () => {
+  it('setModeSwitch arms via updateTargetState with the arming delay', () => {
     const state = makeState();
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-    const modeServiceKeys: Array<keyof ServiceRegistry> = [
-      'modeHomeSwitchService', 'modeAwaySwitchService', 'modeNightSwitchService',
-      'modeOffSwitchService', 'modeAwayExtendedSwitchService', 'modePauseSwitchService',
-    ];
-    for (const key of modeServiceKeys) {
-      (services[key] as any).getCharacteristic('On' as any).value = true;
-    }
+    const { handler, stateHandler } = makeHandler(state);
+    stateHandler.getArmingSeconds.mockReturnValue(42);
 
-    handler.resetModeSwitches();
+    const result = handler.setModeSwitch(SecurityState.HOME, true);
 
-    for (const key of modeServiceKeys) {
-      expect((services[key] as any).getCharacteristic('On' as any).value).toBe(false);
-    }
+    expect(stateHandler.updateTargetState).toHaveBeenCalledWith(SecurityState.HOME, OriginType.INTERNAL, 42);
+    expect(result.success).toBe(true);
   });
 
-  it('does not call updateValue on switches that are already OFF', () => {
-    const services = makeServices();
+  it('setModeSwitch reports how updateTargetState refused the change', () => {
     const state = makeState();
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-    const offCharacteristic = services.modeOffSwitchService.getCharacteristic('On' as any)!;
-    offCharacteristic.value = false;
+    const { handler, stateHandler } = makeHandler(state);
+    stateHandler.updateTargetState.mockReturnValue({ success: false, reason: 'arming is blocked by an arming lock switch' });
 
-    handler.resetModeSwitches();
+    const result = handler.setModeSwitch(SecurityState.HOME, true);
 
-    expect(offCharacteristic.updateValue).not.toHaveBeenCalled();
-  });
-});
-
-describe('SwitchHandler.subscribeToStateEvents', async () => {
-  const { SwitchHandler } = await import('../handlers/switch-handler.js');
-  const { EventBusService } = await import('../services/event-bus-service.js');
-  const { EventType } = await import('../types/event-type.js');
-
-  it('calls updateModeSwitches on UPDATE_MODE_SWITCHES event', () => {
-    const bus = new EventBusService();
-    const state = makeState({ targetState: SecurityState.HOME });
-    const services = makeServices();
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-
-    handler.subscribeToStateEvents(bus);
-    bus.emit(EventType.UPDATE_MODE_SWITCHES, {});
-
-    expect(services.modeHomeSwitchService.getCharacteristic('On' as any).value).toBe(true);
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('arming is blocked by an arming lock switch');
   });
 
-  it('calls resetModeSwitches on RESET_MODE_SWITCHES event', () => {
-    const bus = new EventBusService();
+  it('setModeSwitch rejects turning a mode switch off', () => {
     const state = makeState();
-    const services = makeServices();
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-    const modeServiceKeys: Array<keyof ServiceRegistry> = [
-      'modeHomeSwitchService', 'modeAwaySwitchService', 'modeNightSwitchService',
-      'modeOffSwitchService', 'modeAwayExtendedSwitchService', 'modePauseSwitchService',
-    ];
-    for (const key of modeServiceKeys) {
-      (services[key] as any).getCharacteristic('On' as any).value = true;
-    }
+    const { handler, stateHandler } = makeHandler(state);
 
-    handler.subscribeToStateEvents(bus);
-    bus.emit(EventType.RESET_MODE_SWITCHES, {});
+    const result = handler.setModeSwitch(SecurityState.HOME, false);
 
-    for (const key of modeServiceKeys) {
-      expect((services[key] as any).getCharacteristic('On' as any).value).toBe(false);
-    }
-  });
-});
-
-// ── Regression: mode switch sync on startup ──────────────────────────────────
-
-describe('SwitchHandler startup sync regression', async () => {
-  const { SwitchHandler } = await import('../handlers/switch-handler.js');
-
-  it('sets mode OFF switch ON when state is initialized to OFF (regression test for #889)', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.OFF });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
-
-    expect(services.modeOffSwitchService.getCharacteristic('On' as any).value).toBe(false);
-
-    handler.updateModeSwitches();
-
-    expect(services.modeOffSwitchService.getCharacteristic('On' as any).value).toBe(true);
-    expect(services.modeHomeSwitchService.getCharacteristic('On' as any).value).toBe(false);
-    expect(services.modeAwaySwitchService.getCharacteristic('On' as any).value).toBe(false);
-    expect(services.modeNightSwitchService.getCharacteristic('On' as any).value).toBe(false);
+    expect(result.success).toBe(false);
+    expect(stateHandler.updateTargetState).not.toHaveBeenCalled();
   });
 
-  it('sets mode HOME switch ON when state is initialized to HOME', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.HOME });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
+  it('setModeOffSwitch disarms and propagates refusals', () => {
+    const state = makeState();
+    const { handler, stateHandler } = makeHandler(state);
 
-    handler.updateModeSwitches();
+    handler.setModeOffSwitch(true);
+    expect(stateHandler.updateTargetState).toHaveBeenCalledWith(SecurityState.OFF, OriginType.INTERNAL, 0);
 
-    expect(services.modeHomeSwitchService.getCharacteristic('On' as any).value).toBe(true);
-    expect(services.modeOffSwitchService.getCharacteristic('On' as any).value).toBe(false);
+    stateHandler.updateTargetState.mockReturnValue({ success: false, reason: 'target mode is disabled' });
+    const refused = handler.setModeOffSwitch(true);
+    expect(refused).toEqual({ success: false, reason: 'target mode is disabled' });
+
+    const rejected = handler.setModeOffSwitch(false);
+    expect(rejected.success).toBe(false);
+    // Only the two successful ON commands reach updateTargetState.
+    expect(stateHandler.updateTargetState).toHaveBeenCalledTimes(2);
   });
 
-  it('sets mode AWAY switch ON when state is initialized to AWAY', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.AWAY });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
+  it('setModeAwayExtendedSwitch arms away and records the extended flag', () => {
+    const state = makeState();
+    const { handler, stateHandler } = makeHandler(state);
 
-    handler.updateModeSwitches();
+    const result = handler.setModeAwayExtendedSwitch(true);
 
-    expect(services.modeAwaySwitchService.getCharacteristic('On' as any).value).toBe(true);
-    expect(services.modeOffSwitchService.getCharacteristic('On' as any).value).toBe(false);
+    expect(stateHandler.updateTargetState).toHaveBeenCalledWith(SecurityState.AWAY, OriginType.INTERNAL, 0);
+    expect(state.modeAwayExtended).toBe(true);
+    expect(result.success).toBe(true);
   });
 
-  it('sets mode NIGHT switch ON when state is initialized to NIGHT', () => {
-    const services = makeServices();
-    const state = makeState({ targetState: SecurityState.NIGHT });
-    const handler = new SwitchHandler(
-      services, state, makeOptions(), {} as any, makeMockLog() as any, makeMockTimers(), makeMockStateHandler() as any,
-    );
+  it('setModeAwayExtendedSwitch does not set the extended flag when arming was refused', () => {
+    const state = makeState();
+    const { handler, stateHandler } = makeHandler(state);
+    stateHandler.updateTargetState.mockReturnValue({ success: false, reason: 'arming is blocked by an arming lock switch' });
 
-    handler.updateModeSwitches();
+    const result = handler.setModeAwayExtendedSwitch(true);
 
-    expect(services.modeNightSwitchService.getCharacteristic('On' as any).value).toBe(true);
-    expect(services.modeOffSwitchService.getCharacteristic('On' as any).value).toBe(false);
+    expect(result.success).toBe(false);
+    expect(state.modeAwayExtended).toBe(false);
+  });
+
+  it('setModeAwayExtendedSwitch rejects turning off', () => {
+    const state = makeState();
+    const { handler } = makeHandler(state);
+
+    expect(handler.setModeAwayExtendedSwitch(false).success).toBe(false);
+  });
+
+  it('setModePauseSwitch rejects while triggered', () => {
+    const state = makeState({ currentState: SecurityState.TRIGGERED });
+    const { handler, timers } = makeHandler(state);
+
+    const result = handler.setModePauseSwitch(true);
+
+    expect(result.success).toBe(false);
+    expect(timers.setPauseTimer).not.toHaveBeenCalled();
+  });
+
+  it('setModePauseSwitch rejects while disarmed', () => {
+    const state = makeState({ currentState: SecurityState.OFF });
+    const { handler, timers } = makeHandler(state);
+
+    const result = handler.setModePauseSwitch(true);
+
+    expect(result.success).toBe(false);
+    expect(timers.setPauseTimer).not.toHaveBeenCalled();
+  });
+
+  it('setModePauseSwitch pauses and schedules the resume timer', () => {
+    const state = makeState({ currentState: SecurityState.HOME });
+    const { handler, stateHandler, timers } = makeHandler(state, makeOptions({ pauseMinutes: 5 }));
+
+    const result = handler.setModePauseSwitch(true);
+
+    expect(state.pausedCurrentState).toBe(SecurityState.HOME);
+    expect(stateHandler.updateTargetState).toHaveBeenCalledWith(SecurityState.OFF, OriginType.INTERNAL, 0);
+    expect(timers.setPauseTimer).toHaveBeenCalledWith(5 * 60 * 1000, expect.any(Function));
+    expect(result.success).toBe(true);
+  });
+
+  it('setModePauseSwitch cancel resumes the paused mode', () => {
+    const state = makeState({ currentState: SecurityState.OFF, pausedCurrentState: SecurityState.AWAY });
+    const { handler, stateHandler, timers } = makeHandler(state);
+
+    const result = handler.setModePauseSwitch(false);
+
+    expect(timers.clearPauseTimer).toHaveBeenCalled();
+    expect(stateHandler.updateTargetState).toHaveBeenCalledWith(SecurityState.AWAY, OriginType.INTERNAL, 0);
+    expect(result.success).toBe(true);
+  });
+
+  it('updateArmingLock stores the lock on state and returns success', () => {
+    const state = makeState();
+    const { handler } = makeHandler(state);
+
+    expect(handler.updateArmingLock('global', true).success).toBe(true);
+    expect(state.armingLocks.global).toBe(true);
+
+    expect(handler.updateArmingLock('away', false).success).toBe(true);
+    expect(state.armingLocks.away).toBe(false);
+  });
+
+  it('updateArmingLock rejects unknown modes', () => {
+    const state = makeState();
+    const { handler } = makeHandler(state);
+
+    const result = handler.updateArmingLock('garage', true);
+
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('unknown arming lock mode: garage');
   });
 });

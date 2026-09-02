@@ -4,7 +4,7 @@ import { SecurityState } from '../types/security-state-type.js';
 import { OriginType } from '../types/origin-type.js';
 import { stateToMode, capitalise } from '../utils/state-util.js';
 import { modeToState } from '../utils/state-util.js';
-import type { ServiceRegistry, SingleServiceKey } from '../interfaces/service-registry-interface.js';
+import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
 import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { EventBusService } from '../services/event-bus-service.js';
@@ -126,20 +126,23 @@ export class StateHandler {
 
   /** Checks whether arming is currently blocked by an arming-lock switch. */
   isArmingLocked(targetState: SecurityState): boolean {
-    if (this.services.armingLockSwitchService.getCharacteristic(this.Characteristic.On).value) {
+    // Locks never block disarming.
+    if (targetState === SecurityState.OFF) {
+      return false;
+    }
+
+    if (this.state.armingLocks.global) {
       return true;
     }
 
-    const modeMap: Partial<Record<SecurityState, SingleServiceKey>> = {
-      [SecurityState.HOME]: 'armingLockHomeSwitchService',
-      [SecurityState.AWAY]: 'armingLockAwaySwitchService',
-      [SecurityState.NIGHT]: 'armingLockNightSwitchService',
+    const modeMap: Partial<Record<SecurityState, keyof SystemState['armingLocks']>> = {
+      [SecurityState.HOME]: 'home',
+      [SecurityState.AWAY]: 'away',
+      [SecurityState.NIGHT]: 'night',
     };
 
-    const svcKey = modeMap[targetState];
-    return svcKey
-      ? Boolean(this.services[svcKey].getCharacteristic(this.Characteristic.On).value)
-      : false;
+    const lock = modeMap[targetState];
+    return lock ? this.state.armingLocks[lock] : false;
   }
 
   getAvailableTargetStates(): SecurityState[] {
@@ -184,6 +187,10 @@ export class StateHandler {
 
   private handleTargetStateChange(origin: OriginType): void {
     this.resetTimers();
+
+    // The away-extended flag only applies to the arm cycle it started; any
+    // subsequent target change clears it (mirrors the HAP mode-switch reset).
+    this.state.modeAwayExtended = false;
 
     // Notify handlers to reset their displayed state (bus is synchronous).
     this.bus.emit(EventType.RESET_TRIP_SWITCHES, {});

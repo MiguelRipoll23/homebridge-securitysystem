@@ -1,4 +1,4 @@
-import type { API, Logging, PlatformAccessory, Service } from 'homebridge';
+import type { API, Logging, MatterAccessory, PlatformAccessory, Service } from 'homebridge';
 import type { CharacteristicConstructor } from './interfaces/hap-types-interface.js';
 import { SecurityState } from './types/security-state-type.js';
 import { OriginType } from './types/origin-type.js';
@@ -13,6 +13,7 @@ import { StorageService } from './services/storage-service.js';
 import { WebhookService } from './services/webhook-service.js';
 import { CommandService } from './services/command-service.js';
 import { MqttService } from './services/mqtt-service.js';
+import { MatterService } from './services/matter-service.js';
 import { ServerService } from './services/server-service.js';
 import { StateHandler } from './handlers/state-handler.js';
 import { TripHandler } from './handlers/trip-handler.js';
@@ -34,6 +35,7 @@ export class SecuritySystem {
   private readonly switchHandler: SwitchHandler;
   private readonly sensorHandler: SensorHandler;
   private readonly storageService: StorageService;
+  private readonly matterService: MatterService;
 
   constructor(
     private readonly log: Logging,
@@ -67,18 +69,16 @@ export class SecuritySystem {
 
     // Handlers — construction order matters: sensorHandler first (leaf), then stateHandler,
     // then switchHandler (depends on stateHandler), then tripHandler.
-    this.sensorHandler = new SensorHandler(this.svcs, Char, log);
+    this.sensorHandler = new SensorHandler(log, this.bus);
     this.stateHandler = new StateHandler(
       this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, timerManager, this.sensorHandler,
     );
-    this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log, timerManager, this.stateHandler);
+    this.switchHandler = new SwitchHandler(this.state, this.options, log, timerManager, this.stateHandler);
     this.tripHandler = new TripHandler(
-      this.svcs, this.state, this.options, Char, log, this.bus, this.sensorHandler, timerManager,
+      this.state, this.options, log, this.bus, this.sensorHandler, timerManager,
     );
 
     // Wire bus listeners for cross-handler coordination (no more circular constructor deps).
-    this.switchHandler.subscribeToStateEvents(this.bus);
-    this.bus.on(EventType.RESET_TRIP_SWITCHES, () => this.tripHandler.resetTripSwitches());
     this.bus.on(EventType.TRIGGER_FIRED, ({ origin }) => {
       this.stateHandler.setCurrentState(SecurityState.TRIGGERED, origin);
     });
@@ -99,12 +99,18 @@ export class SecuritySystem {
     mqttSvc.attachToBus(this.bus);
     this.api.on('shutdown', () => mqttSvc.disconnect());
 
+    // Publish the optional switch/sensor accessories over Matter (HAP keeps the
+    // main SecuritySystem service and the motion sensors). Registration happens
+    // on the platform after didFinishLaunching, via setupMatterAccessories().
+    this.matterService = new MatterService(log, this.options, api, this.state, this.switchHandler, this.tripHandler, this.sensorHandler);
+    this.matterService.attachToBus(this.bus);
+
     // Register HomeKit characteristic handlers.
-    new HomeKitRegistrar(this.api, this.log, this.svcs, this.state, this.stateHandler, this.tripHandler, this.switchHandler)
+    new HomeKitRegistrar(this.svcs, this.state, this.stateHandler)
       .register(Char);
 
     // Build the exposed service list and host it on the platform accessory.
-    this.serviceList = buildServiceList(this.svcs, this.options, this.state);
+    this.serviceList = buildServiceList(this.svcs);
     this.populateAccessory(Svc);
     this.accessory.on('identify', () => this.log.info('Identify'));
 
@@ -132,6 +138,16 @@ export class SecuritySystem {
     }
   }
 
+  // ── Public API ─────────────────────────────────────────────────────────────
+
+  /**
+   * Registers all configured switch/sensor accessories over Matter.
+   * No-op when Matter is disabled on the bridge.
+   */
+  setupMatterAccessories(cachedAccessories: Map<string, MatterAccessory>): Promise<void> {
+    return this.matterService.registerAccessories(cachedAccessories);
+  }
+
   // ── Private helpers ────────────────────────────────────────────────────────
 
   /** Replaces the accessory's auto-created information service and adds all exposed services. */
@@ -157,6 +173,8 @@ export class SecuritySystem {
       isKnocked: false,
       serverAuthenticationAttempts: 0,
       pausedCurrentState: null,
+      armingLocks: { global: false, home: false, away: false, night: false },
+      modeAwayExtended: false,
     };
   }
 

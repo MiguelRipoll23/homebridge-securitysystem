@@ -1,43 +1,11 @@
 import type { Service } from 'homebridge';
 
-/** All HomeKit services exposed by the security system accessory. */
+/**
+ * HomeKit services exposed by the security system accessory.
+ * Switches and motion sensors are published over Matter only, so the HomeKit
+ * accessory carries just the security system itself.
+ */
 export interface ServiceRegistry {
   mainService: Service;
   accessoryInfoService: Service;
-
-  // Trip switches
-  tripSwitchService: Service;
-  tripHomeSwitchService: Service;
-  tripAwaySwitchService: Service;
-  tripNightSwitchService: Service;
-  tripOverrideSwitchService: Service;
-
-  // Arming lock switches
-  armingLockSwitchService: Service;
-  armingLockHomeSwitchService: Service;
-  armingLockAwaySwitchService: Service;
-  armingLockNightSwitchService: Service;
-
-  // Mode switches
-  modeHomeSwitchService: Service;
-  modeAwaySwitchService: Service;
-  modeNightSwitchService: Service;
-  modeOffSwitchService: Service;
-  modeAwayExtendedSwitchService: Service;
-  modePauseSwitchService: Service;
-
-  // Custom trip mode switches (dynamic, one per configured entry)
-  customTripHomeSwitchServices: Service[];
-  customTripAwaySwitchServices: Service[];
-  customTripNightSwitchServices: Service[];
-
-  // Motion sensors
-  armingMotionSensorService: Service;
-  trippedMotionSensorService: Service;
-  triggeredResetMotionSensorService: Service;
-}
-
-/** Keys of ServiceRegistry whose value is a single Service (not Service[]). */
-export type SingleServiceKey = {
-  [K in keyof ServiceRegistry]: ServiceRegistry[K] extends Service[] ? never : K;
-}[keyof ServiceRegistry];
+}
