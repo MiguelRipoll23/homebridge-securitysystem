@@ -155,7 +155,7 @@ export class HomeKitRegistrar {
     // Motion sensors (read-only).
     const sensorKeys = [
       'armingMotionSensorService', 'trippedMotionSensorService',
-      'triggeredMotionSensorService', 'triggeredResetMotionSensorService',
+      'triggeredResetMotionSensorService',
     ] as const;
     for (const key of sensorKeys) {
       s[key].getCharacteristic(Char.MotionDetected)

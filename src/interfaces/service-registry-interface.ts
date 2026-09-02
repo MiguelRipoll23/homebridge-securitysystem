@@ -34,7 +34,6 @@ export interface ServiceRegistry {
   // Motion sensors
   armingMotionSensorService: Service;
   trippedMotionSensorService: Service;
-  triggeredMotionSensorService: Service;
   triggeredResetMotionSensorService: Service;
 }
 

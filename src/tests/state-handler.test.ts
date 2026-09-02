@@ -37,7 +37,7 @@ function makeServices(): ServiceRegistry {
     'armingLockNightSwitchService', 'modeHomeSwitchService', 'modeAwaySwitchService',
     'modeNightSwitchService', 'modeOffSwitchService', 'modeAwayExtendedSwitchService',
     'modePauseSwitchService', 'armingMotionSensorService',
-    'trippedMotionSensorService', 'triggeredMotionSensorService', 'triggeredResetMotionSensorService',
+    'trippedMotionSensorService', 'triggeredResetMotionSensorService',
   ];
   for (const k of keys) {
     s[k] = makeMockService();
@@ -77,8 +77,6 @@ function makeOptions(overrides: Partial<SecuritySystemOptions> = {}): SecuritySy
     homeTriggerSeconds: null,
     awayTriggerSeconds: null,
     nightTriggerSeconds: null,
-    triggeredMotionSensor: false,
-    triggeredMotionSensorSeconds: 5,
     trippedMotionSensor: false,
     trippedMotionSensorSeconds: 5,
     resetOffFlow: false,
@@ -102,7 +100,6 @@ function makeTimers() {
     setDoubleKnockTimer: vi.fn(), clearDoubleKnockTimer: vi.fn(),
     setResetTimer: vi.fn(), clearResetTimer: vi.fn(),
     setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
-    setTriggeredInterval: vi.fn(), clearTriggeredInterval: vi.fn(),
     clearAll: vi.fn(),
   } as any;
 }
@@ -112,9 +109,6 @@ function makeMockSensor() {
     resetArmingMotionSensor: vi.fn(),
     setTrippedMotionSensor: vi.fn(),
     resetTrippedMotionSensor: vi.fn(),
-    pulseTriggeredMotionSensor: vi.fn(),
-    setTriggeredMotionSensor: vi.fn(),
-    resetTriggeredMotionSensor: vi.fn(),
     pulseResetMotionSensor: vi.fn(),
     updateArmingMotionSensor: vi.fn(),
   };
@@ -300,50 +294,11 @@ describe('StateHandler.updateTargetState - isTripping reset', async () => {
   });
 });
 
-// ── Triggered motion sensor behavior ─────────────────────────────────────────
+// ── Tripped sensor reset on TRIGGERED ────────────────────────────────────────
 
-describe('StateHandler.setCurrentState - triggered motion sensor', async () => {
+describe('StateHandler.setCurrentState - tripped sensor reset', async () => {
   const { StateHandler } = await import('../handlers/state-handler.js');
   const { EventBusService } = await import('../services/event-bus-service.js');
-
-  it('starts triggered sensor steady-on when triggeredMotionSensorSeconds = 0', () => {
-    const state = makeState({ currentState: SecurityState.NIGHT });
-    const bus = new EventBusService();
-    const sensor = makeMockSensor() as any;
-    const timers = makeTimers();
-
-    const handler = new StateHandler(
-      makeServices(), state,
-      makeOptions({ triggeredMotionSensor: true, triggeredMotionSensorSeconds: 0 }),
-      {} as any, makeMockLog() as any, bus, makeStorage(),
-      timers, sensor,
-    );
-
-    handler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-
-    expect(sensor.setTriggeredMotionSensor).toHaveBeenCalledWith(true);
-    expect(sensor.pulseTriggeredMotionSensor).not.toHaveBeenCalled();
-    expect(timers.setTriggeredInterval).not.toHaveBeenCalled();
-  });
-
-  it('pulses triggered sensor with interval when triggeredMotionSensorSeconds > 0', () => {
-    const state = makeState({ currentState: SecurityState.NIGHT });
-    const bus = new EventBusService();
-    const sensor = makeMockSensor() as any;
-    const timers = makeTimers();
-
-    const handler = new StateHandler(
-      makeServices(), state,
-      makeOptions({ triggeredMotionSensor: true, triggeredMotionSensorSeconds: 10 }),
-      {} as any, makeMockLog() as any, bus, makeStorage(),
-      timers, sensor,
-    );
-
-    handler.setCurrentState(SecurityState.TRIGGERED, OriginType.EXTERNAL);
-
-    expect(timers.setTriggeredInterval).toHaveBeenCalledWith(10000, expect.any(Function));
-    expect(sensor.setTriggeredMotionSensor).not.toHaveBeenCalled();
-  });
 
   it('resets tripped motion sensor when entering TRIGGERED', () => {
     const state = makeState({ currentState: SecurityState.NIGHT });

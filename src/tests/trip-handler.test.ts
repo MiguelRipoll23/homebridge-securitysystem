@@ -35,7 +35,7 @@ function makeServices(): ServiceRegistry {
     'modeHomeSwitchService', 'modeAwaySwitchService', 'modeNightSwitchService',
     'modeOffSwitchService', 'modeAwayExtendedSwitchService', 'modePauseSwitchService',
     'armingMotionSensorService', 'trippedMotionSensorService',
-    'triggeredMotionSensorService', 'triggeredResetMotionSensorService', 'accessoryInfoService',
+    'triggeredResetMotionSensorService', 'accessoryInfoService',
   ];
   const s: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
   for (const k of keys) {

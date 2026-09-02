@@ -54,28 +54,6 @@ export class SensorHandler {
     }
   }
 
-  // ── Triggered sensor ───────────────────────────────────────────────────────
-
-  pulseTriggeredMotionSensor(): void {
-    this.setTriggeredMotionSensor(true);
-    this.scheduleReset(this.services.triggeredMotionSensorService);
-  }
-
-  setTriggeredMotionSensor(value: boolean): void {
-    this.services.triggeredMotionSensorService.updateCharacteristic(
-      this.Characteristic.MotionDetected,
-      value,
-    );
-  }
-
-  resetTriggeredMotionSensor(): void {
-    const char = this.services.triggeredMotionSensorService
-      .getCharacteristic(this.Characteristic.MotionDetected);
-    if (char.value) {
-      char.updateValue(false);
-    }
-  }
-
   // ── Reset sensor ───────────────────────────────────────────────────────────
 
   pulseResetMotionSensor(): void {

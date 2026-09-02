@@ -60,7 +60,6 @@ export function buildServiceRegistry(
     customTripNightSwitchServices: buildCustomTripSwitches('night', 'Night', options.tripNightSwitches),
     armingMotionSensorService: sensor('Arming', SWITCH_UUIDS.ARMING_SENSOR),
     trippedMotionSensorService: sensor('Tripped', SWITCH_UUIDS.TRIPPED_SENSOR),
-    triggeredMotionSensorService: sensor('Triggered', SWITCH_UUIDS.TRIGGERED_SENSOR),
     triggeredResetMotionSensorService: sensor('Triggered Reset', SWITCH_UUIDS.RESET_SENSOR),
   };
 }
@@ -79,9 +78,6 @@ export function buildServiceList(
   }
   if (options.trippedMotionSensor) {
     list.push(svcs.trippedMotionSensorService);
-  }
-  if (options.triggeredMotionSensor) {
-    list.push(svcs.triggeredMotionSensorService);
   }
   if (options.resetSensor) {
     list.push(svcs.triggeredResetMotionSensorService);

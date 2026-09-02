@@ -37,7 +37,7 @@ function makeServices(): ServiceRegistry {
     'armingLockNightSwitchService', 'modeHomeSwitchService', 'modeAwaySwitchService',
     'modeNightSwitchService', 'modeOffSwitchService', 'modeAwayExtendedSwitchService',
     'modePauseSwitchService', 'armingMotionSensorService',
-    'trippedMotionSensorService', 'triggeredMotionSensorService', 'triggeredResetMotionSensorService',
+    'trippedMotionSensorService', 'triggeredResetMotionSensorService',
   ];
   const registry: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
   for (const key of keys) {
@@ -89,8 +89,6 @@ function makeOptions(overrides: Partial<SecuritySystemOptions> = {}): SecuritySy
     homeArmSeconds: null,
     awayArmSeconds: null,
     nightArmSeconds: null,
-    triggeredMotionSensor: false,
-    triggeredMotionSensorSeconds: 5,
     trippedMotionSensor: false,
     trippedMotionSensorSeconds: 5,
     resetOffFlow: false,
@@ -117,7 +115,6 @@ function makeMockTimers() {
     setDoubleKnockTimer: vi.fn(), clearDoubleKnockTimer: vi.fn(),
     setResetTimer: vi.fn(), clearResetTimer: vi.fn(),
     setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
-    setTriggeredInterval: vi.fn(), clearTriggeredInterval: vi.fn(),
     clearAll: vi.fn(),
   } as any;
 }
