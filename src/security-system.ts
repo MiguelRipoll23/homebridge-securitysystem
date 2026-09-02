@@ -10,7 +10,6 @@ import type { ServiceRegistry } from './interfaces/service-registry-interface.js
 import { EventBusService } from './services/event-bus-service.js';
 import { EventType } from './types/event-type.js';
 import { StorageService } from './services/storage-service.js';
-import { AudioService } from './services/audio-service.js';
 import { WebhookService } from './services/webhook-service.js';
 import { CommandService } from './services/command-service.js';
 import { MqttService } from './services/mqtt-service.js';
@@ -35,7 +34,6 @@ export class SecuritySystem implements AccessoryPlugin {
   private readonly switchHandler: SwitchHandler;
   private readonly sensorHandler: SensorHandler;
   private readonly storageService: StorageService;
-  private readonly audioService: AudioService;
 
   constructor(
     private readonly log: Logging,
@@ -64,20 +62,17 @@ export class SecuritySystem implements AccessoryPlugin {
     // Services.
     this.bus = new EventBusService();
     this.storageService = new StorageService(log, this.options, api.user.storagePath());
-    this.audioService = new AudioService(log, this.options, this.state, () =>
-      Boolean(this.svcs.audioSwitchService.getCharacteristic(Char.On).value),
-    );
     const timerManager = new TimerManager(log);
 
     // Handlers — construction order matters: sensorHandler first (leaf), then stateHandler,
     // then switchHandler (depends on stateHandler), then tripHandler.
     this.sensorHandler = new SensorHandler(this.svcs, Char, log);
     this.stateHandler = new StateHandler(
-      this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, this.audioService, timerManager, this.sensorHandler,
+      this.svcs, this.state, this.options, Char, log, this.bus, this.storageService, timerManager, this.sensorHandler,
     );
     this.switchHandler = new SwitchHandler(this.svcs, this.state, this.options, Char, log, timerManager, this.stateHandler);
     this.tripHandler = new TripHandler(
-      this.svcs, this.state, this.options, Char, log, this.bus, this.audioService, this.sensorHandler, timerManager,
+      this.svcs, this.state, this.options, Char, log, this.bus, this.sensorHandler, timerManager,
     );
 
     // Wire bus listeners for cross-handler coordination (no more circular constructor deps).
@@ -95,7 +90,6 @@ export class SecuritySystem implements AccessoryPlugin {
     });
 
     // Attach side-effect listeners.
-    this.audioService.attachToBus(this.bus);
     const webhookSvc = new WebhookService(log, this.options, this.state);
     const commandSvc = new CommandService(log, this.options, this.state);
     webhookSvc.attachToBus(this.bus);
@@ -130,10 +124,6 @@ export class SecuritySystem implements AccessoryPlugin {
       syncModeSwitches();
     }
 
-    if (this.options.audioPath) {
-      this.audioService.setup();
-    }
-
     if (this.options.serverPort !== null) {
       new ServerService(log, this.options, this.state, this.stateHandler, this.tripHandler, this.switchHandler).start();
     }
@@ -160,7 +150,6 @@ export class SecuritySystem implements AccessoryPlugin {
       isKnocked: false,
       serverAuthenticationAttempts: 0,
       pausedCurrentState: null,
-      audioProcess: null,
     };
   }
 
@@ -178,7 +167,6 @@ export class SecuritySystem implements AccessoryPlugin {
     this.stateHandler.logMode('Default', this.state.defaultState);
     this.log.info(`Arm delay (${this.options.armSeconds}s)`);
     this.log.info(`Trigger delay (${this.options.triggerSeconds}s)`);
-    this.log.info(`Audio (${this.options.audio ? 'Enabled' : 'Disabled'})`);
     if (this.options.proxyMode) {
       this.log.info('Proxy mode (Enabled)');
     }

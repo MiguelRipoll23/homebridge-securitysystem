@@ -7,7 +7,6 @@ import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { EventBusService } from '../services/event-bus-service.js';
 import { EventType } from '../types/event-type.js';
-import type { AudioService } from '../services/audio-service.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { Condition } from '../conditions/condition.js';
 import type { ConditionContext } from '../interfaces/condition-context-interface.js';
@@ -34,7 +33,6 @@ export class TripHandler {
     private readonly Characteristic: CharacteristicConstructor,
     private readonly log: Logging,
     private readonly bus: EventBusService,
-    private readonly audio: AudioService,
     private readonly sensorHandler: SensorHandler,
     private readonly timers: TimerManager,
   ) {
@@ -200,7 +198,6 @@ export class TripHandler {
   private cancelTrip(origin: OriginType, stateChanged: boolean): void {
     this.log.info('Security System (Cancelled)');
     this.state.isTripping = false;
-    this.audio.stop();
 
     this.bus.emit(EventType.TRIP_CANCELLED, { origin, stateChanged });
 

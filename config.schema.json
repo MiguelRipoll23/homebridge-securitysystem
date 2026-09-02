@@ -323,23 +323,6 @@
           "functionBody": "return !(model.disabled_modes || []).includes('Night');"
         }
       },
-      "audio_switch": {
-        "title": "Show Audio Enable Switch (Deprecated)",
-        "description": "Adds a global switch to enable or disable audio except for alarm triggered. Deprecated — audio playback is deprecated, use command hooks instead.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "audio_switch_name": {
-        "title": "Audio Enable Switch Name (Deprecated)",
-        "description": "",
-        "type": "string",
-        "default": "Enable Audio",
-        "required": false,
-        "condition": {
-          "functionBody": "return model.audio_switch === true;"
-        }
-      },
       "arming_sensor": {
         "title": "Show Arming Sensor",
         "description": "Adds a sensor that asserts when the security system is being armed.",
@@ -386,72 +369,6 @@
       "reset_sensor": {
         "title": "Show Triggered Reset Sensor",
         "description": "Adds a sensor that asserts when the security system has reset after being triggered.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "audio": {
-        "title": "Play Sounds (Deprecated, local-only, ffmpeg required)",
-        "description": "Warns of pending or current events by playing sounds. Deprecated — use command hooks (command_current_*) to play audio instead, which is more flexible.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "audio_language": {
-        "title": "Audio Language",
-        "description": "",
-        "type": "string",
-        "default": "en-US",
-        "required": false,
-        "enum": ["en-US", "de-DE"]
-      },
-      "audio_extra_variables": {
-        "title": "Audio Extra Variables",
-        "description": "Add extra environment variables to the ffplay command that will be executed",
-        "type": "array",
-        "items": {
-          "title": "Environment Variable",
-          "type": "object",
-          "properties": {
-            "key": {
-              "title": "Name",
-              "type": "string",
-              "required": true
-            },
-            "value": {
-              "title": "Value",
-              "type": "string",
-              "required": true
-            }
-          }
-        },
-        "required": false
-      },
-      "audio_path": {
-        "title": "Custom Audio Path",
-        "description": "Instructions will be created in this path.",
-        "type": "string",
-        "required": false,
-        "placeholder": "/home/user/sounds"
-      },
-      "audio_volume": {
-        "title": "Audio Volume",
-        "description": "",
-        "type": "string",
-        "required": false,
-        "default": 100,
-        "placeholder": "100"
-      },
-      "audio_arming_looped": {
-        "title": "Loop Arming Sound",
-        "description": "",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "audio_alert_looped": {
-        "title": "Loop Tripped Sound",
-        "description": "",
         "type": "boolean",
         "default": false,
         "required": false
@@ -888,9 +805,7 @@
           "type": "tabarray",
           "title": "{{ value.label || 'Night Switch' }}",
           "items": ["trip_night_switches[].label"]
-        },
-        "audio_switch",
-        "audio_switch_name"
+        }
       ]
     },
     {
@@ -916,40 +831,6 @@
           "items": ["triggered_sensor", "triggered_sensor_seconds"]
         },
         "reset_sensor"
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Audio (Deprecated)",
-      "description": "Play sounds on your connected speakers to notify events. Deprecated — use command hooks to play audio instead, which is more flexible.",
-      "expandable": true,
-      "expanded": false,
-      "items": [
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row wrap",
-          "flex-direction": "row",
-          "items": ["audio", "audio_language"]
-        },
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row wrap",
-          "flex-direction": "row",
-          "items": ["audio_path", "audio_volume"]
-        },
-        "audio_arming_looped",
-        "audio_alert_looped",
-        {
-          "key": "audio_extra_variables",
-          "type": "tabarray",
-          "title": "{{ value.key || 'Environment Variable' }}",
-          "items": [
-            "audio_extra_variables[].key",
-            "audio_extra_variables[].value"
-          ]
-        }
       ]
     },
     {

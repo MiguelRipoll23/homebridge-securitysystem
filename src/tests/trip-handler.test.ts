@@ -34,7 +34,7 @@ function makeServices(): ServiceRegistry {
     'armingLockHomeSwitchService', 'armingLockAwaySwitchService', 'armingLockNightSwitchService',
     'modeHomeSwitchService', 'modeAwaySwitchService', 'modeNightSwitchService',
     'modeOffSwitchService', 'modeAwayExtendedSwitchService', 'modePauseSwitchService',
-    'audioSwitchService', 'armingMotionSensorService', 'trippedMotionSensorService',
+    'armingMotionSensorService', 'trippedMotionSensorService',
     'triggeredMotionSensorService', 'triggeredResetMotionSensorService', 'accessoryInfoService',
   ];
   const s: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
@@ -58,7 +58,6 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
-    audioProcess: null,
     ...overrides,
   };
 }
@@ -98,7 +97,6 @@ describe('TripHandler', async () => {
     setTrippedMotionSensor: vi.fn(),
     resetTrippedMotionSensor: vi.fn(),
   };
-  const mockAudio = { stop: vi.fn(), play: vi.fn(), attachToBus: vi.fn() };
   const mockTimers = {
     setTriggerTimer: vi.fn(), clearTriggerTimer: vi.fn(), isTriggerRunning: vi.fn().mockReturnValue(false),
     setTrippedInterval: vi.fn(), clearTrippedInterval: vi.fn(),
@@ -112,7 +110,7 @@ describe('TripHandler', async () => {
     services = makeServices();
     bus = new EventBusService();
     const mockLog = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
-    tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockAudio as any, mockSensorHandler as any, mockTimers);
+    tripHandler = new TripHandler(services, state, makeOptions(), {} as any, mockLog as any, bus, mockSensorHandler as any, mockTimers);
   });
 
   it('blocks trip when system is disarmed (not overriding)', () => {
@@ -156,7 +154,7 @@ describe('TripHandler', async () => {
         services, state,
         makeOptions({ trippedMotionSensor: true, trippedMotionSensorSeconds: 0 }),
         {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
-        bus, mockAudio as any, mockSensorHandler as any, mockTimers,
+        bus, mockSensorHandler as any, mockTimers,
       );
 
       handler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
@@ -171,7 +169,7 @@ describe('TripHandler', async () => {
         services, state,
         makeOptions({ trippedMotionSensor: true, trippedMotionSensorSeconds: 10 }),
         {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
-        bus, mockAudio as any, mockSensorHandler as any, mockTimers,
+        bus, mockSensorHandler as any, mockTimers,
       );
 
       handler.updateTripSwitch(true, OriginType.REGULAR_SWITCH, false);
@@ -186,7 +184,7 @@ describe('TripHandler', async () => {
         services, state,
         makeOptions({ trippedMotionSensor: true }),
         {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as any,
-        bus, mockAudio as any, mockSensorHandler as any, mockTimers,
+        bus, mockSensorHandler as any, mockTimers,
       );
 
       handler.updateTripSwitch(false, OriginType.REGULAR_SWITCH, false);
@@ -195,13 +193,12 @@ describe('TripHandler', async () => {
     });
   });
 
-  it('cancels trip and stops audio', () => {
+  it('cancels trip and emits TRIP_CANCELLED', () => {
     const emitted: unknown[] = [];
     bus.on(EventType.TRIP_CANCELLED, (payload) => emitted.push(payload));
 
     tripHandler.updateTripSwitch(false, OriginType.REGULAR_SWITCH, false);
 
-    expect(mockAudio.stop).toHaveBeenCalled();
     expect(emitted).toHaveLength(1);
   });
 
@@ -333,7 +330,6 @@ describe('TripHandler', async () => {
       state.currentState = SecurityState.HOME;
       const result = tripHandler.triggerIfModeSet(SecurityState.HOME, false);
       expect(result.success).toBe(true);
-      expect(mockAudio.stop).toHaveBeenCalled();
     });
 
     it('resetTripSwitches includes custom trip switch services', () => {

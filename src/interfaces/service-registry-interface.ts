@@ -31,9 +31,6 @@ export interface ServiceRegistry {
   customTripAwaySwitchServices: Service[];
   customTripNightSwitchServices: Service[];
 
-  // Audio switch
-  audioSwitchService: Service;
-
   // Motion sensors
   armingMotionSensorService: Service;
   trippedMotionSensorService: Service;

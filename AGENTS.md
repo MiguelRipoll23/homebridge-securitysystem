@@ -9,8 +9,8 @@ This document defines the architecture, naming conventions, and rules that all c
 `homebridge-securitysystem` is a Homebridge accessory plugin (not a platform plugin) that exposes a fully-featured security system to HomeKit. It is written in TypeScript with ESM modules.
 
 The plugin:
-- Exposes one `SecuritySystem` HAP service plus a configurable set of optional switch/sensor accessories (trip, mode, arming-lock, and audio switches; motion sensors).
-- Uses an event-driven architecture: core state changes emit domain events; side-effect services (audio, webhook, command, MQTT) listen and react.
+- Exposes one `SecuritySystem` HAP service plus a configurable set of optional switch/sensor accessories (trip, mode, and arming-lock switches; motion sensors).
+- Uses an event-driven architecture: core state changes emit domain events; side-effect services (webhook, command, MQTT) listen and react.
 - Uses an abstract `Condition` class hierarchy to encapsulate all blocking-logic decisions.
 - Provides an optional Hono HTTP server (zod-validated routes with OpenAPI and Scalar docs) for remote control.
 - Optionally publishes status updates over MQTT.
@@ -28,7 +28,7 @@ src/
   homekit/           HomeKit service construction + characteristic registration
   interfaces/        TypeScript interfaces (plain object shapes)
   schemas/           Zod schemas for HTTP server request/response validation
-  services/          Stateful services (audio, webhook, command, MQTT, storage, server, event bus)
+  services/          Stateful services (webhook, command, MQTT, storage, server, event bus)
   tests/             Vitest test suites
   timers/            Centralised timer/interval ownership (TimerManager)
   types/             TypeScript enums and type aliases
@@ -69,7 +69,7 @@ All filenames use **kebab-case** with a mandatory suffix describing their kind:
 | Constant object | `-constant.ts` | `homekit-constant.ts` |
 | Utility functions | `-util.ts` | `state-util.ts` |
 | Zod schema | `-schema.ts` | `error-schema.ts` |
-| Service class | `-service.ts` | `audio-service.ts` |
+| Service class | `-service.ts` | `webhook-service.ts` |
 | Handler class | `-handler.ts` | `state-handler.ts` |
 | Condition class | `-condition.ts` | `double-knock-condition.ts` |
 | HomeKit registrar class | `-registrar.ts` | `homekit-registrar.ts` |
@@ -139,11 +139,11 @@ The core state machine (`StateHandler`, `TripHandler`, `SwitchHandler`) never ca
 
 ```
 StateHandler → bus.emit(EventType.CURRENT_CHANGED, payload)
-                         ↓              ↓              ↓              ↓
-                  AudioService   WebhookService  CommandService  MqttService
+                         ↓              ↓              ↓
+                  WebhookService  CommandService  MqttService
 ```
 
-`AudioService` and `StorageService` are constructor-injected into the handlers that need them; `WebhookService`, `CommandService`, and `MqttService` are purely event-driven and call `attachToBus(bus)` during construction in `security-system.ts`.
+`StorageService` is constructor-injected into the handlers that need it; `WebhookService`, `CommandService`, and `MqttService` are purely event-driven and call `attachToBus(bus)` during construction in `security-system.ts`.
 
 **New side effects must follow this pattern** — never add direct calls from handlers to services. The MQTT client is disconnected on shutdown via an `api.on('shutdown', ...)` hook wired in `security-system.ts`.
 

@@ -39,7 +39,6 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
-    audioProcess: null,
     ...overrides,
   };
 }

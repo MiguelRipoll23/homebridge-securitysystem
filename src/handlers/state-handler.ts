@@ -10,7 +10,6 @@ import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { EventBusService } from '../services/event-bus-service.js';
 import { EventType } from '../types/event-type.js';
 import type { StorageService } from '../services/storage-service.js';
-import type { AudioService } from '../services/audio-service.js';
 import type { SensorHandler } from './sensor-handler.js';
 import type { TimerManager } from '../timers/timer-manager.js';
 import { getArmingSeconds } from '../utils/arming-util.js';
@@ -30,7 +29,6 @@ export class StateHandler {
     private readonly log: Logging,
     private readonly bus: EventBusService,
     private readonly storageService: StorageService,
-    private readonly audio: AudioService,
     private readonly timers: TimerManager,
     private readonly sensorHandler: SensorHandler,
   ) {}
@@ -39,7 +37,6 @@ export class StateHandler {
 
   setCurrentState(state: SecurityState, origin: OriginType): void {
     this.sensorHandler.resetArmingMotionSensor();
-    this.audio.play('current', state);
 
     if (this.state.currentState === state) {
       this.log.warn('Current mode (Already set)');

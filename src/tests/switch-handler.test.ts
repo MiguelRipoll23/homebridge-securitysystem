@@ -36,7 +36,7 @@ function makeServices(): ServiceRegistry {
     'armingLockSwitchService', 'armingLockHomeSwitchService', 'armingLockAwaySwitchService',
     'armingLockNightSwitchService', 'modeHomeSwitchService', 'modeAwaySwitchService',
     'modeNightSwitchService', 'modeOffSwitchService', 'modeAwayExtendedSwitchService',
-    'modePauseSwitchService', 'audioSwitchService', 'armingMotionSensorService',
+    'modePauseSwitchService', 'armingMotionSensorService',
     'trippedMotionSensorService', 'triggeredMotionSensorService', 'triggeredResetMotionSensorService',
   ];
   const registry: Record<string, ReturnType<typeof makeMockService> | unknown[]> = {};
@@ -60,7 +60,6 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
-    audioProcess: null,
     ...overrides,
   };
 }
