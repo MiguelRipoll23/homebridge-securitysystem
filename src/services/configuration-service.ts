@@ -101,7 +101,6 @@ export class ConfigurationService {
       modeOffSwitchName: this.str(raw, 'mode_off_switch_name') ?? DEFAULTS.MODE_OFF_SWITCH_NAME,
       modeAwayExtendedSwitchName: this.str(raw, 'mode_away_extended_switch_name') ?? DEFAULTS.MODE_AWAY_EXTENDED_SWITCH_NAME,
       modePauseSwitchName: this.str(raw, 'mode_pause_switch_name') ?? DEFAULTS.MODE_PAUSE_SWITCH_NAME,
-      audioSwitchName: this.str(raw, 'audio_switch_name') ?? DEFAULTS.AUDIO_SWITCH_NAME,
 
       // Behaviour toggles
       overrideOff: this.bool(raw, 'override_off', false),
@@ -151,17 +150,6 @@ export class ConfigurationService {
       awayDoubleKnockSeconds: this.num(raw, 'away_double_knock_seconds'),
       nightDoubleKnockSeconds: this.num(raw, 'night_double_knock_seconds'),
 
-      // Audio
-      audio: this.bool(raw, 'audio', false),
-      audioPath: this.str(raw, 'audio_path'),
-      audioLanguage: this.str(raw, 'audio_language') ?? DEFAULTS.AUDIO_LANGUAGE,
-      audioVolume: this.num(raw, 'audio_volume'),
-      audioArmingLooped: this.bool(raw, 'audio_arming_looped', false),
-      audioAlertLooped: this.bool(raw, 'audio_alert_looped', false),
-      audioExtraVariables: Array.isArray(raw.audio_extra_variables)
-        ? (raw.audio_extra_variables as { key: string; value: string }[])
-        : [],
-
       // Custom trip mode switches
       tripHomeSwitches: Array.isArray(raw.trip_home_switches)
         ? (raw.trip_home_switches as { label: string }[])
@@ -172,7 +160,6 @@ export class ConfigurationService {
       tripNightSwitches: Array.isArray(raw.trip_night_switches)
         ? (raw.trip_night_switches as { label: string }[])
         : [],
-      audioSwitch: this.bool(raw, 'audio_switch', false),
 
       // Server
       serverPort: this.num(raw, 'server_port'),
@@ -232,13 +219,6 @@ export class ConfigurationService {
   // ── Post-parse deprecation warnings ─────────────────────────────────────────
 
   private warnDeprecations(opts: SecuritySystemOptions): void {
-    const audioConfigured = opts.audio || opts.audioPath !== null || opts.audioSwitch ||
-      opts.audioVolume !== null || opts.audioArmingLooped || opts.audioAlertLooped ||
-      opts.audioExtraVariables.length > 0;
-    if (audioConfigured) {
-      this.log.warn('Config: audio playback is deprecated, use command hooks (command_current_*) to play audio instead.');
-    }
-
     if (opts.triggeredMotionSensor) {
       this.log.warn('Config: the triggered sensor is deprecated, Apple already provides emergency alerts for security system accessories.');
     }

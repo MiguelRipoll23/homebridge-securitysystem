@@ -5,7 +5,6 @@ import type { SystemState } from '../interfaces/system-state-interface.js';
 import type { SecuritySystemOptions } from '../interfaces/options-interface.js';
 import type { ServiceRegistry } from '../interfaces/service-registry-interface.js';
 import type { StorageService } from '../services/storage-service.js';
-import type { AudioService } from '../services/audio-service.js';
 import { EventType } from '../types/event-type.js';
 
 // ── Minimal mocks ─────────────────────────────────────────────────────────────
@@ -37,7 +36,7 @@ function makeServices(): ServiceRegistry {
     'armingLockSwitchService', 'armingLockHomeSwitchService', 'armingLockAwaySwitchService',
     'armingLockNightSwitchService', 'modeHomeSwitchService', 'modeAwaySwitchService',
     'modeNightSwitchService', 'modeOffSwitchService', 'modeAwayExtendedSwitchService',
-    'modePauseSwitchService', 'audioSwitchService', 'armingMotionSensorService',
+    'modePauseSwitchService', 'armingMotionSensorService',
     'trippedMotionSensorService', 'triggeredMotionSensorService', 'triggeredResetMotionSensorService',
   ];
   for (const k of keys) {
@@ -57,7 +56,6 @@ function makeState(overrides: Partial<SystemState> = {}): SystemState {
     isKnocked: false,
     serverAuthenticationAttempts: 0,
     pausedCurrentState: null,
-    audioProcess: null,
     ...overrides,
   };
 }
@@ -94,10 +92,6 @@ function makeMockLog() {
 
 function makeStorage() {
   return { save: vi.fn(), load: vi.fn(), init: vi.fn() } as unknown as StorageService;
-}
-
-function makeAudio() {
-  return { play: vi.fn(), stop: vi.fn(), attachToBus: vi.fn() } as unknown as AudioService;
 }
 
 function makeTimers() {
@@ -144,7 +138,7 @@ describe('StateHandler.getArmingSeconds', async () => {
     const bus = new EventBusService();
 
     const sensor = makeMockSensor() as any;
-    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
+    stateHandler = new StateHandler(services, state, options, {} as any, log as any, bus, makeStorage(), makeTimers(), sensor);
   });
 
   it('returns 0 when current state is TRIGGERED', () => {
@@ -175,7 +169,7 @@ describe('StateHandler.updateTargetState', async () => {
     const bus = new EventBusService();
     const sensor = makeMockSensor() as any;
     const timers = makeTimers();
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.INTERNAL, 0);
     expect(result.success).toBe(true);
@@ -188,7 +182,7 @@ describe('StateHandler.updateTargetState', async () => {
     const bus = new EventBusService();
     const sensor = makeMockSensor() as any;
     const timers = makeTimers();
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.EXTERNAL, 0);
     expect(result.success).toBe(true);
@@ -203,7 +197,7 @@ describe('StateHandler.updateTargetState', async () => {
     const bus = new EventBusService();
     const sensor = makeMockSensor() as any;
     const timers = makeTimers();
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), timers, sensor);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), timers, sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.EXTERNAL, 0);
     expect(result.success).toBe(true);
@@ -216,7 +210,7 @@ describe('StateHandler.updateTargetState', async () => {
     const log = makeMockLog();
     const bus = new EventBusService();
     const sensor = makeMockSensor() as any;
-    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeAudio(), makeTimers(), sensor);
+    const handler = new StateHandler(makeServices(), state, makeOptions(), {} as any, log as any, bus, makeStorage(), makeTimers(), sensor);
 
     const result = handler.updateTargetState(SecurityState.HOME, OriginType.REGULAR_SWITCH, 0);
     expect(result.success).toBe(true);
@@ -240,7 +234,7 @@ describe('StateHandler.setCurrentState - RESET_TRIP_SWITCHES', async () => {
 
     const handler = new StateHandler(
       makeServices(), state, makeOptions(), {} as any,
-      makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      makeMockLog() as any, bus, makeStorage(),
       makeTimers(), makeMockSensor() as any,
     );
 
@@ -257,7 +251,7 @@ describe('StateHandler.setCurrentState - RESET_TRIP_SWITCHES', async () => {
 
     const handler = new StateHandler(
       makeServices(), state, makeOptions(), {} as any,
-      makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      makeMockLog() as any, bus, makeStorage(),
       makeTimers(), makeMockSensor() as any,
     );
 
@@ -279,7 +273,7 @@ describe('StateHandler.updateTargetState - isTripping reset', async () => {
     const state = makeState({ currentState: SecurityState.HOME, isTripping: true });
     const handler = new StateHandler(
       makeServices(), state, makeOptions(), {} as any,
-      makeMockLog() as any, new EventBusService(), makeStorage(), makeAudio(),
+      makeMockLog() as any, new EventBusService(), makeStorage(),
       makeTimers(), makeMockSensor() as any,
     );
 
@@ -296,7 +290,7 @@ describe('StateHandler.updateTargetState - isTripping reset', async () => {
     });
     const handler = new StateHandler(
       makeServices(), state, makeOptions(), {} as any,
-      makeMockLog() as any, new EventBusService(), makeStorage(), makeAudio(),
+      makeMockLog() as any, new EventBusService(), makeStorage(),
       makeTimers(), makeMockSensor() as any,
     );
 
@@ -321,7 +315,7 @@ describe('StateHandler.setCurrentState - triggered motion sensor', async () => {
     const handler = new StateHandler(
       makeServices(), state,
       makeOptions({ triggeredMotionSensor: true, triggeredMotionSensorSeconds: 0 }),
-      {} as any, makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      {} as any, makeMockLog() as any, bus, makeStorage(),
       timers, sensor,
     );
 
@@ -341,7 +335,7 @@ describe('StateHandler.setCurrentState - triggered motion sensor', async () => {
     const handler = new StateHandler(
       makeServices(), state,
       makeOptions({ triggeredMotionSensor: true, triggeredMotionSensorSeconds: 10 }),
-      {} as any, makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      {} as any, makeMockLog() as any, bus, makeStorage(),
       timers, sensor,
     );
 
@@ -358,7 +352,7 @@ describe('StateHandler.setCurrentState - triggered motion sensor', async () => {
 
     const handler = new StateHandler(
       makeServices(), state, makeOptions(), {} as any,
-      makeMockLog() as any, bus, makeStorage(), makeAudio(),
+      makeMockLog() as any, bus, makeStorage(),
       makeTimers(), sensor,
     );
 

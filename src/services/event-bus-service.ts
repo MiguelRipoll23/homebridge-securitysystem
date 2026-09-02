@@ -3,7 +3,7 @@ import { EventType } from '../types/event-type.js';
 import type { EventPayloadMap } from '../types/event-payload-map-type.js';
 
 /**
- * Typed event bus used to decouple side-effect services (audio, commands,
+ * Typed event bus used to decouple side-effect services (commands,
  * webhooks, storage) from the core state-machine handlers.
  */
 export class EventBusService extends EventEmitter {
