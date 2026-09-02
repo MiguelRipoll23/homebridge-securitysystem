@@ -111,7 +111,7 @@ export class SecuritySystem {
 
     // Build the exposed service list and host it on the platform accessory.
     this.serviceList = buildServiceList(this.svcs);
-    this.populateAccessory(Svc);
+    this.populateAccessory();
     this.accessory.on('identify', () => this.log.info('Identify'));
 
     // Startup tasks.
@@ -150,14 +150,18 @@ export class SecuritySystem {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  /** Replaces the accessory's auto-created information service and adds all exposed services. */
-  private populateAccessory(Svc: typeof Service): void {
-    const existingInfoService = this.accessory.getService(Svc.AccessoryInformation);
-    if (existingInfoService) {
-      this.accessory.removeService(existingInfoService);
-    }
+  /**
+   * Replaces any existing services (from a restored cached accessory) with fresh
+   * instances and adds all exposed services exactly once. addService() throws if
+   * the accessory already carries a service with the same UUID without subtype.
+   */
+  private populateAccessory(): void {
     this.accessory.updateDisplayName(this.options.name);
     for (const service of this.serviceList) {
+      const existingService = this.accessory.getService(service.UUID);
+      if (existingService) {
+        this.accessory.removeService(existingService);
+      }
       this.accessory.addService(service);
     }
   }

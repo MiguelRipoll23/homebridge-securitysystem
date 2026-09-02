@@ -2,7 +2,7 @@
   "name": "homebridge-securitysystem",
   "displayName": "Homebridge Security System",
   "type": "module",
-  "version": "0.0.2-matter",
+  "version": "0.0.3-matter",
   "description": "Homebridge plugin that creates a security system accessory that can be triggered by HomeKit sensors.",
   "author": "MiguelRipoll23",
   "license": "MIT",
