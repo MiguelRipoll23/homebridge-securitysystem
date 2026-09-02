@@ -153,13 +153,14 @@ export class SecuritySystem {
   /**
    * Replaces any existing services (from a restored cached accessory) with fresh
    * instances and adds all exposed services exactly once. addService() throws if
-   * the accessory already carries a service with the same UUID without subtype.
+   * the accessory already carries a service with the same UUID without subtype,
+   * so stale services are matched by UUID and removed beforehand (getService()
+   * matches display names, not UUIDs, and is therefore useless here).
    */
   private populateAccessory(): void {
     this.accessory.updateDisplayName(this.options.name);
     for (const service of this.serviceList) {
-      const existingService = this.accessory.getService(service.UUID);
-      if (existingService) {
+      for (const existingService of this.accessory.services.filter(existing => existing.UUID === service.UUID)) {
         this.accessory.removeService(existingService);
       }
       this.accessory.addService(service);
