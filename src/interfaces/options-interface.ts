@@ -61,8 +61,6 @@ export interface SecuritySystemOptions {
   armingMotionSensor: boolean;
   trippedMotionSensor: boolean;
   trippedMotionSensorSeconds: number;
-  triggeredMotionSensor: boolean;
-  triggeredMotionSensorSeconds: number;
   resetSensor: boolean;
 
   // Mode switches

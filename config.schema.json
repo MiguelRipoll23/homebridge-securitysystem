@@ -348,24 +348,6 @@
           "functionBody": "return model.tripped_sensor === true;"
         }
       },
-      "triggered_sensor": {
-        "title": "Show Triggered Sensor (Deprecated)",
-        "description": "Adds a sensor that pulses at the set rate when the security system has been triggered. Deprecated — Apple already provides emergency alerts for security system accessories, so this sensor is redundant.",
-        "type": "boolean",
-        "default": false,
-        "required": false
-      },
-      "triggered_sensor_seconds": {
-        "title": "Triggered Sensor Pulse Rate (seconds) (Deprecated)",
-        "description": "Set to 0 for steady on.",
-        "type": "integer",
-        "default": 5,
-        "required": false,
-        "minimum": 0,
-        "condition": {
-          "functionBody": "return model.triggered_sensor === true;"
-        }
-      },
       "reset_sensor": {
         "title": "Show Triggered Reset Sensor",
         "description": "Adds a sensor that asserts when the security system has reset after being triggered.",
@@ -822,13 +804,6 @@
           "flex-flow": "row",
           "flex-direction": "row",
           "items": ["tripped_sensor", "tripped_sensor_seconds"]
-        },
-        {
-          "type": "div",
-          "displayFlex": true,
-          "flex-flow": "row",
-          "flex-direction": "row",
-          "items": ["triggered_sensor", "triggered_sensor_seconds"]
         },
         "reset_sensor"
       ]

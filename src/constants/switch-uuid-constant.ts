@@ -17,6 +17,5 @@ export const SWITCH_UUIDS = {
   MODE_PAUSE: 'mode-pause',
   ARMING_SENSOR: 'arming-motion-sensor',
   TRIPPED_SENSOR: 'siren-tripped',
-  TRIGGERED_SENSOR: 'siren-triggered',
   RESET_SENSOR: 'reset-event',
 } as const;

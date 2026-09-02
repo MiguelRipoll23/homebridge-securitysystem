@@ -18,7 +18,6 @@ export class ConfigurationService {
     this.options = this.parse(raw);
     this.validate(this.options);
     this.normalize(this.options);
-    this.warnDeprecations(this.options);
     log.info('Options', JSON.stringify(this.options));
   }
 
@@ -63,8 +62,6 @@ export class ConfigurationService {
       siren_switch: 'trip_switch',
       siren_override_switch: 'trip_override_switch',
       siren_mode_switches: 'trip_mode_switches',
-      siren_sensor: 'triggered_sensor',
-      siren_sensor_seconds: 'triggered_sensor_seconds',
     };
 
     for (const [oldKey, newKey] of Object.entries(renames)) {
@@ -130,8 +127,6 @@ export class ConfigurationService {
       armingMotionSensor: this.bool(raw, 'arming_sensor', false),
       trippedMotionSensor: this.bool(raw, 'tripped_sensor', false),
       trippedMotionSensorSeconds: this.num(raw, 'tripped_sensor_seconds') ?? DEFAULTS.TRIPPED_SENSOR_SECONDS,
-      triggeredMotionSensor: this.bool(raw, 'triggered_sensor', false),
-      triggeredMotionSensorSeconds: this.num(raw, 'triggered_sensor_seconds') ?? DEFAULTS.TRIGGERED_SENSOR_SECONDS,
       resetSensor: this.bool(raw, 'reset_sensor', false),
 
       // Mode switches
@@ -213,14 +208,6 @@ export class ConfigurationService {
 
     if (opts.mqttBroker !== null && !/^mqtts?:\/\//.test(opts.mqttBroker)) {
       this.log.warn('\'mqtt_broker\' should start with mqtt:// or mqtts://');
-    }
-  }
-
-  // ── Post-parse deprecation warnings ─────────────────────────────────────────
-
-  private warnDeprecations(opts: SecuritySystemOptions): void {
-    if (opts.triggeredMotionSensor) {
-      this.log.warn('Config: the triggered sensor is deprecated, Apple already provides emergency alerts for security system accessories.');
     }
   }
 
