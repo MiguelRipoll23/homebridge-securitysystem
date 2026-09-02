@@ -14,7 +14,6 @@ export class ConfigurationService {
 
   constructor(private readonly log: Logging, raw: RawConfig) {
     log.info('Config', JSON.stringify(raw));
-    this.applyDeprecations(raw);
     this.options = this.parse(raw);
     this.validate(this.options);
     this.normalize(this.options);
@@ -52,24 +51,6 @@ export class ConfigurationService {
 
   private strArr(raw: RawConfig, key: string): string[] {
     return Array.isArray(raw[key]) ? (raw[key] as unknown[]).map(String) : [];
-  }
-
-  // ── Deprecation migration ───────────────────────────────────────────────────
-
-  /** Rewrites deprecated config keys to their current equivalents in-place. */
-  private applyDeprecations(raw: RawConfig): void {
-    const renames: Record<string, string> = {
-      siren_switch: 'trip_switch',
-      siren_override_switch: 'trip_override_switch',
-      siren_mode_switches: 'trip_mode_switches',
-    };
-
-    for (const [oldKey, newKey] of Object.entries(renames)) {
-      if (this.isSet(raw[oldKey]) && !this.isSet(raw[newKey])) {
-        this.log.warn(`Config: '${oldKey}' is deprecated, use '${newKey}' instead.`);
-        raw[newKey] = raw[oldKey];
-      }
-    }
   }
 
   // ── Core parsing ────────────────────────────────────────────────────────────
@@ -158,8 +139,7 @@ export class ConfigurationService {
 
       // Server
       serverPort: this.num(raw, 'server_port'),
-      // TODO: Remove serverCode fallback in future major version
-      serverApiKey: this.str(raw, 'server_api_key') ?? (this.num(raw, 'server_code') !== null ? String(this.num(raw, 'server_code')!) : null),
+      serverApiKey: this.str(raw, 'server_api_key'),
 
       // Shell commands
       commandTargetHome: this.str(raw, 'command_target_home'),
