@@ -8,9 +8,7 @@ export const DEFAULTS = {
   RESET_MINUTES: 10,
   DOUBLE_KNOCK_SECONDS: 90,
   TRIPPED_SENSOR_SECONDS: 5,
-  TRIGGERED_SENSOR_SECONDS: 5,
   PAUSE_MINUTES: 0,
-  AUDIO_LANGUAGE: 'en-US',
 
   // Switch display names
   TRIP_SWITCH_NAME: 'Trip',
@@ -24,7 +22,6 @@ export const DEFAULTS = {
   MODE_OFF_SWITCH_NAME: 'Mode Off',
   MODE_AWAY_EXTENDED_SWITCH_NAME: 'Mode Away Extended',
   MODE_PAUSE_SWITCH_NAME: 'Mode Pause',
-  AUDIO_SWITCH_NAME: 'Audio',
 
   // MQTT
   MQTT_TOPIC: 'security-system/state',

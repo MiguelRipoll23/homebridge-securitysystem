@@ -152,15 +152,10 @@ export class HomeKitRegistrar {
         .onSet(async (v: CharacteristicValue) => this.log.info(`Arming lock [${mode}] (${v ? 'On' : 'Off'})`));
     }
 
-    // Audio switch.
-    s.audioSwitchService.getCharacteristic(Char.On)
-      .onGet(async () => Boolean(s.audioSwitchService.getCharacteristic(Char.On).value))
-      .onSet(async (v: CharacteristicValue) => this.log.info(`Audio (${v ? 'Enabled' : 'Disabled'})`));
-
     // Motion sensors (read-only).
     const sensorKeys = [
       'armingMotionSensorService', 'trippedMotionSensorService',
-      'triggeredMotionSensorService', 'triggeredResetMotionSensorService',
+      'triggeredResetMotionSensorService',
     ] as const;
     for (const key of sensorKeys) {
       s[key].getCharacteristic(Char.MotionDetected)

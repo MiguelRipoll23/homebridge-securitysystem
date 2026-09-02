@@ -15,7 +15,6 @@ export class TimerManager {
   private doubleKnockTimer: TimerHandle = null;
   private resetTimer: TimerHandle = null;
   private trippedInterval: IntervalHandle = null;
-  private triggeredInterval: IntervalHandle = null;
 
   constructor(private readonly log: Logging) {}
 
@@ -128,28 +127,12 @@ export class TimerManager {
     }
   }
 
-  // ── Triggered motion sensor interval ─���─────────────────────────────────────
-
-  setTriggeredInterval(ms: number, cb: () => void): void {
-    this.clearTriggeredInterval();
-    this.triggeredInterval = setInterval(cb, ms);
-  }
-
-  clearTriggeredInterval(): void {
-    if (this.triggeredInterval) {
-      clearInterval(this.triggeredInterval);
-      this.triggeredInterval = null;
-      this.log.debug('Triggered interval (Cleared)');
-    }
-  }
-
   // ── Bulk clear ─────────────────────────────────────────────────────────────
 
   /** Clears every active timer and interval. */
   clearAll(): void {
     this.clearTriggerTimer();
     this.clearArmTimer();
-    this.clearTriggeredInterval();
     this.clearTrippedInterval();
     this.clearDoubleKnockTimer();
     this.clearPauseTimer();

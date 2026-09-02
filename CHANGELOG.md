@@ -1,5 +1,35 @@
 # Changelog
 
+## v13.0.0-beta.1 - 2026-09-02
+
+<!-- Release notes generated using configuration in .github/release.yml at v13.0.0-beta.1 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* Remove audio playback by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/1001
+* Remove triggered sensor by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/1002
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v12.0.0...v13.0.0-beta.1
+
+
+## v12.0.0 - 2026-08-30
+
+<!-- Release notes generated using configuration in .github/release.yml at v12.0.0 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* Remove file logging by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/988
+* feat: use full URL per webhook event (remove base URL) by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/992
+### 🛠️ Other Changes
+* Deprecate audio playback by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/989
+* Deprecate triggered sensor by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/990
+* docs: update AGENTS.md to match current architecture by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/995
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v11.4.1...v12.0.0
+
+
 ## v12.0.0-beta.2 - 2026-08-29
 
 <!-- Release notes generated using configuration in .github/release.yml at v12.0.0-beta.2 -->

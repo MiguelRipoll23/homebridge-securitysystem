@@ -1,9 +1,3 @@
-/** Key-value pair for extra ffplay environment variables. */
-export interface AudioVariable {
-  key: string;
-  value: string;
-}
-
 /** A single custom trip switch entry with a user-defined label. */
 export interface TripModeSwitch {
   label: string;
@@ -33,7 +27,6 @@ export interface SecuritySystemOptions {
   modeOffSwitchName: string;
   modeAwayExtendedSwitchName: string;
   modePauseSwitchName: string;
-  audioSwitchName: string;
 
   // Behaviour toggles
   overrideOff: boolean;
@@ -68,8 +61,6 @@ export interface SecuritySystemOptions {
   armingMotionSensor: boolean;
   trippedMotionSensor: boolean;
   trippedMotionSensorSeconds: number;
-  triggeredMotionSensor: boolean;
-  triggeredMotionSensorSeconds: number;
   resetSensor: boolean;
 
   // Mode switches
@@ -87,16 +78,6 @@ export interface SecuritySystemOptions {
   homeDoubleKnockSeconds: number | null;
   awayDoubleKnockSeconds: number | null;
   nightDoubleKnockSeconds: number | null;
-
-  // Audio
-  audio: boolean;
-  audioPath: string | null;
-  audioLanguage: string;
-  audioVolume: number | null;
-  audioArmingLooped: boolean;
-  audioAlertLooped: boolean;
-  audioExtraVariables: AudioVariable[];
-  audioSwitch: boolean;
 
   // Server
   serverPort: number | null;
