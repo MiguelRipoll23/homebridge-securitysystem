@@ -38,7 +38,7 @@
   "dependencies": {
     "@hono/node-server": "^2.1.1",
     "@hono/zod-openapi": "^1.6.0",
-    "@scalar/hono-api-reference": "^0.11.14",
+    "@scalar/hono-api-reference": "^0.12.0",
     "hono": "^4.13.2",
     "mqtt": "^5.15.2",
     "node-persist": "^4.0.4",
