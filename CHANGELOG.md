@@ -1,5 +1,20 @@
 # Changelog
 
+## v13.0.0 - 2026-10-08
+
+<!-- Release notes generated using configuration in .github/release.yml at v13.0.0 -->
+
+## What's Changed
+### 💥 Breaking Changes
+* Remove audio playback by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/1001
+* Remove triggered sensor by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/1002
+### 📦 Dependencies
+* build(deps): bump MiguelRipoll23/get-next-version from 3.2.1 to 3.2.2 by @dependabot[bot] in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/1036
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v12.0.0...v13.0.0
+
+
 ## v13.0.0-beta.1 - 2026-09-02
 
 <!-- Release notes generated using configuration in .github/release.yml at v13.0.0-beta.1 -->
