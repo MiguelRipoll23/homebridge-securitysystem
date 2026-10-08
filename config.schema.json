@@ -87,7 +87,7 @@
         "title": "Home-Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Home-Mode",
+        "default": "Home Mode",
         "required": false,
         "condition": {
           "functionBody": "return !(model.disabled_modes || []).includes('Home') && model.mode_switches === true;"
@@ -97,7 +97,7 @@
         "title": "Away-Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Away-Mode",
+        "default": "Away Mode",
         "required": false,
         "condition": {
           "functionBody": "return !(model.disabled_modes || []).includes('Away') && model.mode_switches === true;"
@@ -107,7 +107,7 @@
         "title": "Night-Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Night-Mode",
+        "default": "Night Mode",
         "required": false,
         "condition": {
           "functionBody": "return !(model.disabled_modes || []).includes('Night') && model.mode_switches === true;"
@@ -127,7 +127,7 @@
         "title": "Off-Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.  Turning this switch ON disarms the security system.",
         "type": "string",
-        "default": "Set Off-Mode",
+        "default": "Off Mode",
         "required": false,
         "condition": {
           "functionBody": "return model.mode_switches === true && model.mode_off_switch === true;"
@@ -155,7 +155,7 @@
         "title": "Extended Away-Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Extended Away-Mode",
+        "default": "Extended Away Mode",
         "required": false,
         "condition": {
           "functionBody": "return model.mode_away_extended_switch === true;"
