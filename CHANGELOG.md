@@ -1,5 +1,17 @@
 # Changelog
 
+## v13.0.1 - 2026-10-09
+
+<!-- Release notes generated using configuration in .github/release.yml at v13.0.1 -->
+
+## What's Changed
+### 🐛 Bug Fixes
+* Fix npm publish packaging by @MiguelRipoll23 in https://github.com/MiguelRipoll23/homebridge-securitysystem/pull/1039
+
+
+**Full Changelog**: https://github.com/MiguelRipoll23/homebridge-securitysystem/compare/v13.0.0...v13.0.1
+
+
 ## v13.0.0 - 2026-10-08
 
 <!-- Release notes generated using configuration in .github/release.yml at v13.0.0 -->
