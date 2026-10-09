@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^2.1.1
-        version: 2.1.1(hono@4.13.2)
+        version: 2.1.3(hono@4.13.2)
       '@hono/zod-openapi':
         specifier: ^1.6.0
         version: 1.6.0(hono@4.13.2)(zod@4.4.3)
@@ -87,8 +87,8 @@ packages:
     resolution: {integrity: sha512-AOx7zlGDI2xIihXjTMf5DqkbIaN8/njAVWhN9GSy0tjUvUYtkq1L3sdTOxzAVIg/XKVFSWDp82UZ6e8IEBr9Rw==}
     engines: {node: ^22 || ^24 || ^26}
 
-  '@hono/node-server@2.1.1':
-    resolution: {integrity: sha512-ELuehkj5VCBdgEw9zs+ivkKwyzzUCSQuE96YmiPvn1ECBoZCczbFXJLeEGMTYjphP6gydh4pHMqEYPVMYUVgQg==}
+  '@hono/node-server@2.1.3':
+    resolution: {integrity: sha512-TA//nWMqPhbfdfneACk6t5a9eqbS9lABEPyKn0/xZTah3H3U2XaVg85rJFl0/Fyit0I552YDHgXGVSf3GwqbUw==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
@@ -1344,7 +1344,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@hono/node-server@2.1.1(hono@4.13.2)':
+  '@hono/node-server@2.1.3(hono@4.13.2)':
     dependencies:
       hono: 4.13.2
 
