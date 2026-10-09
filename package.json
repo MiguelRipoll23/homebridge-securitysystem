@@ -23,6 +23,13 @@
     "category-security"
   ],
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "config.schema.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": "^22 || ^24",
     "homebridge": "^1.8.0 || ^2.0.0"
