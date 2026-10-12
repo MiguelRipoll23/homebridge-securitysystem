@@ -73,37 +73,37 @@
         "required": false
       },
       "mode_home_switch_name": {
-        "title": "Home-Mode Switch Name",
+        "title": "Home Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Home-Mode",
+        "default": "Home Mode",
         "required": false,
         "condition": {
           "functionBody": "return !(model.disabled_modes || []).includes('Home') && model.mode_switches === true;"
         }
       },
       "mode_away_switch_name": {
-        "title": "Away-Mode Switch Name",
+        "title": "Away Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Away-Mode",
+        "default": "Away Mode",
         "required": false,
         "condition": {
           "functionBody": "return !(model.disabled_modes || []).includes('Away') && model.mode_switches === true;"
         }
       },
       "mode_night_switch_name": {
-        "title": "Night-Mode Switch Name",
+        "title": "Night Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Night-Mode",
+        "default": "Night Mode",
         "required": false,
         "condition": {
           "functionBody": "return !(model.disabled_modes || []).includes('Night') && model.mode_switches === true;"
         }
       },
       "mode_off_switch": {
-        "title": "Show Off-Mode Switch",
+        "title": "Show OfF Mode Switch",
         "description": "Adds a switch to disarm the security system (only if \"Show Mode Switches\" is also enabled).",
         "type": "boolean",
         "default": true,
@@ -113,24 +113,24 @@
         }
       },
       "mode_off_switch_name": {
-        "title": "Off-Mode Switch Name",
+        "title": "Off Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.  Turning this switch ON disarms the security system.",
         "type": "string",
-        "default": "Set Off-Mode",
+        "default": "Off Mode",
         "required": false,
         "condition": {
           "functionBody": "return model.mode_switches === true && model.mode_off_switch === true;"
         }
       },
       "mode_away_extended_switch": {
-        "title": "Show Extended Away-Mode Switch",
-        "description": "Adds an additional Away-Mode switch that can be used in automations (e.g. for extended time away such as vacation).",
+        "title": "Show Extended Away Mode Switch",
+        "description": "Adds an additional Away Mode switch that can be used in automations (e.g. for extended time away such as vacation).",
         "type": "boolean",
         "default": false,
         "required": false
       },
       "mode_away_extended_switch_trigger_seconds": {
-        "title": "Extended Away-Mode Set Delay (seconds)",
+        "title": "Extended Away Mode Set Delay (seconds)",
         "description": "Give yourself time to leave before the system is armed.",
         "type": "integer",
         "default": 0,
@@ -141,10 +141,10 @@
         }
       },
       "mode_away_extended_switch_name": {
-        "title": "Extended Away-Mode Switch Name",
+        "title": "Extended Away Mode Switch Name",
         "description": "\"Set-only\" switch; trying to turn it off does nothing.",
         "type": "string",
-        "default": "Set Extended Away-Mode",
+        "default": "Extended Away Mode",
         "required": false,
         "condition": {
           "functionBody": "return model.mode_away_extended_switch === true;"
